@@ -1,0 +1,812 @@
+import { getAdminWithPermissions } from "@/lib/admin-auth";
+import { prisma } from "@/lib/prisma";
+import { NextResponse } from "next/server";
+
+const allowedCategories = [
+  "PFAND_COLLECTION",
+  "SUPPLIER_PAYMENT",
+  "GOODS_PURCHASE",
+  "FUEL",
+  "PERSONNEL",
+  "RENT",
+  "MANUAL_INCOME",
+  "OTHER_EXPENSE",
+] as const;
+
+type AllowedCategory = (typeof allowedCategories)[number];
+
+function serializeMovement(movement: any) {
+  return {
+    ...movement,
+    amount: Number(movement.amount),
+
+    purchaseItems: Array.isArray(movement.purchaseItems)
+      ? movement.purchaseItems.map((item: any) => ({
+          ...item,
+          unitPrice: Number(item.unitPrice),
+
+          totalAmount: Number(item.totalAmount),
+
+          packagePrice:
+            item.packagePrice !== null && item.packagePrice !== undefined
+              ? Number(item.packagePrice)
+              : null,
+        }))
+      : [],
+  };
+}
+
+export async function GET() {
+  const admin = await getAdminWithPermissions();
+
+  if (!admin || (!admin.isSuperAdmin && !admin.permissions.viewBarCash)) {
+    return NextResponse.json(
+      {
+        error: "Gerçek kasayı görüntüleme yetkiniz yok.",
+      },
+      {
+        status: 403,
+      },
+    );
+  }
+
+  try {
+    const [movements, products] = await Promise.all([
+      prisma.cashMovement.findMany({
+        where: {
+          accountType: "BAR",
+        },
+
+        include: {
+          supplier: true,
+
+          purchaseItems: {
+            orderBy: {
+              productName: "asc",
+            },
+          },
+        },
+
+        orderBy: {
+          createdAt: "desc",
+        },
+
+        take: 500,
+      }),
+
+      prisma.product.findMany({
+        where: {
+          active: true,
+        },
+
+        select: {
+          id: true,
+          name: true,
+          nameTr: true,
+          nameDe: true,
+          stock: true,
+          stockUnit: true,
+          purchasePrice: true,
+          price: true,
+          pfandAmount: true,
+          packageInfo: true,
+          categoryId: true,
+
+          category: {
+            select: {
+              id: true,
+              name: true,
+              nameTr: true,
+              nameDe: true,
+            },
+          },
+        },
+
+        orderBy: {
+          name: "asc",
+        },
+      }),
+    ]);
+
+    const serialized = movements.map(serializeMovement);
+
+    const totalIn = serialized
+      .filter((item) => item.direction === "IN")
+      .reduce((total, item) => total + item.amount, 0);
+
+    const totalOut = serialized
+      .filter((item) => item.direction === "OUT")
+      .reduce((total, item) => total + item.amount, 0);
+
+    return NextResponse.json({
+      movements: serialized,
+
+      products: products.map((product) => ({
+        ...product,
+        purchasePrice: Number(product.purchasePrice),
+        price: Number(product.price),
+        pfandAmount: Number(product.pfandAmount),
+      })),
+
+      summary: {
+        totalIn: Number(totalIn.toFixed(2)),
+        totalOut: Number(totalOut.toFixed(2)),
+        balance: Number((totalIn - totalOut).toFixed(2)),
+      },
+
+      permissions: admin.permissions,
+    });
+  } catch (error) {
+    console.error("LOAD_REAL_CASH_ERROR", error);
+
+    return NextResponse.json(
+      {
+        error: "Gerçek kasa yüklenemedi.",
+      },
+      {
+        status: 500,
+      },
+    );
+  }
+}
+
+export async function POST(request: Request) {
+  const admin = await getAdminWithPermissions();
+
+  if (!admin) {
+    return NextResponse.json(
+      {
+        error: "Yetkisiz erişim.",
+      },
+      {
+        status: 403,
+      },
+    );
+  }
+
+  try {
+    const body = await request.json();
+
+    const direction = String(body.direction || "");
+
+    const category = String(body.category || "") as AllowedCategory;
+
+    const companyName = String(body.companyName || "").trim();
+
+    const supplierId = String(body.supplierId || "").trim();
+
+    const description = String(body.description || "").trim();
+
+    if (direction !== "IN" && direction !== "OUT") {
+      return NextResponse.json(
+        {
+          error: "Geçersiz kasa hareketi.",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
+    if (!allowedCategories.includes(category)) {
+      return NextResponse.json(
+        {
+          error: "Geçersiz kasa kategorisi.",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
+    if (
+      direction === "IN" &&
+      !admin.isSuperAdmin &&
+      !admin.permissions.createBarCashIncome
+    ) {
+      return NextResponse.json(
+        {
+          error: "Kasaya para girişi yapma yetkiniz yok.",
+        },
+        {
+          status: 403,
+        },
+      );
+    }
+
+    if (
+      direction === "OUT" &&
+      !admin.isSuperAdmin &&
+      !admin.permissions.createBarCashExpense
+    ) {
+      return NextResponse.json(
+        {
+          error: "Kasadan para çıkışı yapma yetkiniz yok.",
+        },
+        {
+          status: 403,
+        },
+      );
+    }
+
+    /*
+     * MAL ALIMI
+     *
+     * Aynı transaction içinde:
+     * - kasa çıkışı
+     * - stok artışı
+     * - stok hareketi
+     * - alış fiyatı güncellemesi
+     */
+    if (category === "GOODS_PURCHASE") {
+      if (direction !== "OUT") {
+        return NextResponse.json(
+          {
+            error: "Mal alımı yalnızca para çıkışı olarak kaydedilebilir.",
+          },
+          {
+            status: 400,
+          },
+        );
+      }
+
+      if (!supplierId) {
+        return NextResponse.json(
+          {
+            error: "Mal alımında kayıtlı bir firma seçilmelidir.",
+          },
+          {
+            status: 400,
+          },
+        );
+      }
+
+      const supplier = await prisma.supplier.findFirst({
+        where: {
+          id: supplierId,
+          active: true,
+        },
+
+        select: {
+          id: true,
+          name: true,
+        },
+      });
+
+      if (!supplier) {
+        return NextResponse.json(
+          {
+            error: "Seçilen firma bulunamadı veya aktif değil.",
+          },
+          {
+            status: 400,
+          },
+        );
+      }
+
+      const rawItems = Array.isArray(body.purchaseItems)
+        ? body.purchaseItems
+        : [];
+
+      if (rawItems.length === 0) {
+        return NextResponse.json(
+          {
+            error: "En az bir ürün ekleyin.",
+          },
+          {
+            status: 400,
+          },
+        );
+      }
+
+      const activeStockUnitOptions = await prisma.stockUnitOption.findMany({
+        where: {
+          active: true,
+        },
+        select: {
+          code: true,
+        },
+      });
+
+      const validStockUnitCodes = new Set(
+        activeStockUnitOptions.map((unit) => unit.code),
+      );
+
+      const requestedItems: Array<{
+        productId: string;
+        packageCount: number;
+        unitsPerPackage: number;
+        packagePrice: number;
+        purchaseUnit: string;
+        stockUnit: string;
+        salePrice: number;
+        pfandAmount: number;
+      }> = [];
+
+      const seenProductIds = new Set<string>();
+
+      for (const rawItem of rawItems) {
+        const productId = String(rawItem?.productId || "").trim();
+
+        const packageCount = Number(rawItem?.packageCount);
+
+        const unitsPerPackage = Number(rawItem?.unitsPerPackage);
+
+        const packagePrice = Number(rawItem?.packagePrice);
+
+        const purchaseUnit = String(rawItem?.purchaseUnit || "ADET")
+          .trim()
+          .toLocaleUpperCase("tr-TR");
+
+        const stockUnit = String(rawItem?.stockUnit || "ADET")
+          .trim()
+          .toLocaleUpperCase("tr-TR");
+
+        const salePrice = Number(rawItem?.salePrice);
+
+        const pfandAmount = Number(rawItem?.pfandAmount || 0);
+
+        if (!productId) {
+          return NextResponse.json(
+            {
+              error: "Mal alımı kalemlerinden birinde ürün seçilmedi.",
+            },
+            {
+              status: 400,
+            },
+          );
+        }
+
+        if (seenProductIds.has(productId)) {
+          return NextResponse.json(
+            {
+              error: "Aynı ürün mal alımına iki kez eklenemez.",
+            },
+            {
+              status: 400,
+            },
+          );
+        }
+
+        if (!Number.isInteger(packageCount) || packageCount <= 0) {
+          return NextResponse.json(
+            {
+              error: "Alınan ambalaj miktarı pozitif tam sayı olmalıdır.",
+            },
+            {
+              status: 400,
+            },
+          );
+        }
+
+        if (!Number.isInteger(unitsPerPackage) || unitsPerPackage <= 0) {
+          return NextResponse.json(
+            {
+              error: "Ambalaj içeriği pozitif tam sayı olmalıdır.",
+            },
+            {
+              status: 400,
+            },
+          );
+        }
+
+        if (!validStockUnitCodes.has(purchaseUnit)) {
+          return NextResponse.json(
+            {
+              error: "Geçersiz alış ambalajı.",
+            },
+            {
+              status: 400,
+            },
+          );
+        }
+
+        if (!validStockUnitCodes.has(stockUnit)) {
+          return NextResponse.json(
+            {
+              error: "Geçersiz satış birimi.",
+            },
+            {
+              status: 400,
+            },
+          );
+        }
+
+        if (!Number.isFinite(packagePrice) || packagePrice <= 0) {
+          return NextResponse.json(
+            {
+              error: "Ambalaj alış fiyatı sıfırdan büyük olmalıdır.",
+            },
+            {
+              status: 400,
+            },
+          );
+        }
+
+        if (!Number.isFinite(salePrice) || salePrice < 0) {
+          return NextResponse.json(
+            {
+              error: "Ürün satış fiyatı geçersiz.",
+            },
+            {
+              status: 400,
+            },
+          );
+        }
+
+        if (!Number.isFinite(pfandAmount) || pfandAmount < 0) {
+          return NextResponse.json(
+            {
+              error: "Pfand tutarı geçersiz.",
+            },
+            {
+              status: 400,
+            },
+          );
+        }
+
+        seenProductIds.add(productId);
+
+        requestedItems.push({
+          productId,
+          packageCount,
+          unitsPerPackage,
+          packagePrice,
+          purchaseUnit,
+          stockUnit,
+          salePrice,
+          pfandAmount,
+        });
+      }
+
+      const products = await prisma.product.findMany({
+        where: {
+          id: {
+            in: requestedItems.map((item) => item.productId),
+          },
+          active: true,
+        },
+
+        select: {
+          id: true,
+          name: true,
+          nameTr: true,
+          nameDe: true,
+        },
+      });
+
+      if (products.length !== requestedItems.length) {
+        return NextResponse.json(
+          {
+            error: "Seçilen ürünlerden biri bulunamadı veya aktif değil.",
+          },
+          {
+            status: 400,
+          },
+        );
+      }
+
+      const productMap = new Map(
+        products.map((product) => [product.id, product]),
+      );
+
+      const preparedItems = requestedItems.map((item) => {
+        const product = productMap.get(item.productId);
+
+        if (!product) {
+          throw new Error("PURCHASE_PRODUCT_NOT_FOUND");
+        }
+
+        const productName = product.nameTr || product.nameDe || product.name;
+
+        /*
+         * Stok satış birimi üzerinden tutulur.
+         *
+         * Aynı birim:
+         * 10 kasa alınır, kasa satılır -> stok +10 kasa
+         *
+         * Farklı birim:
+         * 10 karton alınır, her kartonda 24 adet vardır,
+         * adet satılır -> stok +240 adet
+         */
+        const quantity =
+          item.purchaseUnit === item.stockUnit
+            ? item.packageCount
+            : item.packageCount * item.unitsPerPackage;
+
+        const unitPrice = item.packagePrice;
+
+        const totalAmount = Number(
+          (item.packageCount * item.packagePrice).toFixed(2),
+        );
+
+        return {
+          ...item,
+          productName,
+          quantity,
+          unitPrice,
+          totalAmount,
+        };
+      });
+
+      const amount = Number(
+        preparedItems
+          .reduce((total, item) => total + item.totalAmount, 0)
+          .toFixed(2),
+      );
+
+      if (amount <= 0) {
+        return NextResponse.json(
+          {
+            error: "Mal alımı toplam tutarı sıfırdan büyük olmalıdır.",
+          },
+          {
+            status: 400,
+          },
+        );
+      }
+
+      const movement = await prisma.$transaction(async (tx) => {
+        const createdMovement = await tx.cashMovement.create({
+          data: {
+            accountType: "BAR",
+            direction: "OUT",
+            category: "GOODS_PURCHASE",
+            amount,
+
+            supplierId: supplier.id,
+
+            companyName: supplier.name,
+
+            description: description || `Mal alımı: ${supplier.name}`,
+
+            createdById: admin.user.id,
+
+            purchaseItems: {
+              create: preparedItems.map((item) => ({
+                productId: item.productId,
+                productName: item.productName,
+                quantity: item.quantity,
+
+                purchaseUnit: item.purchaseUnit,
+
+                stockUnit: item.stockUnit,
+
+                unitPrice: item.unitPrice,
+
+                totalAmount: item.totalAmount,
+
+                packageCount: item.packageCount,
+
+                unitsPerPackage: item.unitsPerPackage,
+
+                packagePrice: item.packagePrice,
+              })),
+            },
+          },
+
+          include: {
+            purchaseItems: true,
+          },
+        });
+
+        for (const item of preparedItems) {
+          await tx.product.update({
+            where: {
+              id: item.productId,
+            },
+
+            data: {
+              stock: {
+                increment: item.quantity,
+              },
+
+              purchasePrice: item.unitPrice,
+
+              price: item.salePrice,
+
+              pfandAmount: item.pfandAmount,
+
+              stockUnit: item.stockUnit,
+
+              unitsPerPackage: item.unitsPerPackage,
+            },
+          });
+
+          await tx.stockMovement.create({
+            data: {
+              productId: item.productId,
+              amount: item.quantity,
+              reason:
+                `Mal alımı ${supplier.name} · ` +
+                `${item.packageCount} ${item.purchaseUnit.toLocaleLowerCase("tr-TR")} alındı · ` +
+                `${item.quantity} ${item.stockUnit.toLocaleLowerCase("tr-TR")} stoğa eklendi · ` +
+                `Ambalaj içeriği ${item.unitsPerPackage} ${item.stockUnit.toLocaleLowerCase("tr-TR")} · ` +
+                `Ambalaj alış fiyatı ${item.packagePrice.toFixed(2)} € · ` +
+                `Satış fiyatı ${item.salePrice.toFixed(2)} € · ` +
+                `Pfand ${item.pfandAmount.toFixed(2)} € · ` +
+                `Kasa hareketi: ${createdMovement.id}`,
+            },
+          });
+        }
+
+        return createdMovement;
+      });
+
+      return NextResponse.json(
+        {
+          message:
+            `Mal alımı kaydedildi. ` +
+            `${preparedItems.reduce((total, item) => total + item.packageCount, 0)} kasa stoğa eklendi ve ` +
+            `${amount.toFixed(2)} € kasadan düşüldü.`,
+
+          movement: serializeMovement(movement),
+        },
+        {
+          status: 201,
+        },
+      );
+    }
+
+    const amount = Number(body.amount);
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+      return NextResponse.json(
+        {
+          error: "Geçerli bir tutar girin.",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
+    const movement = await prisma.cashMovement.create({
+      data: {
+        accountType: "BAR",
+        direction,
+        category,
+        amount: Number(amount.toFixed(2)),
+
+        supplierId: supplierId || null,
+
+        companyName: companyName || null,
+
+        description: description || null,
+
+        createdById: admin.user.id,
+      },
+
+      include: {
+        purchaseItems: true,
+      },
+    });
+
+    return NextResponse.json(
+      {
+        message:
+          direction === "IN"
+            ? "Gerçek kasaya para girişi kaydedildi."
+            : "Gerçek kasadan para çıkışı kaydedildi.",
+
+        movement: serializeMovement(movement),
+      },
+      {
+        status: 201,
+      },
+    );
+  } catch (error) {
+    console.error("CREATE_REAL_CASH_ERROR", error);
+
+    return NextResponse.json(
+      {
+        error: "Kasa hareketi kaydedilemedi.",
+      },
+      {
+        status: 500,
+      },
+    );
+  }
+}
+
+export async function DELETE(request: Request) {
+  const admin = await getAdminWithPermissions();
+
+  if (
+    !admin ||
+    (!admin.isSuperAdmin && !admin.permissions.deleteBarCashMovement)
+  ) {
+    return NextResponse.json(
+      {
+        error: "Kasa hareketini silme yetkiniz yok.",
+      },
+      {
+        status: 403,
+      },
+    );
+  }
+
+  try {
+    const url = new URL(request.url);
+    const id = url.searchParams.get("id");
+
+    if (!id) {
+      return NextResponse.json(
+        {
+          error: "Kasa hareketi seçilmedi.",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
+    const existing = await prisma.cashMovement.findFirst({
+      where: {
+        id,
+        accountType: "BAR",
+      },
+
+      select: {
+        id: true,
+        category: true,
+      },
+    });
+
+    if (!existing) {
+      return NextResponse.json(
+        {
+          error: "Kasa hareketi bulunamadı.",
+        },
+        {
+          status: 404,
+        },
+      );
+    }
+
+    if (existing.category === "BAR_SALE") {
+      return NextResponse.json(
+        {
+          error: "Otomatik oluşturulan bar satışı hareketi silinemez.",
+        },
+        {
+          status: 409,
+        },
+      );
+    }
+
+    if (existing.category === "GOODS_PURCHASE") {
+      return NextResponse.json(
+        {
+          error:
+            "Stoğa bağlanmış mal alımı doğrudan silinemez. " +
+            "Stok ve kasa için iptal/ters kayıt yapılmalıdır.",
+        },
+        {
+          status: 409,
+        },
+      );
+    }
+
+    await prisma.cashMovement.delete({
+      where: {
+        id,
+      },
+    });
+
+    return NextResponse.json({
+      message: "Kasa hareketi silindi.",
+    });
+  } catch (error) {
+    console.error("DELETE_REAL_CASH_ERROR", error);
+
+    return NextResponse.json(
+      {
+        error: "Kasa hareketi silinemedi.",
+      },
+      {
+        status: 500,
+      },
+    );
+  }
+}

@@ -1,0 +1,32 @@
+# Dependencies
+/node_modules
+
+# Next.js
+/.next
+/out
+
+# Build ve cache
+/build
+/dist
+/.turbo
+/.cache
+/coverage
+
+# Ortam değişkenleri
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Vercel
+.vercel
+
+# Loglar
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# macOS
+.DS_Store

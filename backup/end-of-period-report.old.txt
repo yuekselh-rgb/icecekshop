@@ -1,0 +1,114 @@
+import PDFDocument from "pdfkit";
+import { prisma } from "@/lib/prisma";
+
+export async function createEndOfPeriodPdf(): Promise<Buffer> {
+  const customerList = await prisma.user.findMany({
+    where: {
+      role: "CUSTOMER",
+    },
+    orderBy: {
+      companyName: "asc",
+    },
+    select: {
+      companyName: true,
+      firstName: true,
+      lastName: true,
+      phone: true,
+      email: true,
+    },
+  });
+
+  const [
+    products,
+    customers,
+    dealers,
+    drivers,
+    admins,
+    orders,
+    company,
+  ] = await Promise.all([
+    prisma.product.count(),
+    prisma.user.count({
+      where: {
+        role: "CUSTOMER",
+      },
+    }),
+    prisma.dealerProfile.count(),
+    prisma.user.count({
+      where: {
+        role: "DRIVER",
+      },
+    }),
+    prisma.user.count({
+      where: {
+        role: {
+          in: ["ADMIN", "SUPER_ADMIN"],
+        },
+      },
+    }),
+    prisma.order.count(),
+    prisma.companySetting.findFirst(),
+  ]);
+
+  return new Promise((resolve, reject) => {
+    console.log("CWD:", process.cwd());
+    console.log("PDFKIT:", require.resolve("pdfkit"));
+
+    const doc = new PDFDocument({
+      size: "A4",
+      margin: 40,
+    });
+
+    const chunks: Buffer[] = [];
+
+    doc.on("data", c => chunks.push(c));
+    doc.on("end", () => resolve(Buffer.concat(chunks)));
+    doc.on("error", reject);
+
+    doc.fontSize(24).text(company?.companyName || "Şirket");
+
+    doc.fontSize(16);
+    doc.text("DÖNEM SONU KAPANIŞ RAPORU");
+
+    doc.moveDown();
+
+    doc.fontSize(11);
+    doc.text("Oluşturulma : " + new Date().toLocaleString("tr-TR"));
+    doc.text("Rapor Tipi  : Dönem Sonu");
+    doc.text("Versiyon    : 1.0");
+
+    doc.moveDown();
+
+    doc.fontSize(12);
+
+    doc.text(`Firma : ${company?.companyName ?? "-"}`);
+    doc.text(`Tarih : ${new Date().toLocaleString("tr-TR")}`);
+
+    doc.moveDown();
+
+    doc.text(`Ürün Sayısı      : ${products}`);
+    doc.text(`Müşteri Sayısı   : ${customers}`);
+    doc.text(`Bayi Sayısı      : ${dealers}`);
+    doc.text(`Şoför Sayısı     : ${drivers}`);
+    doc.text(`Admin Sayısı     : ${admins}`);
+    doc.text(`Sipariş Sayısı   : ${orders}`);
+
+    doc.moveDown();
+    doc.fontSize(16).text("MÜŞTERİ LİSTESİ");
+    doc.moveDown(0.5);
+    doc.fontSize(10);
+
+    customerList.forEach((c, index) => {
+      const name =
+        c.companyName ||
+        [c.firstName, c.lastName].filter(Boolean).join(" ") ||
+        "-";
+
+      doc.text(
+        `${index + 1}. ${name} | Tel: ${c.phone ?? "-"} | E-Posta: ${c.email ?? "-"}`
+      );
+    });
+
+    doc.end();
+  });
+}

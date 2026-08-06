@@ -1,0 +1,595 @@
+import { getSession } from "@/lib/session";
+import { prisma } from "@/lib/prisma";
+import { NextResponse } from "next/server";
+
+type RequestedItem = {
+  productId: string;
+  quantity: number;
+};
+
+function createOrderNumber() {
+  const date = new Date();
+
+  const datePart = [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, "0"),
+    String(date.getDate()).padStart(2, "0"),
+  ].join("");
+
+  const timePart = [
+    String(date.getHours()).padStart(2, "0"),
+    String(date.getMinutes()).padStart(2, "0"),
+    String(date.getSeconds()).padStart(2, "0"),
+  ].join("");
+
+  const randomPart = Math.random().toString(36).slice(2, 7).toUpperCase();
+
+  return `PM-${datePart}-${timePart}-${randomPart}`;
+}
+
+type RequestedPfandItem = {
+  name: string;
+  quantity: number;
+  unitAmount: number;
+};
+
+function normalizePfandItems(value: unknown): RequestedPfandItem[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  const result: RequestedPfandItem[] = [];
+
+  for (const rawItem of value) {
+    if (!rawItem || typeof rawItem !== "object") {
+      continue;
+    }
+
+    const raw = rawItem as {
+      name?: unknown;
+      quantity?: unknown;
+      unitAmount?: unknown;
+    };
+
+    const name = String(raw.name ?? "").trim();
+
+    const quantity = Number(raw.quantity);
+
+    const rawUnitAmount = Number(
+      String(raw.unitAmount ?? "").replace(",", "."),
+    );
+
+    if (
+      !name ||
+      !Number.isInteger(quantity) ||
+      quantity <= 0 ||
+      quantity > 9999 ||
+      !Number.isFinite(rawUnitAmount)
+    ) {
+      continue;
+    }
+
+    let unitAmount: number | null = null;
+
+    if (Math.abs(rawUnitAmount - 0.25) < 0.01) {
+      unitAmount = 0.25;
+    } else if (Math.abs(rawUnitAmount - 0.08) < 0.01) {
+      unitAmount = 0.08;
+    } else if (Math.abs(rawUnitAmount - 0.15) < 0.01) {
+      unitAmount = 0.15;
+    } else if (Math.abs(rawUnitAmount - 3.3) < 0.01) {
+      unitAmount = 3.3;
+    }
+
+    if (unitAmount === null) {
+      continue;
+    }
+
+    result.push({
+      name,
+      quantity,
+      unitAmount,
+    });
+  }
+
+  return result;
+}
+
+function normalizeItems(value: unknown): RequestedItem[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  const quantityByProduct = new Map<string, number>();
+
+  for (const rawItem of value) {
+    if (!rawItem || typeof rawItem !== "object") {
+      continue;
+    }
+
+    const productId = String(
+      (
+        rawItem as {
+          productId?: unknown;
+        }
+      ).productId || "",
+    ).trim();
+
+    const quantity = Number(
+      (
+        rawItem as {
+          quantity?: unknown;
+        }
+      ).quantity,
+    );
+
+    if (
+      !productId ||
+      !Number.isInteger(quantity) ||
+      quantity <= 0 ||
+      quantity > 999
+    ) {
+      continue;
+    }
+
+    quantityByProduct.set(
+      productId,
+      (quantityByProduct.get(productId) || 0) + quantity,
+    );
+  }
+
+  return Array.from(quantityByProduct.entries()).map(
+    ([productId, quantity]) => ({
+      productId,
+      quantity,
+    }),
+  );
+}
+
+export async function POST(request: Request) {
+  const session = await getSession();
+
+  if (!session) {
+    return NextResponse.json(
+      {
+        error: "Sipariş vermek için giriş yapmalısınız.",
+      },
+      {
+        status: 401,
+      },
+    );
+  }
+
+  if (!["CUSTOMER", "DEALER"].includes(session.role)) {
+    return NextResponse.json(
+      {
+        error: "Bu hesapla sipariş oluşturulamaz.",
+      },
+      {
+        status: 403,
+      },
+    );
+  }
+
+  try {
+    const body = await request.json();
+
+    const items = normalizeItems(body.items);
+
+    const pfandItems = normalizePfandItems(body.pfandItems);
+
+    console.log("ORDER_PFAND_DEBUG", {
+      raw: body.pfandItems,
+      normalized: pfandItems,
+    });
+
+    if (items.length === 0) {
+      return NextResponse.json(
+        {
+          error: "Sipariş sepeti boş veya geçersiz.",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
+    const firstName = String(body.firstName || "").trim();
+
+    const lastName = String(body.lastName || "").trim();
+
+    const phone = String(body.phone || "").trim();
+
+    const street = String(body.street || "").trim();
+
+    const houseNumber = String(body.houseNumber || "").trim();
+
+    const postalCode = String(body.postalCode || "").trim();
+
+    const city = String(body.city || "").trim();
+
+    const country = String(body.country || "Deutschland").trim();
+
+    const floor = String(body.floor || "").trim();
+
+    const doorbellName = String(body.doorbellName || "").trim();
+
+    const customerNote = String(body.customerNote || "")
+      .trim()
+      .slice(0, 1000);
+
+    const isDealer = session.role === "DEALER";
+
+    const dealerProfile = isDealer
+      ? await prisma.dealerProfile.findFirst({
+          where: {
+            userId: session.userId,
+            active: true,
+          },
+          select: {
+            dealerNumber: true,
+            companyName: true,
+            contactName: true,
+            phone: true,
+            taxNumber: true,
+          },
+        })
+      : null;
+
+    if (isDealer && !dealerProfile) {
+      return NextResponse.json(
+        {
+          error: "Aktif bayi profili bulunamadı.",
+        },
+        {
+          status: 404,
+        },
+      );
+    }
+
+    if (
+      !isDealer &&
+      (!firstName ||
+        !lastName ||
+        !phone ||
+        !street ||
+        !houseNumber ||
+        !postalCode ||
+        !city ||
+        !country)
+    ) {
+      return NextResponse.json(
+        {
+          error: "Teslimat ve iletişim bilgilerini eksiksiz doldurun.",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
+    if (!isDealer && !/^\d{5}$/.test(postalCode)) {
+      return NextResponse.json(
+        {
+          error: "Geçerli bir 5 haneli posta kodu girin.",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
+    const productIds = items.map((item) => item.productId);
+
+    const products = await prisma.product.findMany({
+      where: {
+        id: {
+          in: productIds,
+        },
+        active: true,
+      },
+
+      select: {
+        id: true,
+        name: true,
+        nameTr: true,
+        nameDe: true,
+        price: true,
+        pfandAmount: true,
+        stock: true,
+      },
+    });
+
+    if (products.length !== productIds.length) {
+      return NextResponse.json(
+        {
+          error: "Sepette artık satışta olmayan bir ürün bulunuyor.",
+        },
+        {
+          status: 409,
+        },
+      );
+    }
+
+    const productById = new Map(
+      products.map((product) => [product.id, product]),
+    );
+
+    /*
+     * Bayi özel fiyatı sadece ürün fiyatıdır.
+     * Pfand ürün üzerinden sabit olarak ayrıca hesaplanır.
+     */
+    const dealerPrices = isDealer
+      ? await prisma.dealerPrice.findMany({
+          where: {
+            dealerId: session.userId,
+            active: true,
+            productId: {
+              in: productIds,
+            },
+          },
+          select: {
+            productId: true,
+            price: true,
+          },
+        })
+      : [];
+
+    const dealerPriceMap = new Map(
+      dealerPrices.map((dealerPrice) => [
+        dealerPrice.productId,
+        Number(dealerPrice.price),
+      ]),
+    );
+
+    let subtotal = 0;
+    let pfandAmount = 0;
+
+    const preparedItems = items.map((item) => {
+      const product = productById.get(item.productId);
+
+      if (!product) {
+        throw new Error("PRODUCT_NOT_FOUND");
+      }
+
+      if (product.stock < item.quantity) {
+        throw new Error(`INSUFFICIENT_STOCK:${product.name}:${product.stock}`);
+      }
+
+      const normalPrice = Number(product.price);
+
+      const price = isDealer
+        ? (dealerPriceMap.get(product.id) ?? normalPrice)
+        : normalPrice;
+
+      const unitPfand = Number(product.pfandAmount);
+
+      subtotal += price * item.quantity;
+
+      pfandAmount += unitPfand * item.quantity;
+
+      return {
+        productId: product.id,
+
+        name: product.nameTr || product.nameDe || product.name,
+
+        price,
+        quantity: item.quantity,
+
+        pfand: unitPfand,
+      };
+    });
+
+    subtotal = Number(subtotal.toFixed(2));
+
+    pfandAmount = Number(pfandAmount.toFixed(2));
+
+    const pfandReturnAmount = Number(
+      pfandItems
+        .reduce((total, item) => total + item.quantity * item.unitAmount, 0)
+        .toFixed(2),
+    );
+
+    /*
+     * Bayiler siparişi depodan kendileri teslim alır.
+     * Sipariş miktarı ve tutarı ne olursa olsun teslimat ücreti yoktur.
+     */
+    const deliveryFee = isDealer ? 0 : subtotal >= 100 ? 0 : 7.9;
+
+    const totalAmount = Number(
+      Math.max(
+        0,
+        subtotal + pfandAmount + deliveryFee - pfandReturnAmount,
+      ).toFixed(2),
+    );
+
+    const deliveryAddress = isDealer
+      ? [
+          "DEPODAN TESLİM",
+          `Bayi: ${dealerProfile?.companyName || "-"}`,
+          dealerProfile?.dealerNumber
+            ? `Bayi No: ${dealerProfile.dealerNumber}`
+            : null,
+          dealerProfile?.contactName
+            ? `Yetkili: ${dealerProfile.contactName}`
+            : null,
+          `Telefon: ${dealerProfile?.phone || phone || "-"}`,
+          dealerProfile?.taxNumber
+            ? `Vergi No: ${dealerProfile.taxNumber}`
+            : null,
+        ]
+          .filter(Boolean)
+          .join("\n")
+      : [
+          `${firstName} ${lastName}`,
+          `${street} ${houseNumber}`,
+          floor ? `Kat: ${floor}` : null,
+          doorbellName ? `Zil: ${doorbellName}` : null,
+          `${postalCode} ${city}`,
+          country,
+          `Telefon: ${phone}`,
+        ]
+          .filter(Boolean)
+          .join("\n");
+
+    const orderNumber = createOrderNumber();
+
+    const order = await prisma.$transaction(async (tx) => {
+      for (const item of preparedItems) {
+        const updated = await tx.product.updateMany({
+          where: {
+            id: item.productId,
+
+            active: true,
+
+            stock: {
+              gte: item.quantity,
+            },
+          },
+
+          data: {
+            stock: {
+              decrement: item.quantity,
+            },
+          },
+        });
+
+        if (updated.count !== 1) {
+          throw new Error(`STOCK_CHANGED:${item.name}`);
+        }
+
+        await tx.stockMovement.create({
+          data: {
+            productId: item.productId,
+
+            amount: -item.quantity,
+
+            reason: `Sipariş ${orderNumber}`,
+          },
+        });
+      }
+
+      const createdOrder = await tx.order.create({
+        data: {
+          orderNumber,
+          userId: session.userId,
+          status: "NEW",
+          subtotal,
+          deliveryFee,
+          pfandAmount,
+          totalAmount,
+          deliveryAddress,
+          customerNote: customerNote || null,
+
+          items: {
+            create: preparedItems.map((item) => ({
+              productId: item.productId,
+              name: item.name,
+              price: item.price,
+              quantity: item.quantity,
+              pfand: item.pfand,
+            })),
+          },
+        },
+
+        include: {
+          items: true,
+        },
+      });
+
+      if (pfandItems.length > 0 && pfandReturnAmount > 0) {
+        await tx.pfandReturn.create({
+          data: {
+            userId: session.userId,
+
+            orderId: createdOrder.id,
+
+            status: "PENDING",
+
+            totalAmount: pfandReturnAmount,
+
+            items: {
+              create: pfandItems.map((item) => ({
+                name: item.name,
+
+                quantity: item.quantity,
+
+                originalQuantity: item.quantity,
+
+                unitAmount: item.unitAmount,
+
+                totalAmount: Number(
+                  (item.quantity * item.unitAmount).toFixed(2),
+                ),
+
+                originalTotal: Number(
+                  (item.quantity * item.unitAmount).toFixed(2),
+                ),
+              })),
+            },
+          },
+        });
+      }
+
+      return createdOrder;
+    });
+
+    return NextResponse.json(
+      {
+        message: "Siparişiniz başarıyla oluşturuldu.",
+        order: {
+          id: order.id,
+          orderNumber: order.orderNumber,
+          status: order.status,
+          subtotal: Number(order.subtotal),
+          deliveryFee: Number(order.deliveryFee),
+          pfandAmount: Number(order.pfandAmount),
+          totalAmount: Number(order.totalAmount),
+          createdAt: order.createdAt,
+        },
+      },
+      {
+        status: 201,
+      },
+    );
+  } catch (error) {
+    console.error("CREATE_ORDER_ERROR", error);
+
+    const message = error instanceof Error ? error.message : "";
+
+    if (message.startsWith("INSUFFICIENT_STOCK:")) {
+      const [, productName, stock] = message.split(":");
+
+      return NextResponse.json(
+        {
+          error: `${productName} için yeterli stok yok. Mevcut stok: ${stock}.`,
+        },
+        {
+          status: 409,
+        },
+      );
+    }
+
+    if (message.startsWith("STOCK_CHANGED:")) {
+      const productName = message.split(":")[1];
+
+      return NextResponse.json(
+        {
+          error: `${productName} ürününün stok durumu değişti. Sepetinizi kontrol edin.`,
+        },
+        {
+          status: 409,
+        },
+      );
+    }
+
+    return NextResponse.json(
+      {
+        error: "Sipariş oluşturulurken beklenmeyen bir hata oluştu.",
+      },
+      {
+        status: 500,
+      },
+    );
+  }
+}

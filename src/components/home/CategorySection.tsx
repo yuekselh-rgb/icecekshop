@@ -1,0 +1,330 @@
+"use client";
+
+import { useLanguage } from "@/context/LanguageContext";
+import {
+  Coffee,
+  Milk,
+  Package,
+  Pizza,
+  ShoppingBasket,
+  SprayCan,
+} from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+
+type CategorySlug =
+  "all" | "icecekler" | "ambalaj" | "sicak-icecek" | "take-away" | "temizlik";
+
+
+type HomeCategory = {
+  id: string;
+  slug: string;
+  name: string;
+  nameTr?: string | null;
+  nameDe?: string | null;
+  type: string;
+};
+
+
+const iconMap = {
+  DRINK: Milk,
+  PACKAGING: Package,
+  TAKEAWAY: Pizza,
+  CLEANING: SprayCan,
+  OTHER: Coffee,
+} as const;
+
+export default function CategorySection({
+  initialCategories = [],
+}: {
+  initialCategories?: HomeCategory[];
+}) {
+  const { language } = useLanguage();
+
+  const [activeCategory, setActiveCategory] = useState("all");
+  const [categories, setCategories] = useState<HomeCategory[]>(
+    initialCategories,
+  );
+
+  const buttonRefs = useRef<
+    Record<string, HTMLButtonElement | null>
+  >({})
+
+
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const categoryBarRef = useRef<HTMLElement | null>(null);
+
+  const [isPinned, setIsPinned] = useState(false);
+  const [categoryBarHeight, setCategoryBarHeight] = useState(0);
+
+  /*
+   * Safari'de sticky bazı sayfa yapılarında çalışmadığı için
+   * kategori çubuğunu scroll sırasında gerçek fixed konuma alır.
+   */
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    const categoryBar = categoryBarRef.current;
+
+    if (!sentinel || !categoryBar) {
+      return;
+    }
+
+    function updateBarHeight() {
+      if (!categoryBar) return;
+      setCategoryBarHeight(categoryBar.getBoundingClientRect().height);
+    }
+
+    updateBarHeight();
+
+    const resizeObserver = new ResizeObserver(updateBarHeight);
+    resizeObserver.observe(categoryBar);
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        const shouldPin =
+          !entry.isIntersecting &&
+          entry.boundingClientRect.top < 0;
+
+        setIsPinned(shouldPin);
+      },
+      {
+        root: null,
+        threshold: [0, 1],
+      },
+    );
+
+    observer.observe(sentinel);
+
+    return () => {
+      observer.disconnect();
+      resizeObserver.disconnect();
+    };
+  }, []);
+
+
+  useEffect(() => {
+    fetch("/api/categories")
+      .then(r => r.json())
+      .then(data => {
+        console.log("HOME CATEGORIES", data.categories);
+        setCategories(data.categories || []);
+      })
+      .catch(() => {});
+  }, []);
+
+;
+
+  /*
+   * Sayfa aşağı/yukarı kaydırıldığında sabit barın hemen
+   * altındaki ilk ürünün kategorisini aktif yapar.
+   */
+
+
+  /*
+   * Scroll sırasında aktif kategoriyi otomatik değiştir.
+   */
+  useEffect(() => {
+    let frameId = 0;
+
+    function detectActiveCategory() {
+      cancelAnimationFrame(frameId);
+
+      frameId = requestAnimationFrame(() => {
+        if (window.scrollY < 80) {
+          setActiveCategory("all");
+          return;
+        }
+
+        const products = Array.from(
+          document.querySelectorAll<HTMLElement>(
+            "[data-home-product-category]"
+          )
+        );
+
+        if (!products.length) {
+          setActiveCategory("all");
+          return;
+        }
+
+        const line = isPinned ? categoryBarHeight + 20 : 150;
+
+        let current: HTMLElement | null = null;
+
+        for (const el of products) {
+          const rect = el.getBoundingClientRect();
+
+          if (rect.top <= line && rect.bottom > line) {
+            current = el;
+            break;
+          }
+
+          if (!current && rect.top > line) {
+            current = el;
+          }
+        }
+
+        if (!current) {
+          current = products[products.length - 1];
+        }
+
+        setActiveCategory(
+          current.dataset.homeProductCategory || "all"
+        );
+      });
+    }
+
+    detectActiveCategory();
+
+    window.addEventListener("scroll", detectActiveCategory, {
+      passive: true,
+    });
+
+    window.addEventListener("resize", detectActiveCategory);
+
+    return () => {
+      cancelAnimationFrame(frameId);
+      window.removeEventListener("scroll", detectActiveCategory);
+      window.removeEventListener("resize", detectActiveCategory);
+    };
+  }, [isPinned, categoryBarHeight]);
+
+
+  /*
+   * Aktif kategori telefonda görünmeyen tarafta kalırsa
+   * kategori satırı otomatik olarak yana kayar.
+   */
+  useEffect(() => {
+    buttonRefs.current[activeCategory]?.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+      inline: "center",
+    });
+  }, [activeCategory]);
+
+  return (    <>
+      <div
+        ref={sentinelRef}
+        aria-hidden="true"
+        className="h-px w-full"
+      />
+
+      {isPinned ? (
+        <div
+          aria-hidden="true"
+          style={{ height: categoryBarHeight }}
+        />
+      ) : null}
+
+      <section
+        ref={categoryBarRef}
+        className={`border-y border-slate-200 bg-white/95 shadow-md backdrop-blur-md ${
+          isPinned
+            ? "fixed inset-x-0 top-0 z-[9999] w-full"
+            : "relative z-[100] w-full"
+        }`}
+      >
+      <div className="mx-auto max-w-7xl px-4 lg:px-8">
+        <div className="flex gap-3 overflow-x-auto py-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+
+          <button
+            ref={(element) => {
+              buttonRefs.current["all"] = element;
+            }}
+            type="button"
+            onClick={() => {
+              setActiveCategory("all");
+
+              window.dispatchEvent(
+                new CustomEvent("home-category-change", {
+                  detail: {
+                    category: "all",
+                  },
+                }),
+              );
+            }}
+            aria-pressed={activeCategory === "all"}
+            className={`group flex shrink-0 items-center gap-2.5 rounded-2xl border px-4 py-3 transition ${
+              activeCategory === "all"
+                ? "border-sky-500 bg-sky-500 text-white shadow-md"
+                : "border-slate-200 bg-white text-slate-800 hover:border-sky-400 hover:bg-sky-50"
+            }`}
+          >
+            <span
+              className={`flex h-9 w-9 items-center justify-center rounded-xl ${
+                activeCategory === "all"
+                  ? "bg-white/20 text-white"
+                  : "bg-sky-50 text-sky-500"
+              }`}
+            >
+              <ShoppingBasket size={19} />
+            </span>
+
+            <span className="whitespace-nowrap text-sm font-black">
+              {language === "de" ? "Alle" : "Tümü"}
+            </span>
+          </button>
+
+          {categories.map((category) => {
+            const Icon = iconMap[category.type as keyof typeof iconMap] ?? ShoppingBasket;
+
+            const isActive = activeCategory === category.slug;
+
+            return (
+              <button
+                key={category.slug}
+                ref={(element) => {
+                  buttonRefs.current[category.slug] = element;
+                }}
+                type="button"
+                onClick={() => {
+                  setActiveCategory(category.slug);
+
+                  window.dispatchEvent(
+                    new CustomEvent("home-category-change", {
+                      detail: {
+                        category: category.slug,
+                      },
+                    }),
+                  );
+
+                  requestAnimationFrame(() => {
+                    document
+                      .querySelector(
+                        `[data-home-product-category="${category.slug}"]`
+                      )
+                      ?.scrollIntoView({
+                        behavior: "smooth",
+                        block: "start",
+                      });
+                  });
+                }}
+                aria-pressed={isActive}
+                className={`group flex shrink-0 items-center gap-2.5 rounded-2xl border px-4 py-3 transition ${
+                  isActive
+                    ? "border-sky-500 bg-sky-500 text-white shadow-md"
+                    : "border-slate-200 bg-white text-slate-800 hover:border-sky-400 hover:bg-sky-50"
+                }`}
+              >
+                <span
+                  className={`flex h-9 w-9 items-center justify-center rounded-xl transition ${
+                    isActive
+                      ? "bg-white/20 text-white"
+                      : "bg-sky-50 text-sky-500 group-hover:bg-sky-500 group-hover:text-white"
+                  }`}
+                >
+                  <Icon size={19} />
+                </span>
+
+                <span className="whitespace-nowrap text-sm font-black">
+                  {language === "de"
+                    ? (category.nameDe || category.name)
+                    : (category.nameTr || category.name)}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+    </>
+  );
+}

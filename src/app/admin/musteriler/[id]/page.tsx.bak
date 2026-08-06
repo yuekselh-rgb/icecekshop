@@ -1,0 +1,126 @@
+import Link from "next/link";
+import { prisma } from "@/lib/prisma";
+
+export default async function CustomerDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+
+  const customer = await prisma.user.findUnique({
+    where: {
+      id,
+    },
+
+    include: {
+      orders: {
+        include: {
+          items: true,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      },
+
+      pfandReturns: {
+        orderBy: {
+          createdAt: "desc",
+        },
+      },
+    },
+  });
+
+
+  if (!customer) {
+    return (
+      <main className="p-10">
+        <h1 className="text-2xl font-black">
+          Müşteri bulunamadı.
+        </h1>
+      </main>
+    );
+  }
+
+  const totalPurchase = customer.orders.reduce(
+    (sum, order) => sum + Number(order.totalAmount),
+    0,
+  );
+
+  const openDebt = customer.orders
+    .filter((order) => order.paymentStatus === "OPEN")
+    .reduce(
+      (sum, order) => sum + Number(order.totalAmount),
+      0,
+    );
+
+  const totalPfand = customer.pfandReturns.reduce(
+    (sum, pfand) => sum + Number(pfand.approvedAmount ?? 0),
+    0,
+  );
+
+  const totalOrders = customer.orders.length;
+
+
+  return (
+    <main className="min-h-screen bg-slate-100 p-6">
+      <div className="mx-auto max-w-7xl space-y-6">
+
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-black">
+            Müşteri Cari Kartı
+          </h1>
+
+          <Link
+            href="/admin/musteriler"
+            className="rounded-xl bg-slate-900 px-5 py-3 font-bold text-white"
+          >
+            ← Müşterilere Dön
+          </Link>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-4">
+
+          <div className="rounded-2xl bg-white p-6 shadow">
+            <p className="text-slate-500">Toplam Alış</p>
+            <h2 className="mt-2 text-3xl font-black">{totalPurchase.toFixed(2)} €</h2>
+          </div>
+
+          <div className="rounded-2xl bg-white p-6 shadow">
+            <p className="text-slate-500">Cari Borç</p>
+            <h2 className="mt-2 text-3xl font-black text-red-600">
+              {openDebt.toFixed(2)} €
+            </h2>
+          </div>
+
+          <div className="rounded-2xl bg-white p-6 shadow">
+            <p className="text-slate-500">Toplam Sipariş</p>
+            <h2 className="mt-2 text-3xl font-black">{totalOrders}</h2>
+          </div>
+
+          <div className="rounded-2xl bg-white p-6 shadow">
+            <p className="text-slate-500">Pfand</p>
+            <h2 className="mt-2 text-3xl font-black">{totalPfand.toFixed(2)} €</h2>
+          </div>
+
+        </div>
+
+        <div className="rounded-2xl bg-white p-6 shadow">
+          <h2 className="mb-4 text-2xl font-black">
+            Sipariş Geçmişi
+          </h2>
+
+          <p className="text-slate-500">
+            Müşteri ID: {id}
+          </p>
+
+          <p className="mt-3 text-slate-400">
+            Bir sonraki adımda tüm siparişler, ödemeler,
+            cari hareketler ve pfand geçmişi burada gösterilecek.
+          </p>
+        </div>
+
+      </div>
+    </main>
+  );
+}  

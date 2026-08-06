@@ -1,0 +1,71 @@
+import { prisma } from "@/lib/prisma";
+
+export async function getPublicProducts() {
+  const products = await prisma.product.findMany({
+    where: {
+      active: true,
+    },
+    include: {
+      category: true,
+    },
+    orderBy: [
+      {
+        category: {
+          sortOrder: "asc",
+        },
+      },
+      {
+        sortOrder: "asc",
+      },
+      {
+        name: "asc",
+      },
+    ],
+  });
+
+  return products.map((product) => ({
+    id: product.id,
+    slug: product.slug,
+
+    name: {
+      tr: product.nameTr || product.name,
+      de: product.nameDe || product.name,
+    },
+
+    category: {
+      tr: product.category.nameTr || product.category.name,
+      de: product.category.nameDe || product.category.name,
+    },
+
+    categorySlug: product.category.slug,
+    packageInfo: product.packageInfo || "",
+    price: Number(product.price),
+    pfandAmount: Number(product.pfandAmount),
+
+    oldPrice:
+      product.oldPrice !== null ? Number(product.oldPrice) : undefined,
+
+    isOffer: product.isOffer,
+
+    image: product.imageUrl || "📦",
+    imageScale: product.imageScale,
+    imagePositionX: product.imagePositionX,
+    imagePositionY: product.imagePositionY,
+
+    badge:
+      product.badgeTr || product.badgeDe
+        ? {
+            tr: product.badgeTr || "",
+            de: product.badgeDe || "",
+          }
+        : undefined,
+
+    inStock: product.stock > 0,
+    stock: product.stock,
+    createdAt: product.createdAt.toISOString(),
+  }));
+}
+
+export type PublicProduct = Awaited<
+  ReturnType<typeof getPublicProducts>
+>[number];

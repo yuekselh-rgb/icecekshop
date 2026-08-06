@@ -1,0 +1,866 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  CUSTOMER
+  DRIVER
+  DEALER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum StockUnit {
+  KASA
+  KARTON
+  PAKET
+  ADET
+}
+
+enum DriverLoadStatus {
+  DRAFT
+  CONFIRMED
+  CANCELLED
+}
+
+enum DriverStockMovementType {
+  LOAD
+  SALE
+  RETURN
+  ADJUSTMENT
+}
+
+enum OrderPaymentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum OrderPaymentReporterRole {
+  DRIVER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum PaymentStatus {
+  OPEN
+  PAID
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  OPEN
+}
+
+enum CustomerType {
+  PRIVATE
+  BUSINESS
+}
+
+enum VerificationType {
+  REGISTER
+  RESET_PASSWORD
+  CHANGE_EMAIL
+}
+
+enum OrderStatus {
+  NEW
+  CONFIRMED
+  PREPARING
+  READY
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+}
+
+enum PfandStatus {
+  PENDING
+  APPROVED
+  PAID_CASH
+  DEDUCTED_FROM_ORDER
+  CANCELLED
+}
+
+enum PfandMovementType {
+  IN
+  OUT
+  ADJUSTMENT
+}
+
+enum PfandPartyType {
+  CUSTOMER
+  SUPPLIER
+  WHOLESALER
+  METRO
+  TRINKGUT
+  OTHER_COMPANY
+  OWN_BRANCH
+  OTHER
+}
+
+enum CashAccountType {
+  BAR
+  GENERAL
+  PFAND
+}
+
+enum CashMovementDirection {
+  IN
+  OUT
+}
+
+enum CashMovementCategory {
+  BAR_SALE
+  PFAND_COLLECTION
+  SUPPLIER_PAYMENT
+  GOODS_PURCHASE
+  FUEL
+  PERSONNEL
+  RENT
+  MANUAL_INCOME
+  OTHER_EXPENSE
+}
+
+model User {
+  id               String        @id @default(cuid())
+  email            String        @unique
+  passwordHash     String
+  role             UserRole      @default(CUSTOMER)
+  customerType     CustomerType?
+  firstName        String?
+  lastName         String?
+  companyName      String?
+  phone            String?
+  profileCompleted Boolean       @default(false)
+  isActive         Boolean       @default(true)
+  emailVerified    Boolean       @default(false)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  addresses             Address[]
+  orders                Order[]                  @relation("CustomerOrders")
+  driverOrders          Order[]                  @relation("DriverOrders")
+  pfandReturns          PfandReturn[]            @relation("CustomerPfandReturns")
+  approvedPfandReturns  PfandReturn[]            @relation("PfandApprovedBy")
+  pfandMovementsCreated PfandWarehouseMovement[] @relation("PfandMovementCreatedBy")
+  adminPermission       AdminPermission?
+  dealerProfile         DealerProfile?
+  dealerPrices          DealerPrice[]            @relation("DealerUserPrices")
+
+  driverLoads        DriverLoad[] @relation("DriverLoadDriver")
+  createdDriverLoads DriverLoad[] @relation("DriverLoadCreatedBy")
+
+  driverStocks DriverStock[]
+
+  driverStockMovements DriverStockMovement[] @relation("DriverStockMovementDriver")
+
+  createdDriverStockMovements DriverStockMovement[] @relation("DriverStockMovementCreatedBy")
+
+  verificationCodes VerificationCode[]
+}
+
+model Address {
+  id           String   @id @default(cuid())
+  userId       String
+  street       String
+  houseNumber  String
+  postalCode   String
+  city         String
+  country      String
+  floor        String?
+  doorbellName String?
+  isDefault    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationCode {
+  id        String           @id @default(cuid())
+  userId    String
+  code      String
+  type      VerificationType
+  expiresAt DateTime
+  used      Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([code])
+  @@index([type])
+}
+
+model Category {
+  id        String       @id @default(cuid())
+  name      String
+  nameTr    String?
+  nameDe    String?
+  slug      String       @unique
+  type      CategoryType @default(OTHER)
+  sortOrder Int          @default(0)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  products Product[]
+}
+
+enum CategoryType {
+  DRINK
+  PACKAGING
+  TAKEAWAY
+  CLEANING
+  OTHER
+}
+
+enum PackageUnit {
+  STUECK
+  G
+  KG
+  ML
+  L
+}
+
+enum ProductStockUnit {
+  KASA
+  KARTON
+  PAKET
+  ADET
+}
+
+model Product {
+  id              String       @id @default(cuid())
+  name            String
+  nameTr          String?
+  nameDe          String?
+  slug            String       @unique
+  description     String?
+  descriptionTr   String?
+  descriptionDe   String?
+  badgeTr         String?
+  badgeDe         String?
+  price           Decimal      @db.Decimal(10, 2)
+  oldPrice        Decimal?     @db.Decimal(10, 2)
+  isOffer         Boolean      @default(false)
+  purchasePrice   Decimal      @default(0) @db.Decimal(10, 2)
+  pfandAmount     Decimal      @default(0) @db.Decimal(10, 2)
+  stock           Int          @default(0)
+  minStock        Int          @default(0)
+  stockUnit       String       @default("ADET")
+  unitsPerPackage Int          @default(1)
+  packageInfo     String?
+  packageCount    Int?
+  unitAmount      Decimal?     @db.Decimal(10, 3)
+  unitType        PackageUnit?
+  imageUrl        String?
+  imageScale      Float        @default(1)
+  imagePositionX  Int          @default(0)
+  imagePositionY  Int          @default(0)
+  active          Boolean      @default(true)
+  sortOrder       Int          @default(0)
+  categoryId      String
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  category       Category        @relation(fields: [categoryId], references: [id])
+  orderItems     OrderItem[]
+  stockMovements StockMovement[]
+
+  cashPurchaseItems CashPurchaseItem[]
+  dealerPrices      DealerPrice[]
+
+  driverLoadItems      DriverLoadItem[]
+  driverStocks         DriverStock[]
+  driverStockMovements DriverStockMovement[]
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  orderNumber     String      @unique
+  userId          String
+  status          OrderStatus @default(NEW)
+  subtotal        Decimal     @db.Decimal(10, 2)
+  deliveryFee     Decimal     @default(0) @db.Decimal(10, 2)
+  pfandAmount     Decimal     @default(0) @db.Decimal(10, 2)
+  totalAmount     Decimal     @db.Decimal(10, 2)
+  deliveryAddress String
+  customerNote    String?
+
+  driverId         String?
+  assignedAt       DateTime?
+  outForDeliveryAt DateTime?
+  deliveredAt      DateTime?
+  driverNote       String?
+
+  paymentStatus PaymentStatus @default(OPEN)
+  paidAt        DateTime?
+
+  // Şoför müşteriden ödemeyi aldığını bildirdiğinde doldurulur.
+  // Bu aşamada ödeme henüz kesinleşmez ve Gerçek Kasa'ya girmez.
+  driverPaymentReportedAt     DateTime?
+  driverPaymentReportedAmount Decimal?  @db.Decimal(10, 2)
+
+  // Admin fiziksel parayı teslim alıp onayladığında doldurulur.
+  paymentApprovedAt   DateTime?
+  paymentApprovedById String?
+
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  user         User          @relation("CustomerOrders", fields: [userId], references: [id], onDelete: Cascade)
+  driver       User?         @relation("DriverOrders", fields: [driverId], references: [id], onDelete: SetNull)
+  items        OrderItem[]
+  pfandReturns PfandReturn[]
+
+  payments             OrderPayment[]
+  driverStockMovements DriverStockMovement[]
+
+  @@index([driverId])
+  @@index([status])
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  productId String
+  name      String
+  price     Decimal @db.Decimal(10, 2)
+  quantity  Int
+  pfand     Decimal @default(0) @db.Decimal(10, 2)
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+}
+
+model StockMovement {
+  id        String   @id @default(cuid())
+  productId String
+  amount    Int
+  reason    String
+  createdAt DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model PfandReturn {
+  id             String      @id @default(cuid())
+  userId         String
+  orderId        String?
+  status         PfandStatus @default(PENDING)
+  totalAmount    Decimal     @db.Decimal(10, 2)
+  approvedAmount Decimal?    @db.Decimal(10, 2)
+  approvedById   String?
+  approvedAt     DateTime?
+  note           String?
+  driverNote     String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  user              User                    @relation("CustomerPfandReturns", fields: [userId], references: [id], onDelete: Cascade)
+  approvedBy        User?                   @relation("PfandApprovedBy", fields: [approvedById], references: [id], onDelete: SetNull)
+  order             Order?                  @relation(fields: [orderId], references: [id])
+  items             PfandReturnItem[]
+  warehouseMovement PfandWarehouseMovement?
+
+  @@index([approvedById])
+  @@index([status])
+}
+
+model PfandReturnItem {
+  id               String   @id @default(cuid())
+  pfandReturnId    String
+  name             String
+  quantity         Int
+  originalQuantity Int?
+  approvedQuantity Int?
+  unitAmount       Decimal  @db.Decimal(10, 2)
+  totalAmount      Decimal  @db.Decimal(10, 2)
+  originalTotal    Decimal? @db.Decimal(10, 2)
+  approvedTotal    Decimal? @db.Decimal(10, 2)
+
+  pfandReturn PfandReturn @relation(fields: [pfandReturnId], references: [id], onDelete: Cascade)
+}
+
+model PfandWarehouseMovement {
+  id            String            @id @default(cuid())
+  type          PfandMovementType
+  partyType     PfandPartyType
+  partyName     String?
+  pfandReturnId String?           @unique
+  createdById   String
+  note          String?
+  totalAmount   Decimal           @db.Decimal(10, 2)
+  createdAt     DateTime          @default(now())
+
+  pfandReturn PfandReturn?                 @relation(fields: [pfandReturnId], references: [id], onDelete: SetNull)
+  createdBy   User                         @relation("PfandMovementCreatedBy", fields: [createdById], references: [id])
+  items       PfandWarehouseMovementItem[]
+
+  @@index([type])
+  @@index([partyType])
+  @@index([createdById])
+  @@index([createdAt])
+}
+
+model PfandWarehouseMovementItem {
+  id          String  @id @default(cuid())
+  movementId  String
+  name        String
+  quantity    Int
+  unitAmount  Decimal @db.Decimal(10, 2)
+  totalAmount Decimal @db.Decimal(10, 2)
+
+  movement PfandWarehouseMovement @relation(fields: [movementId], references: [id], onDelete: Cascade)
+
+  @@index([movementId])
+  @@index([name])
+}
+
+model CompanySetting {
+  id              String  @id @default("main")
+  companyName     String  @default("Firma Adı")
+  companySubtitle String?
+  logoUrl         String?
+  logoWidth       Int     @default(260)
+  logoHeight      Int     @default(120)
+
+  phone    String?
+  whatsapp String?
+  email    String?
+  website  String?
+
+  address String?
+  country String?
+
+  footerText    String?
+  copyrightText String?
+
+  // Firma
+  legalForm          String?
+  managingDirector   String?
+  companyDescription String?
+
+  // Resmi Bilgiler
+  taxNumber          String?
+  vatId              String?
+  commercialRegister String?
+  registerCourt      String?
+
+  // Adres
+  street      String?
+  houseNumber String?
+  postalCode  String?
+  city        String?
+  state       String?
+
+  // Banka
+  bankName      String?
+  accountHolder String?
+  iban          String?
+  bic           String?
+
+  // Sosyal Medya
+  instagram String?
+  facebook  String?
+  linkedin  String?
+  tiktok    String?
+  twitter   String?
+
+  showOffers Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model AdminPermission {
+  id     String @id @default(cuid())
+  userId String @unique
+
+  viewProducts  Boolean @default(true)
+  createProduct Boolean @default(false)
+  updateProduct Boolean @default(false)
+  deleteProduct Boolean @default(false)
+  changePrice   Boolean @default(false)
+  manageOffers  Boolean @default(false)
+
+  viewCategories Boolean @default(true)
+  createCategory Boolean @default(false)
+  updateCategory Boolean @default(false)
+  deleteCategory Boolean @default(false)
+
+  viewStock   Boolean @default(true)
+  addStock    Boolean @default(false)
+  reduceStock Boolean @default(false)
+
+  viewDriverStock   Boolean @default(false)
+  manageDriverStock Boolean @default(false)
+
+  viewOrders             Boolean @default(true)
+  updateOrder            Boolean @default(false)
+  approveCustomerPayment Boolean @default(false)
+  deleteOrder            Boolean @default(false)
+  printOrder             Boolean @default(false)
+
+  viewCustomers Boolean @default(false)
+  managePfand   Boolean @default(false)
+
+  viewDealers        Boolean @default(false)
+  createDealer       Boolean @default(false)
+  updateDealer       Boolean @default(false)
+  manageDealerPrices Boolean @default(false)
+  viewDealerAccounts Boolean @default(false)
+
+  makeBarSale        Boolean @default(false)
+  viewBarSalesReport Boolean @default(false)
+  viewOrderReport    Boolean @default(false)
+
+  viewBarCash           Boolean @default(false)
+  createBarCashIncome   Boolean @default(false)
+  createBarCashExpense  Boolean @default(false)
+  deleteBarCashMovement Boolean @default(false)
+  viewBarCashReport     Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model DriverCashAdjustment {
+  id               String   @id @default(cuid())
+  driverId         String
+  orderId          String?
+  pfandReturnId    String   @unique
+  reportedAmount   Decimal  @db.Decimal(10, 2)
+  approvedAmount   Decimal  @db.Decimal(10, 2)
+  adjustmentAmount Decimal  @db.Decimal(10, 2)
+  createdById      String
+  note             String?
+  createdAt        DateTime @default(now())
+
+  @@index([driverId])
+  @@index([orderId])
+  @@index([createdAt])
+}
+
+model DriverLoad {
+  id String @id @default(cuid())
+
+  driverId    String
+  createdById String
+
+  status DriverLoadStatus @default(CONFIRMED)
+
+  note        String?
+  confirmedAt DateTime?
+  cancelledAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  driver    User @relation("DriverLoadDriver", fields: [driverId], references: [id])
+  createdBy User @relation("DriverLoadCreatedBy", fields: [createdById], references: [id])
+
+  items     DriverLoadItem[]
+  movements DriverStockMovement[]
+
+  @@index([driverId])
+  @@index([createdById])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model DriverLoadItem {
+  id String @id @default(cuid())
+
+  loadId    String
+  productId String
+  quantity  Int
+
+  createdAt DateTime @default(now())
+
+  load    DriverLoad @relation(fields: [loadId], references: [id], onDelete: Cascade)
+  product Product    @relation(fields: [productId], references: [id])
+
+  @@unique([loadId, productId])
+  @@index([loadId])
+  @@index([productId])
+}
+
+model DriverStock {
+  id String @id @default(cuid())
+
+  driverId  String
+  productId String
+  quantity  Int    @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  driver  User    @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([driverId, productId])
+  @@index([driverId])
+  @@index([productId])
+}
+
+model DriverStockMovement {
+  id String @id @default(cuid())
+
+  driverId  String
+  productId String
+
+  loadId  String?
+  orderId String?
+
+  type   DriverStockMovementType
+  amount Int
+
+  createdById String?
+  note        String?
+
+  createdAt DateTime @default(now())
+
+  driver User @relation("DriverStockMovementDriver", fields: [driverId], references: [id], onDelete: Cascade)
+
+  createdBy User? @relation("DriverStockMovementCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  product Product @relation(fields: [productId], references: [id])
+
+  load  DriverLoad? @relation(fields: [loadId], references: [id], onDelete: SetNull)
+  order Order?      @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  @@index([driverId])
+  @@index([productId])
+  @@index([loadId])
+  @@index([orderId])
+  @@index([type])
+  @@index([createdById])
+  @@index([createdAt])
+}
+
+model OrderPayment {
+  id String @id @default(cuid())
+
+  orderId    String
+  customerId String
+  driverId   String?
+
+  amount Decimal @db.Decimal(12, 2)
+
+  paymentMethod PaymentMethod?
+
+  status OrderPaymentStatus @default(PENDING)
+
+  reportedById String
+  reporterRole OrderPaymentReporterRole
+  reportedAt   DateTime                 @default(now())
+
+  approvedById String?
+  approvedAt   DateTime?
+
+  rejectedById String?
+  rejectedAt   DateTime?
+
+  note String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([customerId])
+  @@index([driverId])
+  @@index([status])
+  @@index([reportedById])
+  @@index([approvedById])
+  @@index([reportedAt])
+  @@index([createdAt])
+}
+
+model CashMovement {
+  id          String                @id @default(cuid())
+  accountType CashAccountType
+  direction   CashMovementDirection
+  category    CashMovementCategory
+  amount      Decimal               @db.Decimal(12, 2)
+
+  companyName String?
+  description String?
+
+  supplierId String?
+  supplier   Supplier? @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+
+  orderId     String?
+  createdById String
+  createdAt   DateTime @default(now())
+
+  purchaseItems CashPurchaseItem[]
+
+  @@index([accountType])
+  @@index([direction])
+  @@index([category])
+  @@index([orderId])
+  @@index([supplierId])
+  @@index([createdById])
+  @@index([createdAt])
+}
+
+model CashPurchaseItem {
+  id           String   @id @default(cuid())
+  movementId   String
+  productId    String
+  productName  String
+  quantity     Int
+  purchaseUnit String   @default("ADET")
+  stockUnit    String   @default("ADET")
+  unitPrice    Decimal  @db.Decimal(12, 2)
+  totalAmount  Decimal  @db.Decimal(12, 2)
+  createdAt    DateTime @default(now())
+
+  movement CashMovement @relation(fields: [movementId], references: [id], onDelete: Cascade)
+  product  Product      @relation(fields: [productId], references: [id])
+
+  @@index([movementId])
+  @@index([productId])
+  @@index([createdAt])
+}
+
+model Supplier {
+  id             String   @id @default(cuid())
+  name           String   @unique
+  contactName    String?
+  phone          String?
+  email          String?
+  street         String?
+  houseNumber    String?
+  postalCode     String?
+  city           String?
+  country        String   @default("Deutschland")
+  taxNumber      String?
+  customerNumber String?
+  note           String?
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  cashMovements CashMovement[]
+
+  @@index([name])
+  @@index([city])
+  @@index([active])
+}
+
+model DealerProfile {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  dealerNumber   String   @unique
+  companyName    String
+  contactName    String?
+  phone          String?
+  taxNumber      String?
+  street         String?
+  houseNumber    String?
+  postalCode     String?
+  city           String?
+  country        String   @default("Deutschland")
+  creditLimit    Decimal  @default(0) @db.Decimal(12, 2)
+  currentBalance Decimal  @default(0) @db.Decimal(12, 2)
+  note           String?
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([companyName])
+  @@index([active])
+}
+
+model DealerPrice {
+  id        String   @id @default(cuid())
+  dealerId  String
+  productId String
+  price     Decimal  @db.Decimal(10, 2)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  dealer  User    @relation("DealerUserPrices", fields: [dealerId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([dealerId, productId])
+  @@index([dealerId])
+  @@index([productId])
+  @@index([active])
+}
+
+model StockUnitOption {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  nameTr    String
+  nameDe    String
+  active    Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([active, sortOrder])
+}
+
+enum WarehouseLogType {
+  IN
+  OUT
+}
+
+model WarehouseLog {
+  id String @id @default(cuid())
+
+  type WarehouseLogType
+
+  companyName    String?
+  driverName     String?
+  vehiclePlate   String?
+  deliveryNoteNo String?
+  destination    String?
+  contactPerson  String?
+  note           String?
+
+  createdById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  items WarehouseLogItem[]
+
+  @@index([type])
+  @@index([companyName])
+  @@index([driverName])
+  @@index([vehiclePlate])
+  @@index([deliveryNoteNo])
+  @@index([createdById])
+  @@index([createdAt])
+}
+
+model WarehouseLogItem {
+  id String @id @default(cuid())
+
+  warehouseLogId String
+
+  itemName String
+  quantity Decimal @db.Decimal(12, 3)
+  unit     String
+  note     String?
+
+  warehouseLog WarehouseLog @relation(fields: [warehouseLogId], references: [id], onDelete: Cascade)
+
+  @@index([warehouseLogId])
+  @@index([itemName])
+}
