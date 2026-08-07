@@ -77,9 +77,51 @@ export async function POST(request: Request) {
       );
     }
 
+    const MAX_LOGIN_ATTEMPTS = 5;
+
+    const LOCKOUT_MINUTES = 15;
+
+    if (user.lockedUntil && user.lockedUntil > new Date()) {
+      if (isFormSubmission) {
+        return NextResponse.redirect(
+          new URL("/giris?error=locked", request.url),
+          303,
+        );
+      }
+
+      return NextResponse.json(
+        {
+          error:
+            "Çok fazla hatalı deneme. Lütfen birkaç dakika sonra tekrar deneyin.",
+        },
+        {
+          status: 429,
+        },
+      );
+    }
+
     const passwordMatches = await bcrypt.compare(password, user.passwordHash);
 
     if (!passwordMatches) {
+      const attempts = user.failedLoginAttempts + 1;
+
+      await prisma.user.update({
+        where: {
+          id: user.id,
+        },
+        data:
+          attempts >= MAX_LOGIN_ATTEMPTS
+            ? {
+                failedLoginAttempts: 0,
+                lockedUntil: new Date(
+                  Date.now() + LOCKOUT_MINUTES * 60 * 1000,
+                ),
+              }
+            : {
+                failedLoginAttempts: attempts,
+              },
+      });
+
       if (isFormSubmission) {
         return NextResponse.redirect(
           new URL("/giris?error=invalid", request.url),
@@ -132,6 +174,18 @@ export async function POST(request: Request) {
           status: 403,
         },
       );
+    }
+
+    if (user.failedLoginAttempts > 0 || user.lockedUntil) {
+      await prisma.user.update({
+        where: {
+          id: user.id,
+        },
+        data: {
+          failedLoginAttempts: 0,
+          lockedUntil: null,
+        },
+      });
     }
 
     const token = await createSessionToken({
