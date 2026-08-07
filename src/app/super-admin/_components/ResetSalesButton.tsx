@@ -29,6 +29,7 @@ export default function ResetSalesButton() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [result, setResult] = useState<ResetResult | null>(null);
+  const [reportUrl, setReportUrl] = useState("");
 
   const confirmationValid = confirmation.trim() === REQUIRED_CONFIRMATION;
 
@@ -73,6 +74,7 @@ export default function ResetSalesButton() {
       setSuccess(data.message || "Bütün satışlar kalıcı olarak silindi.");
 
       setResult(data.result || null);
+      setReportUrl(data.reportUrl || "");
       setConfirmation("");
     } catch {
       setError("Sunucuya ulaşılamadı. Satışlar silinemedi.");
@@ -287,6 +289,17 @@ export default function ResetSalesButton() {
                         Sıfırlanan araç stok satırı: {result.resetDriverStocks}
                       </p>
                     </div>
+                  ) : null}
+
+                  {reportUrl ? (
+                    <a
+                      href={reportUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-4 inline-block font-bold text-green-800 underline"
+                    >
+                      Dönem sonu raporunu indir (PDF)
+                    </a>
                   ) : null}
 
                   <button

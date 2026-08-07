@@ -1,8 +1,8 @@
 import { getAdminWithPermissions } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
 import { createEndOfPeriodPdf } from "@/lib/pdf/end-of-period-report";
+import { put } from "@vercel/blob";
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 
 const CONFIRM_TEXT = "NEHIR CAN";
 
@@ -36,17 +36,17 @@ export async function DELETE(request: Request) {
       );
     }
 
-    const cookieStore = await cookies();
-
-    const sessionCookie =
-      cookieStore.get("paketmarket_session")?.value ?? "";
-
     // Silmeden önce dönem sonu raporunu oluştur
-    const pdf = await createEndOfPeriodPdf(sessionCookie);
+    const pdf = await createEndOfPeriodPdf();
 
-    console.log("PDF oluşturuldu. Boyut:", pdf.length, "byte");
-
-    console.log("PDF oluşturuldu. Boyut:", pdf.length, "byte");
+    const reportBlob = await put(
+      `uploads/reports/donem-sonu-${Date.now()}.pdf`,
+      pdf,
+      {
+        access: "public",
+        contentType: "application/pdf",
+      },
+    );
 
 
     const result = await prisma.$transaction(
@@ -196,6 +196,7 @@ export async function DELETE(request: Request) {
       message:
         "Bütün satışlar, kasa hareketleri, Pfand kayıtları ve şoför stok geçmişi kalıcı olarak silindi. Sistem yeni dönem için sıfırlandı.",
       result,
+      reportUrl: reportBlob.url,
     });
   } catch (error) {
     console.error("SUPER_ADMIN_FULL_RESET_ERROR", error);
