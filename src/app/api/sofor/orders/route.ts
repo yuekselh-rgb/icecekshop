@@ -226,18 +226,9 @@ export async function GET() {
         return true;
       }
 
-      // Teslim edilmiş sipariş sadece admin onayı bekleyen ödeme varsa görünür.
-      return order.pendingPaymentAmount > 0;
+      // Teslim edilmiş sipariş açık borcu varsa veya admin onayı bekleyen ödeme varsa görünür.
+      return order.pendingPaymentAmount > 0 || order.openPaymentAmount > 0;
     });
-
-    console.log(
-      "VISIBLE ORDERS:",
-      visibleOrders.map((o) => ({
-        order: o.orderNumber,
-        pending: o.pendingPaymentAmount,
-        approved: o.approvedPaymentAmount,
-      })),
-    );
 
     return NextResponse.json({
       orders: visibleOrders,
