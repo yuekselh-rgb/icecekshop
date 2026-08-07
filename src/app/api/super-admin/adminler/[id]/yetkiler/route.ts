@@ -46,7 +46,6 @@ const permissionNames = [
   "createBarCashIncome",
   "createBarCashExpense",
   "deleteBarCashMovement",
-  "viewBarCashReport",
 ] as const;
 
 type PermissionName = (typeof permissionNames)[number];
@@ -206,8 +205,7 @@ export async function PATCH(
   if (
     data.createBarCashIncome === true ||
     data.createBarCashExpense === true ||
-    data.deleteBarCashMovement === true ||
-    data.viewBarCashReport === true
+    data.deleteBarCashMovement === true
   ) {
     data.viewBarCash = true;
   }
@@ -216,7 +214,6 @@ export async function PATCH(
     data.createBarCashIncome = false;
     data.createBarCashExpense = false;
     data.deleteBarCashMovement = false;
-    data.viewBarCashReport = false;
   }
 
   if (

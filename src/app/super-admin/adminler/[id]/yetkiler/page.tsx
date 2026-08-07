@@ -56,8 +56,7 @@ type PermissionKey =
   | "viewBarCash"
   | "createBarCashIncome"
   | "createBarCashExpense"
-  | "deleteBarCashMovement"
-  | "viewBarCashReport";
+  | "deleteBarCashMovement";
 
 type Permissions = Record<PermissionKey, boolean>;
 
@@ -115,7 +114,6 @@ const defaultPermissions: Permissions = {
   createBarCashIncome: false,
   createBarCashExpense: false,
   deleteBarCashMovement: false,
-  viewBarCashReport: false,
 };
 
 const permissionGroups = [
@@ -195,7 +193,6 @@ const permissionGroups = [
       ["createBarCashIncome", "Kasaya manuel para girişi yapma"],
       ["createBarCashExpense", "Kasadan para çıkışı yapma"],
       ["deleteBarCashMovement", "Kasa hareketini silme"],
-      ["viewBarCashReport", "Kasa raporunu görüntüleme"],
     ] satisfies [PermissionKey, string][],
   },
   {
@@ -345,7 +342,6 @@ export default function AdminPermissionsPage() {
           "createBarCashIncome",
           "createBarCashExpense",
           "deleteBarCashMovement",
-          "viewBarCashReport",
         ].includes(key) &&
         next[key]
       ) {
@@ -356,7 +352,6 @@ export default function AdminPermissionsPage() {
         next.createBarCashIncome = false;
         next.createBarCashExpense = false;
         next.deleteBarCashMovement = false;
-        next.viewBarCashReport = false;
       }
 
       if (

@@ -45,7 +45,6 @@ export const adminPermissionNames = [
   "createBarCashIncome",
   "createBarCashExpense",
   "deleteBarCashMovement",
-  "viewBarCashReport",
 ] as const;
 
 export type AdminPermissionName = (typeof adminPermissionNames)[number];

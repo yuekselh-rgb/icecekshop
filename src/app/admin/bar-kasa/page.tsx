@@ -98,7 +98,6 @@ type Permissions = {
   createBarCashIncome: boolean;
   createBarCashExpense: boolean;
   deleteBarCashMovement: boolean;
-  viewBarCashReport: boolean;
 };
 
 function getStockUnitLabel(code: string, stockUnits: StockUnitOption[]) {
