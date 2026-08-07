@@ -860,46 +860,96 @@ export async function PATCH(
         );
       }
 
-      const updated = await prisma.order.update({
-        where: {
-          id,
-        },
-
-        data: {
-          status: "DELIVERED",
-
-          deliveredAt: new Date(),
-        },
-
-        include: {
-          user: {
-            select: {
-              firstName: true,
-              lastName: true,
-              companyName: true,
-              phone: true,
-              email: true,
-            },
+      const updated = await prisma.$transaction(async (tx) => {
+        const updatedOrder = await tx.order.update({
+          where: {
+            id,
           },
 
-          items: {
-            orderBy: {
-              name: "asc",
-            },
+          data: {
+            status: "DELIVERED",
+
+            deliveredAt: new Date(),
           },
 
-          pfandReturns: {
-            include: {
-              items: true,
+          include: {
+            user: {
+              select: {
+                firstName: true,
+                lastName: true,
+                companyName: true,
+                phone: true,
+                email: true,
+              },
             },
 
-            orderBy: {
-              createdAt: "desc",
+            items: {
+              orderBy: {
+                name: "asc",
+              },
             },
 
-            take: 1,
+            pfandReturns: {
+              include: {
+                items: true,
+              },
+
+              orderBy: {
+                createdAt: "desc",
+              },
+
+              take: 1,
+            },
           },
-        },
+        });
+
+        /*
+         * Teslim edilen normal siparişler de fiziksel olarak
+         * şoförün aracından çıkar. Araç stok takibi tam senkron
+         * olmayabileceği için (ör. sipariş ürünleri şoför tarafından
+         * "yüklenmiş" olarak işaretlenmemiş olabilir), takip edilen
+         * miktar yetersizse teslimatı engellemeden o kalem sessizce
+         * atlanır — bu yalnızca raporlama amaçlı bir rakamdır.
+         */
+        for (const item of updatedOrder.items) {
+          const decremented = await tx.driverStock.updateMany({
+            where: {
+              driverId: session.userId,
+              productId: item.productId,
+
+              quantity: {
+                gte: item.quantity,
+              },
+            },
+
+            data: {
+              quantity: {
+                decrement: item.quantity,
+              },
+            },
+          });
+
+          if (decremented.count !== 1) {
+            continue;
+          }
+
+          await tx.driverStockMovement.create({
+            data: {
+              driverId: session.userId,
+              productId: item.productId,
+              orderId: updatedOrder.id,
+
+              type: "SALE",
+              amount: -item.quantity,
+
+              createdById: session.userId,
+
+              note: `Sipariş teslim edildi: ${updatedOrder.orderNumber}.`,
+            },
+          });
+        }
+
+        return updatedOrder;
       });
 
       return NextResponse.json({
