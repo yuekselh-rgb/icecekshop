@@ -281,12 +281,14 @@ export default function AdminProductsPage() {
   }, [categories, products]);
 
 
-  function moveCategory(index: number, direction: -1 | 1) {
+  async function moveCategory(index: number, direction: -1 | 1) {
     const target = index + direction;
 
     if (target < 0 || target >= categories.length) {
       return;
     }
+
+    const previous = categories;
 
     const updated = [...categories];
 
@@ -302,18 +304,30 @@ export default function AdminProductsPage() {
 
     setCategories(reordered);
 
-    fetch("/api/admin/categories", {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        categories: reordered.map((c) => ({
-          id: c.id,
-          sortOrder: c.sortOrder,
-        })),
-      }),
-    }).catch(console.error);
+    try {
+      const response = await fetch("/api/admin/categories", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          categories: reordered.map((c) => ({
+            id: c.id,
+            sortOrder: c.sortOrder,
+          })),
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+
+        setCategories(previous);
+        setError(data?.error || "Kategori sıralaması kaydedilemedi.");
+      }
+    } catch {
+      setCategories(previous);
+      setError("Kategori sıralaması kaydedilemedi.");
+    }
   }
 
 
