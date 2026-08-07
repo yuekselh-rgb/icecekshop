@@ -20,6 +20,13 @@ export async function POST(request: Request) {
       );
     }
 
+    if (String(password).length < 8) {
+      return NextResponse.json(
+        { error: "Şifre en az 8 karakter olmalıdır." },
+        { status: 400 },
+      );
+    }
+
     const user = await prisma.user.findUnique({
       where: {
         email: normalizedEmail,

@@ -19,8 +19,7 @@ export async function GET() {
 
     return NextResponse.json(
       {
-        error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : null,
+        error: "Kategoriler yüklenirken hata oluştu.",
       },
       {
         status: 500,

@@ -67,6 +67,7 @@ export default function ProductDetailPage() {
             "Bei pfandpflichtigen Produkten können Sie leere Kisten oder Flaschen bei der Lieferung zurückgeben.",
           related: "Ähnliche Produkte",
           youMayLike: "Das könnte Sie auch interessieren",
+          loadError: "Produkt konnte nicht geladen werden.",
         }
       : {
           productNotFound: "Ürün bulunamadı",
@@ -82,6 +83,7 @@ export default function ProductDetailPage() {
             "Pfand içeren ürünlerde boş kasa veya şişelerinizi teslimat sırasında iade edebilirsiniz.",
           related: "Benzer Ürünler",
           youMayLike: "Bunlar da ilginizi çekebilir",
+          loadError: "Ürün yüklenirken hata oluştu.",
         };
 
   const [product, setProduct] = useState<PublicProduct | null>(null);
@@ -100,14 +102,14 @@ export default function ProductDetailPage() {
         const data = await response.json();
 
         if (!response.ok) {
-          setError(data.error || "Ürün bulunamadı.");
+          setError(data.error || t.productNotFound);
           return;
         }
 
         setProduct(data.product);
         setRelatedProducts(data.relatedProducts);
       } catch {
-        setError("Ürün yüklenirken hata oluştu.");
+        setError(t.loadError);
       } finally {
         setLoading(false);
       }

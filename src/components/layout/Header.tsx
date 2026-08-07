@@ -31,7 +31,7 @@ import {
 export default function Header() {
   const router = useRouter();
 
-  const { totalItems } = useCart();
+  const { totalItems, clearCart } = useCart();
 
   const { language, setLanguage, translations } = useLanguage();
 
@@ -138,6 +138,7 @@ export default function Header() {
         method: "POST",
       });
     } finally {
+      clearCart();
       router.push("/giris");
       router.refresh();
     }
