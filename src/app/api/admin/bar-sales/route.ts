@@ -431,7 +431,7 @@ export async function POST(request: Request) {
           customerId: orderCustomerId,
 
           amount: totalAmount,
-          paymentMethod,
+          paymentMethod: paymentMethod as "CASH" | "CARD" | "OPEN",
 
           status: paymentMethod === "OPEN" ? "PENDING" : "APPROVED",
 
