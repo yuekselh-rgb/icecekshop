@@ -40,6 +40,23 @@ function getHomePath(role: AuthRole) {
 export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
+  /*
+   * Temporärer Diagnose-Zweig, um einen PLATFORM_HOST-Mismatch speziell in
+   * der Edge-Middleware selbst zu prüfen (getrennt von normalen Serverless-
+   * Functions, die eine eigene Env-Sicht haben können). Wieder entfernen,
+   * sobald die Ursache gefunden ist.
+   */
+  if (pathname === "/api/debug-edge-host") {
+    const rawHost = request.headers.get("host");
+    const platformHost = process.env.PLATFORM_HOST ?? null;
+
+    return NextResponse.json({
+      rawHost,
+      platformHostEnv: platformHost,
+      matches: rawHost?.split(":")[0] === platformHost,
+    });
+  }
+
   const token = request.cookies.get("paketmarket_session")?.value;
 
   const session = token ? await verifySessionToken(token) : null;
@@ -213,6 +230,7 @@ export const config = {
   matcher: [
     "/",
     "/giris",
+    "/api/debug-edge-host",
 
     "/admin/:path*",
     "/super-admin/:path*",
