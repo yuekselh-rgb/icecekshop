@@ -5,6 +5,39 @@ import { randomUUID } from "crypto";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
+/*
+ * Aynı numaranın "0151...", "+49151..." ve "0049151..." gibi farklı
+ * biçimlerde tekrar kaydedilmesini engellemek için birkaç olası
+ * yazım biçimini üretir. Veritabanındaki bütün numaraları normalize
+ * eden bir migration yapılmadığı için tam kapsamlı değildir, ama en
+ * yaygın biçim farklarını yakalar.
+ */
+function phoneVariants(rawPhone: string): string[] {
+  const digitsOnly = rawPhone.replace(/\D/g, "");
+
+  if (!digitsOnly) {
+    return [rawPhone];
+  }
+
+  let national = digitsOnly;
+
+  if (national.startsWith("49")) {
+    national = national.slice(2);
+  } else if (national.startsWith("0")) {
+    national = national.slice(1);
+  }
+
+  return Array.from(
+    new Set([
+      rawPhone,
+      digitsOnly,
+      `0${national}`,
+      `+49${national}`,
+      `0049${national}`,
+    ]),
+  );
+}
+
 async function requireDriver() {
   const cookieStore = await cookies();
 
@@ -261,7 +294,9 @@ export async function POST(request: Request) {
     const existingPhone = await prisma.user.findFirst({
       where: {
         role: "CUSTOMER",
-        phone,
+        phone: {
+          in: phoneVariants(phone),
+        },
       },
 
       select: {
