@@ -41,7 +41,7 @@ const emptyForm: CheckoutForm = {
 };
 
 export default function CheckoutPage() {
-  const { items, pfandItems, subtotal, pfandReturnTotal, clearCart } =
+  const { items, pfandItems, productSubtotal, subtotal, pfandReturnTotal, clearCart } =
     useCart();
 
   const { language } = useLanguage();
@@ -177,7 +177,7 @@ export default function CheckoutPage() {
    * Bayiler ürünleri depodan kendileri alır.
    * Sipariş tutarı ne olursa olsun teslimat ücreti eklenmez.
    */
-  const deliveryFee = isDealer ? 0 : subtotal >= 100 ? 0 : 7.9;
+  const deliveryFee = isDealer ? 0 : productSubtotal >= 100 ? 0 : 7.9;
 
   const total = Math.max(0, subtotal + deliveryFee - pfandReturnTotal);
 
@@ -612,7 +612,7 @@ export default function CheckoutPage() {
               <p className="mt-4 text-slate-600">
                 {isDealer
                   ? t.dealerDeliveryText
-                  : subtotal >= 100
+                  : productSubtotal >= 100
                     ? t.freeDeliveryText
                     : t.paidDeliveryText}
               </p>
