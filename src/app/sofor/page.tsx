@@ -2867,7 +2867,9 @@ export default function DriverPage() {
                                       ? "Kaydediliyor..."
                                       : "Teslim Ettim"}
                                   </button>
-                                ) : (
+                                ) : ["READY", "PREPARING", "CONFIRMED"].includes(
+                                    order.status,
+                                  ) ? (
                                   <button
                                     type="button"
                                     disabled={updatingOrderId === order.id}
@@ -2883,6 +2885,12 @@ export default function DriverPage() {
                                       ? "Kaydediliyor..."
                                       : "Teslimata Çıktım"}
                                   </button>
+                                ) : (
+                                  <div className="rounded-xl bg-slate-100 px-4 py-3 text-center text-sm font-bold text-slate-500">
+                                    {language === "de"
+                                      ? "Wartet auf Bestätigung"
+                                      : "Onay bekleniyor"}
+                                  </div>
                                 )}
                               </div>
                             ) : (
