@@ -160,6 +160,17 @@ export default function DealerManagementPage() {
           product: "Produkt",
           pfand: "Pfand",
           dealerTotal: "Händlersumme",
+          addDealerTitle: "Neuen Händler hinzufügen",
+          addDealerCloseHint: "Händlerformular schließen",
+          addDealerOpenHint: "Öffnen, um ein neues Händlerkonto zu erstellen",
+          dealerNumber: "Händlernummer",
+          email: "E-Mail",
+          tempPassword: "Vorläufiges Passwort",
+          creditLimit: "Kreditlimit",
+          creditLimitHint:
+            "Maximaler Betrag, den der Händler auf offener Rechnung beziehen kann.",
+          creating: "Wird erstellt...",
+          createDealerAccount: "Händlerkonto erstellen",
         }
       : {
           title: "Bayi Yönetimi",
@@ -188,6 +199,16 @@ export default function DealerManagementPage() {
           product: "Ürün",
           pfand: "Pfand",
           dealerTotal: "Bayi toplamı",
+          addDealerTitle: "Yeni Bayi Ekle",
+          addDealerCloseHint: "Bayi ekleme formunu kapat",
+          addDealerOpenHint: "Yeni bir bayi hesabı oluşturmak için açın",
+          dealerNumber: "Bayi numarası",
+          email: "E-posta",
+          tempPassword: "Geçici şifre",
+          creditLimit: "Kredi limiti",
+          creditLimitHint: "Bayinin açık hesapla alabileceği azami tutar.",
+          creating: "Oluşturuluyor...",
+          createDealerAccount: "Bayi Hesabı Oluştur",
         };
 
 
@@ -621,19 +642,19 @@ export default function DealerManagementPage() {
 
                   <div className="min-w-0">
                     <h2 className="text-2xl font-black text-slate-950">
-                      Yeni Bayi Ekle
+                      {t.addDealerTitle}
                     </h2>
 
                     <p className="mt-1 text-sm text-slate-500">
                       {showCreateDealerForm
-                        ? "Bayi ekleme formunu kapat"
-                        : "Yeni bir bayi hesabı oluşturmak için açın"}
+                        ? t.addDealerCloseHint
+                        : t.addDealerOpenHint}
                     </p>
                   </div>
                 </div>
 
                 <span className="shrink-0 rounded-full bg-slate-100 px-3 py-1.5 text-sm font-black text-slate-600">
-                  {showCreateDealerForm ? "Kapat" : "Aç"}
+                  {showCreateDealerForm ? t.close : t.open}
                 </span>
               </button>
 
@@ -642,7 +663,7 @@ export default function DealerManagementPage() {
                   <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
                     <label className="block">
                       <span className="text-sm font-bold text-slate-700">
-                        Bayi numarası *
+                        {t.dealerNumber} *
                       </span>
 
                       <input
@@ -655,7 +676,7 @@ export default function DealerManagementPage() {
 
                     <label className="block">
                       <span className="text-sm font-bold text-slate-700">
-                        Firma adı *
+                        {t.companyName} *
                       </span>
 
                       <input
@@ -668,7 +689,7 @@ export default function DealerManagementPage() {
 
                     <label className="block">
                       <span className="text-sm font-bold text-slate-700">
-                        Yetkili kişi
+                        {t.contactPerson}
                       </span>
 
                       <input
@@ -694,7 +715,7 @@ export default function DealerManagementPage() {
 
                     <label className="block">
                       <span className="text-sm font-bold text-slate-700">
-                        E-posta *
+                        {t.email} *
                       </span>
 
                       <input
@@ -708,7 +729,7 @@ export default function DealerManagementPage() {
 
                     <label className="block">
                       <span className="text-sm font-bold text-slate-700">
-                        Telefon
+                        {t.phone}
                       </span>
 
                       <input
@@ -721,7 +742,7 @@ export default function DealerManagementPage() {
 
                     <label className="block">
                       <span className="text-sm font-bold text-slate-700">
-                        Geçici şifre *
+                        {t.tempPassword} *
                       </span>
 
                       <input
@@ -736,7 +757,7 @@ export default function DealerManagementPage() {
 
                     <label className="block">
                       <span className="text-sm font-bold text-slate-700">
-                        Vergi numarası
+                        {t.taxNumber}
                       </span>
 
                       <input
@@ -783,7 +804,7 @@ export default function DealerManagementPage() {
 
                     <label className="block">
                       <span className="text-sm font-bold text-slate-700">
-                        Kredi limiti
+                        {t.creditLimit}
                       </span>
 
                       <div className="relative mt-1.5">
@@ -802,7 +823,7 @@ export default function DealerManagementPage() {
                       </div>
 
                       <p className="mt-1 text-[11px] text-slate-500">
-                        Bayinin açık hesapla alabileceği azami tutar.
+                        {t.creditLimitHint}
                       </p>
                     </label>
 
@@ -822,12 +843,12 @@ export default function DealerManagementPage() {
                     {saving ? (
                       <>
                         <Loader2 size={19} className="animate-spin" />
-                        Oluşturuluyor...
+                        {t.creating}
                       </>
                     ) : (
                       <>
                         <Plus size={19} />
-                        Bayi Hesabı Oluştur
+                        {t.createDealerAccount}
                       </>
                     )}
                   </button>
