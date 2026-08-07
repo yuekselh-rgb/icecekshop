@@ -12,6 +12,19 @@ export async function PATCH(
 ) {
   const { id } = await context.params;
 
+  const baseline = await requireAdminPermission("viewProducts");
+
+  if (!baseline) {
+    return NextResponse.json(
+      {
+        error: "Bu işlem için yetkiniz yok.",
+      },
+      {
+        status: 403,
+      },
+    );
+  }
+
   let body: Record<string, unknown>;
 
   try {
