@@ -1,16 +1,22 @@
-import { requireAdminPermission } from "@/lib/admin-auth";
+import { getAdminWithPermissions, requireAdminPermission } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  const admin = await requireAdminPermission("makeBarSale");
+  const admin = await getAdminWithPermissions();
 
-  if (!admin) {
+  const authorized =
+    admin &&
+    (admin.isSuperAdmin ||
+      admin.permissions.viewCustomers ||
+      admin.permissions.makeBarSale);
+
+  if (!authorized) {
     return NextResponse.json(
       {
-        error: "Bar satışı yapma yetkiniz yok.",
+        error: "Bu işlem için yetkiniz yok.",
       },
       {
         status: 403,
