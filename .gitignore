@@ -30,3 +30,15 @@ pnpm-debug.log*
 
 # macOS
 .DS_Store
+
+# Yerel veritabanı ve yedek dosyaları
+*.db
+*.db-journal
+*.bak
+*.before-*
+
+# Yerel test/rapor çıktıları
+*.pdf
+
+# Blob depolamaya taşınmadan önceki eski yükleme klasörü
+/public/uploads

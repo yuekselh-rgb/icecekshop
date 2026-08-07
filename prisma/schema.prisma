@@ -327,6 +327,8 @@ model Order {
 
   @@index([driverId])
   @@index([status])
+  @@index([userId])
+  @@index([createdAt])
 }
 
 model OrderItem {
