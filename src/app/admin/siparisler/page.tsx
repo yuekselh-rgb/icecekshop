@@ -1,6 +1,7 @@
 "use client";
 
 import { useLanguage } from "@/context/LanguageContext";
+import { escapeHtml } from "@/lib/html-escape";
 
 import {
   ArrowLeft,
@@ -755,7 +756,7 @@ export default function AdminOrdersPage() {
       <html lang="tr">
         <head>
           <meta charset="utf-8" />
-          <title>${order.orderNumber}</title>
+          <title>${escapeHtml(order.orderNumber)}</title>
 
           <style>
             body {
@@ -810,7 +811,7 @@ export default function AdminOrdersPage() {
         <body>
           <h1>
             Sipariş
-            ${order.orderNumber}
+            ${escapeHtml(order.orderNumber)}
           </h1>
 
           <p>
@@ -827,8 +828,10 @@ export default function AdminOrdersPage() {
             <strong>${language === "de" ? "Fahrer" : "Şoför"}</strong>
             ${
               order.driver
-                ? `${order.driver.firstName || ""} ${order.driver.lastName || ""}`.trim() ||
-                  order.driver.email
+                ? escapeHtml(
+                    `${order.driver.firstName || ""} ${order.driver.lastName || ""}`.trim() ||
+                      order.driver.email,
+                  )
                 : language === "de" ? "Nicht zugewiesen" : "Atanmadı"
             }
           </p>
@@ -836,27 +839,27 @@ export default function AdminOrdersPage() {
           <h2>${language === "de" ? "Kunde" : "Müşteri"}</h2>
 
           <p>
-            ${order.user.companyName ? `${order.user.companyName}<br />` : ""}
+            ${order.user.companyName ? `${escapeHtml(order.user.companyName)}<br />` : ""}
 
-            ${order.user.firstName || ""}
-            ${order.user.lastName || ""}<br />
+            ${escapeHtml(order.user.firstName || "")}
+            ${escapeHtml(order.user.lastName || "")}<br />
 
-            ${order.user.email}<br />
+            ${escapeHtml(order.user.email)}<br />
 
-            ${order.user.phone || ""}
+            ${escapeHtml(order.user.phone || "")}
           </p>
 
           <h2>${language === "de" ? "Lieferadresse" : "Teslimat Adresi"}</h2>
 
           <p class="address">
-            ${order.deliveryAddress}
+            ${escapeHtml(order.deliveryAddress)}
           </p>
 
           ${
             order.customerNote
               ? `
                 <h2>${language === "de" ? "Kundennotiz" : "Müşteri Notu"}</h2>
-                <p>${order.customerNote}</p>
+                <p>${escapeHtml(order.customerNote)}</p>
               `
               : ""
           }
@@ -878,7 +881,7 @@ export default function AdminOrdersPage() {
                   (item) => `
                     <tr>
                       <td>
-                        ${item.name}
+                        ${escapeHtml(item.name)}
                       </td>
 
                       <td>
@@ -971,7 +974,7 @@ export default function AdminOrdersPage() {
                                   font-size:13px;
                                 ">
                                   <span>
-                                    <strong>${item.name}</strong><br />
+                                    <strong>${escapeHtml(item.name)}</strong><br />
 
                                     <span style="
                                       font-size:11px;

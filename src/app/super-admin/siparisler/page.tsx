@@ -13,6 +13,7 @@ import {
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLanguage } from "@/context/LanguageContext";
+import { escapeHtml } from "@/lib/html-escape";
 
 type OrderStatus =
   | "NEW"
@@ -322,7 +323,7 @@ export default function SuperAdminOrdersPage() {
       <html>
         <head>
           <meta charset="utf-8" />
-          <title>${order.orderNumber}</title>
+          <title>${escapeHtml(order.orderNumber)}</title>
 
           <style>
             body {
@@ -464,19 +465,19 @@ export default function SuperAdminOrdersPage() {
           <section class="order-header">
             <div class="order-left">
               <div class="order-number">
-                Sipariş ${order.orderNumber}
+                Sipariş ${escapeHtml(order.orderNumber)}
               </div>
 
               <div class="customer-name">
-                ${
+                ${escapeHtml(
                   order.user.companyName ||
-                  `${order.user.firstName || ""} ${order.user.lastName || ""}`.trim() ||
-                  "-"
-                }
+                    `${order.user.firstName || ""} ${order.user.lastName || ""}`.trim() ||
+                    "-",
+                )}
               </div>
 
               <div class="address">
-                ${order.deliveryAddress || "-"}
+                ${escapeHtml(order.deliveryAddress || "-")}
               </div>
             </div>
 
@@ -509,8 +510,10 @@ export default function SuperAdminOrdersPage() {
                 <span class="info-value">
                   ${
                     order.driver
-                      ? `${order.driver.firstName || ""} ${order.driver.lastName || ""}`.trim() ||
-                        order.driver.email
+                      ? escapeHtml(
+                          `${order.driver.firstName || ""} ${order.driver.lastName || ""}`.trim() ||
+                            order.driver.email,
+                        )
                       : "Atanmadı"
                   }
                 </span>
@@ -538,7 +541,7 @@ export default function SuperAdminOrdersPage() {
                 </span>
 
                 <span class="info-value">
-                  ${order.user.phone || "-"}
+                  ${escapeHtml(order.user.phone || "-")}
                 </span>
               </div>
             </div>
@@ -548,7 +551,7 @@ export default function SuperAdminOrdersPage() {
             order.customerNote
               ? `
                 <h2>${language === "de" ? "Kundennotiz" : "Müşteri Notu"}</h2>
-                <p>${order.customerNote}</p>
+                <p>${escapeHtml(order.customerNote)}</p>
               `
               : ""
           }
@@ -561,7 +564,7 @@ export default function SuperAdminOrdersPage() {
                 <th>${language === "de" ? "Produkt" : "Ürün"}</th>
                 <th>${language === "de" ? "Menge" : "Adet"}</th>
                 <th>${language === "de" ? "Stückpreis" : "Birim Fiyat"}</th>
-                <th>{language==="de"?"Pfand":"Depozito"}</th>
+                <th>${language === "de" ? "Pfand" : "Depozito"}</th>
                 <th>${language === "de" ? "Gesamt" : "Toplam"}</th>
               </tr>
             </thead>
@@ -571,7 +574,7 @@ export default function SuperAdminOrdersPage() {
                 .map(
                   (item) => `
                     <tr>
-                      <td>${item.name}</td>
+                      <td>${escapeHtml(item.name)}</td>
                       <td>${item.quantity}</td>
                       <td>${Number(item.price).toFixed(2)} €</td>
                       <td>${(Number(item.pfand) * item.quantity).toFixed(
@@ -591,7 +594,7 @@ export default function SuperAdminOrdersPage() {
           ${
             pfandReturn && pfandReturn.items.length > 0
               ? `
-                <h2>{language==="de"?"Pfandrückgabe / Leergut":"Depozito İadesi"}</h2>
+                <h2>${language === "de" ? "Pfandrückgabe / Leergut" : "Depozito İadesi"}</h2>
 
                 <table>
                   <thead>
@@ -608,7 +611,7 @@ export default function SuperAdminOrdersPage() {
                       .map(
                         (item) => `
                           <tr>
-                            <td>${item.name}</td>
+                            <td>${escapeHtml(item.name)}</td>
                             <td>${item.quantity}</td>
                             <td>${Number(item.unitAmount).toFixed(2)} €</td>
                             <td>${Number(item.totalAmount).toFixed(2)} €</td>
@@ -643,7 +646,7 @@ export default function SuperAdminOrdersPage() {
               pfandReturnAmount > 0
                 ? `
                   <div class="row green">
-                    <span>{language==="de"?"Pfandrückgabe":"Depozito İadesi"}</span>
+                    <span>${language === "de" ? "Pfandrückgabe" : "Depozito İadesi"}</span>
                     <strong>-${pfandReturnAmount.toFixed(2)} €</strong>
                   </div>
                 `
@@ -651,7 +654,7 @@ export default function SuperAdminOrdersPage() {
             }
 
             <div class="row">
-              <span>{language==="de"?"Liefergebühr":"Teslimat Ücreti"}</span>
+              <span>${language === "de" ? "Liefergebühr" : "Teslimat Ücreti"}</span>
               <strong>${Number(order.deliveryFee).toFixed(2)} €</strong>
             </div>
 
