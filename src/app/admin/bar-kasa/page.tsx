@@ -217,8 +217,38 @@ const categoryLabels: Record<string, string> =
           newCategory: "+ Neue Kategorie",
           categoryNameTr: "Türkischer Kategoriename",
           categoryNameDe: "Deutscher Kategoriename",
+          saveCategory: "Kategorie speichern",
 
+          drink: "Getränk",
+          packaging: "Verpackung",
+          takeAway: "Take Away",
+          cleaning: "Reinigung",
+          other: "Sonstiges",
 
+          currentStock: "Aktueller Bestand",
+          lastPurchasePrice: "Letzter Kistenpreis",
+          purchaseInfo: "Einkaufsinformationen",
+          salesInfo: "Verkaufsinformationen",
+
+          newUnit: "+ Neue Einheit",
+          trPalette: "Türkisch: Palet",
+          dePalette: "Deutsch: Palette",
+
+          purchasePackage: "Einkaufsverpackung",
+          purchaseQuantity: "Eingekaufte Menge",
+          packageContent: "Verpackungsinhalt",
+          salesUnit: "Verkaufseinheit",
+
+          addToStock: "Zum Bestand hinzufügen",
+          addAnotherProduct: "Weiteres Produkt hinzufügen",
+          totalPurchase: "Gesamter Wareneinkauf",
+
+          stock: "Bestand",
+          editUnit: "Einheit bearbeiten",
+          addUnit: "Einheit hinzufügen",
+          purchase: "Einkauf",
+          piece: "Stück",
+          pfand: "Pfand",
         }
       : {
           save: "Speichern",
@@ -268,7 +298,7 @@ const categoryLabels: Record<string, string> =
           newCategory: "+ Neue Kategorie",
           categoryNameTr: "Türkçe kategori adı",
           categoryNameDe: "Almanca kategori adı",
-          saveCategory: "Kategorie speichern",
+          saveCategory: "Kategori kaydet",
 
           drink: "İçecek",
           packaging: "Ambalaj",
@@ -278,26 +308,26 @@ const categoryLabels: Record<string, string> =
 
           currentStock: "Mevcut stok",
           lastPurchasePrice: "Son kasa alış fiyatı",
-          purchaseInfo: "Einkaufsinformationen",
-          salesInfo: "Verkaufsinformationen",
+          purchaseInfo: "Satın alma bilgileri",
+          salesInfo: "Satış bilgileri",
 
-          newUnit: "+ Neue Einheit",
+          newUnit: "+ Yeni Birim",
           trPalette: "Türkçe: Palet",
           dePalette: "Almanca: Palette",
 
-          purchasePackage: "Einkaufsverpackung",
+          purchasePackage: "Satın alma paketi",
           purchaseQuantity: "Alınan miktar",
           packageContent: "Ambalaj içeriği",
-          salesUnit: "Verkaufseinheit",
+          salesUnit: "Satış birimi",
 
           addToStock: "Stoğa eklenecek",
           addAnotherProduct: "Başka ürün ekle",
-          totalPurchase: "Gesamter Wareneinkauf",
+          totalPurchase: "Toplam mal alımı",
 
-          stock: "Bestand",
+          stock: "Stok",
           editUnit: "Birimi Düzenle",
           addUnit: "Birimi Ekle",
-          purchase: "Einkauf",
+          purchase: "Alış",
           piece: "adet",
           pfand: "Pfand",
 
@@ -2085,7 +2115,7 @@ const categoryLabels: Record<string, string> =
                                 item.packagePrice !== undefined ? (
                                   <>
                                     {item.packageCount} {language === "de" ? "Kiste" : "kasa"} · {t.packageContent}:{" "}
-                                    {item.unitsPerPackage} {t.piece} · language === "de" ? "Kistenpreis" : t.lastPurchasePrice{" "}
+                                    {item.unitsPerPackage} {t.piece} · {t.lastPurchasePrice}:{" "}
                                     {item.packagePrice.toLocaleString("de-DE", {
                                       minimumFractionDigits: 2,
                                       maximumFractionDigits: 2,
