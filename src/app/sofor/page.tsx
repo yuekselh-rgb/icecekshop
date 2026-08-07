@@ -592,7 +592,7 @@ export default function DriverPage() {
 
       if (data?.order?.id) {
         window.open(
-          `/sofor/fis/${data.order.id}`,
+          `/sofor/fis/${data.order.id}?lang=${language}`,
           "_blank",
           "width=420,height=900"
         );
@@ -2903,7 +2903,7 @@ export default function DriverPage() {
                               type="button"
                               onClick={() =>
                                 window.open(
-                                  `/sofor/fis/${order.id}`,
+                                  `/sofor/fis/${order.id}?lang=${language}`,
                                   "_blank",
                                   "width=420,height=900"
                                 )

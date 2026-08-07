@@ -3,10 +3,44 @@ import AutoPrint from "./AutoPrint";
 
 export default async function DriverReceiptPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ lang?: string }>;
 }) {
   const { id } = await params;
+  const { lang } = await searchParams;
+
+  const language = lang === "de" ? "de" : "tr";
+
+  const t =
+    language === "de"
+      ? {
+          notFound: "Beleg nicht gefunden.",
+          tagline: "Getränke & Verpackung",
+          receiptNo: "Beleg-Nr.",
+          date: "Datum",
+          customer: "Kunde",
+          phone: "Telefon",
+          subtotal: "Zwischensumme",
+          pfand: "Pfand",
+          total: "GESAMT",
+          thankYou: "Vielen Dank.",
+          seeYouAgain: "Wir freuen uns auf Ihren nächsten Besuch.",
+        }
+      : {
+          notFound: "Fiş bulunamadı.",
+          tagline: "İçecek & Ambalaj",
+          receiptNo: "Fiş No",
+          date: "Tarih",
+          customer: "Müşteri",
+          phone: "Telefon",
+          subtotal: "Ara Toplam",
+          pfand: "Pfand",
+          total: "TOPLAM",
+          thankYou: "Teşekkür ederiz.",
+          seeYouAgain: "Yine bekleriz.",
+        };
 
   const order = await prisma.order.findUnique({
     where: { id },
@@ -19,7 +53,7 @@ export default async function DriverReceiptPage({
   if (!order) {
     return (
       <div className="flex min-h-screen items-center justify-center text-2xl font-black">
-        Fiş bulunamadı.
+        {t.notFound}
       </div>
     );
   }
@@ -48,7 +82,7 @@ export default async function DriverReceiptPage({
           FLUSS GETRÄNKE
         </h1>
 
-        <p>Getränke & Verpackung</p>
+        <p>{t.tagline}</p>
 
         <p className="mt-2">
           --------------------------------
@@ -56,16 +90,16 @@ export default async function DriverReceiptPage({
       </div>
 
       <div className="mt-3 space-y-1">
-        <div>Fiş No : {order.orderNumber}</div>
+        <div>{t.receiptNo} : {order.orderNumber}</div>
 
         <div>
-          Tarih : {new Date(order.createdAt).toLocaleString("de-DE")}
+          {t.date} : {new Date(order.createdAt).toLocaleString("de-DE")}
         </div>
 
-        <div>Müşteri : {customerName}</div>
+        <div>{t.customer} : {customerName}</div>
 
         {order.user.phone ? (
-          <div>Telefon : {order.user.phone}</div>
+          <div>{t.phone} : {order.user.phone}</div>
         ) : null}
       </div>
 
@@ -94,25 +128,25 @@ export default async function DriverReceiptPage({
 
       <div className="space-y-1">
         <div className="flex justify-between">
-          <span>Ara Toplam</span>
+          <span>{t.subtotal}</span>
           <span>{subtotal.toFixed(2)} €</span>
         </div>
 
         <div className="flex justify-between">
-          <span>Pfand</span>
+          <span>{t.pfand}</span>
           <span>{totalPfand.toFixed(2)} €</span>
         </div>
 
         <div className="flex justify-between border-t pt-2 text-base font-black">
-          <span>TOPLAM</span>
+          <span>{t.total}</span>
           <span>{Number(order.totalAmount).toFixed(2)} €</span>
         </div>
       </div>
 
       <div className="mt-6 text-center">
         <p>******************************</p>
-        <p>Teşekkür ederiz.</p>
-        <p>Yine bekleriz.</p>
+        <p>{t.thankYou}</p>
+        <p>{t.seeYouAgain}</p>
       </div>
 
     </main>
