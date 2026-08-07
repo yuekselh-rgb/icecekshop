@@ -1,12 +1,27 @@
 import Link from "next/link";
-import DeleteCustomerButton from "../../../super-admin/musteriler/[id]/DeleteCustomerButton";
 import { prisma } from "@/lib/prisma";
+import { getAdminWithPermissions } from "@/lib/admin-auth";
+import { redirect } from "next/navigation";
 
 export default async function CustomerDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const admin = await getAdminWithPermissions();
+
+  if (!admin) {
+    redirect("/giris");
+  }
+
+  if (!admin.permissions.viewCustomers) {
+    return (
+      <main className="p-10">
+        <h1 className="text-2xl font-black">Bu sayfayı görüntüleme yetkiniz yok.</h1>
+      </main>
+    );
+  }
+
   const { id } = await params;
 
   const customer = await prisma.user.findUnique({
@@ -73,8 +88,6 @@ export default async function CustomerDetailPage({
           </h1>
 
           <div className="flex gap-3">
-
-            <DeleteCustomerButton id={id} />
 
             <Link
               href="/admin/musteriler"
