@@ -2,6 +2,8 @@ import "dotenv/config";
 
 import { prisma } from "../src/lib/prisma";
 
+const TENANT_ID = "tenant_fluss_getraenke";
+
 type CategorySeed = {
   slug: string;
   nameTr: string;
@@ -144,7 +146,10 @@ async function main() {
   for (const category of categories) {
     await prisma.category.upsert({
       where: {
-        slug: category.slug,
+        tenantId_slug: {
+          tenantId: TENANT_ID,
+          slug: category.slug,
+        },
       },
       update: {
         name: category.nameDe,
@@ -152,6 +157,7 @@ async function main() {
         nameDe: category.nameDe,
       },
       create: {
+        tenantId: TENANT_ID,
         slug: category.slug,
         name: category.nameDe,
         nameTr: category.nameTr,
@@ -185,7 +191,10 @@ async function main() {
 
     await prisma.product.upsert({
       where: {
-        slug: product.slug,
+        tenantId_slug: {
+          tenantId: TENANT_ID,
+          slug: product.slug,
+        },
       },
       update: {
         name: product.nameDe,
@@ -203,6 +212,7 @@ async function main() {
         categoryId,
       },
       create: {
+        tenantId: TENANT_ID,
         slug: product.slug,
         name: product.nameDe,
         nameTr: product.nameTr,

@@ -1,7 +1,8 @@
 import { getAdminWithPermissions } from "@/lib/admin-auth";
+import { withTenant } from "@/lib/tenant";
 import { put } from "@vercel/blob";
 import { randomUUID } from "crypto";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 
@@ -14,7 +15,7 @@ const allowedTypes: Record<string, string> = {
   "image/gif": "gif",
 };
 
-export async function POST(request: Request) {
+export const POST = withTenant(async (request: NextRequest) => {
   const admin = await getAdminWithPermissions();
 
   if (!admin || !admin.isSuperAdmin) {
@@ -96,4 +97,4 @@ export async function POST(request: Request) {
       },
     );
   }
-}
+});

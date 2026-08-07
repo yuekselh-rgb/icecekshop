@@ -1,6 +1,5 @@
-import { verifySessionToken } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { cookies } from "next/headers";
+import { getSession } from "@/lib/session";
 
 export const adminPermissionNames = [
   "viewProducts",
@@ -50,15 +49,7 @@ export const adminPermissionNames = [
 export type AdminPermissionName = (typeof adminPermissionNames)[number];
 
 export async function getAdminSession() {
-  const cookieStore = await cookies();
-
-  const token = cookieStore.get("paketmarket_session")?.value;
-
-  if (!token) {
-    return null;
-  }
-
-  return verifySessionToken(token);
+  return getSession();
 }
 
 export async function getAdminWithPermissions() {

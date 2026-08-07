@@ -1,6 +1,7 @@
 import { getAdminWithPermissions } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { withTenant } from "@/lib/tenant";
+import { NextRequest, NextResponse } from "next/server";
 
 const allowedCategories = [
   "PFAND_COLLECTION",
@@ -36,7 +37,7 @@ function serializeMovement(movement: any) {
   };
 }
 
-export async function GET() {
+export const GET = withTenant(async () => {
   const admin = await getAdminWithPermissions();
 
   if (!admin || (!admin.isSuperAdmin && !admin.permissions.viewBarCash)) {
@@ -148,9 +149,9 @@ export async function GET() {
       },
     );
   }
-}
+});
 
-export async function POST(request: Request) {
+export const POST = withTenant(async (request: NextRequest, _context, tenant) => {
   const admin = await getAdminWithPermissions();
 
   if (!admin) {
@@ -172,7 +173,7 @@ export async function POST(request: Request) {
     idempotencyKey = String(body.idempotencyKey || "").trim() || null;
 
     if (idempotencyKey) {
-      const existingKey = await prisma.idempotencyKey.findUnique({
+      const existingKey = await prisma.idempotencyKey.findFirst({
         where: {
           key: idempotencyKey,
         },
@@ -579,6 +580,7 @@ export async function POST(request: Request) {
       const movement = await prisma.$transaction(async (tx) => {
         const createdMovement = await tx.cashMovement.create({
           data: {
+            tenantId: tenant.id,
             accountType: "BAR",
             direction: "OUT",
             category: "GOODS_PURCHASE",
@@ -623,6 +625,7 @@ export async function POST(request: Request) {
         if (idempotencyKey) {
           await tx.idempotencyKey.create({
             data: {
+              tenantId: tenant.id,
               key: idempotencyKey,
               scope: "bar-cash-movement",
               resultId: createdMovement.id,
@@ -655,6 +658,7 @@ export async function POST(request: Request) {
 
           await tx.stockMovement.create({
             data: {
+              tenantId: tenant.id,
               productId: item.productId,
               amount: item.quantity,
               reason:
@@ -704,6 +708,7 @@ export async function POST(request: Request) {
     const movement = await prisma.$transaction(async (tx) => {
       const createdMovement = await tx.cashMovement.create({
         data: {
+          tenantId: tenant.id,
           accountType: "BAR",
           direction,
           category,
@@ -726,6 +731,7 @@ export async function POST(request: Request) {
       if (idempotencyKey) {
         await tx.idempotencyKey.create({
           data: {
+            tenantId: tenant.id,
             key: idempotencyKey,
             scope: "bar-cash-movement",
             resultId: createdMovement.id,
@@ -764,7 +770,7 @@ export async function POST(request: Request) {
       (error as { code?: string }).code === "P2002" &&
       idempotencyKey
     ) {
-      const existingKey = await prisma.idempotencyKey.findUnique({
+      const existingKey = await prisma.idempotencyKey.findFirst({
         where: { key: idempotencyKey },
       });
 
@@ -792,9 +798,9 @@ export async function POST(request: Request) {
       },
     );
   }
-}
+});
 
-export async function DELETE(request: Request) {
+export const DELETE = withTenant(async (request: NextRequest) => {
   const admin = await getAdminWithPermissions();
 
   if (
@@ -894,4 +900,4 @@ export async function DELETE(request: Request) {
       },
     );
   }
-}
+});

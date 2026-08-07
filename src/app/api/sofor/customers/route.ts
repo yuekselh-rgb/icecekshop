@@ -1,9 +1,10 @@
 import { verifySessionToken } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant";
 import bcrypt from "bcryptjs";
 import { randomUUID } from "crypto";
 import { cookies } from "next/headers";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 /*
  * Aynı numaranın "0151...", "+49151..." ve "0049151..." gibi farklı
@@ -102,7 +103,7 @@ function serializeCustomer(customer: {
   };
 }
 
-export async function GET() {
+export const GET = withTenant(async () => {
   const session = await requireDriver();
 
   if (!session) {
@@ -180,9 +181,9 @@ export async function GET() {
       },
     );
   }
-}
+});
 
-export async function POST(request: Request) {
+export const POST = withTenant(async (request: NextRequest, _context, tenant) => {
   const session = await requireDriver();
 
   if (!session) {
@@ -327,7 +328,7 @@ export async function POST(request: Request) {
     }
 
     if (requestedEmail) {
-      const existingEmail = await prisma.user.findUnique({
+      const existingEmail = await prisma.user.findFirst({
         where: {
           email: requestedEmail,
         },
@@ -355,6 +356,7 @@ export async function POST(request: Request) {
 
     const customer = await prisma.user.create({
       data: {
+        tenantId: tenant.id,
         email: requestedEmail || generatedEmail,
         passwordHash: randomPassword,
         role: "CUSTOMER",
@@ -373,6 +375,7 @@ export async function POST(request: Request) {
         addresses: hasAnyAddressField
           ? {
               create: {
+                tenantId: tenant.id,
                 street,
                 houseNumber,
                 postalCode,
@@ -432,4 +435,4 @@ export async function POST(request: Request) {
       },
     );
   }
-}
+});

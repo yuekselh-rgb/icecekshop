@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getAdminWithPermissions } from "@/lib/admin-auth";
+import { getCurrentTenant } from "@/lib/tenant";
 import { redirect } from "next/navigation";
 
 export default async function CustomerDetailPage({
@@ -23,10 +24,13 @@ export default async function CustomerDetailPage({
   }
 
   const { id } = await params;
+  const tenant = await getCurrentTenant();
 
-  const customer = await prisma.user.findUnique({
+  const customer = tenant
+    ? await prisma.user.findUnique({
     where: {
       id,
+      tenantId: tenant.id,
     },
 
     include: {
@@ -45,7 +49,8 @@ export default async function CustomerDetailPage({
         },
       },
     },
-  });
+  })
+    : null;
 
 
   if (!customer) {

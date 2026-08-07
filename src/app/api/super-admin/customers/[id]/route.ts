@@ -1,11 +1,12 @@
 import { prisma } from "@/lib/prisma";
 import { getAdminSession } from "@/lib/admin-auth";
-import { NextResponse } from "next/server";
+import { withTenant } from "@/lib/tenant";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function DELETE(
-  request: Request,
+export const DELETE = withTenant(async (
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
-) {
+) => {
   const session = await getAdminSession();
 
   if (!session || session.role !== "SUPER_ADMIN") {
@@ -39,4 +40,4 @@ export async function DELETE(
       },
     );
   }
-}
+});

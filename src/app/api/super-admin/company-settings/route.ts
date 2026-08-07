@@ -1,5 +1,6 @@
 import { getAdminWithPermissions } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant";
 import { NextResponse } from "next/server";
 
 async function requireSuperAdmin() {
@@ -12,7 +13,7 @@ async function requireSuperAdmin() {
   return admin;
 }
 
-export async function GET() {
+export const GET = withTenant(async (_request, _context, tenant) => {
   const admin = await requireSuperAdmin();
 
   if (!admin) {
@@ -29,11 +30,11 @@ export async function GET() {
   try {
     const settings = await prisma.companySetting.upsert({
       where: {
-        id: "main",
+        tenantId: tenant.id,
       },
       update: {},
       create: {
-        id: "main",
+        tenantId: tenant.id,
         companyName: "Firma Adı",
         companySubtitle: null,
         showOffers: true,
@@ -55,9 +56,9 @@ export async function GET() {
       },
     );
   }
-}
+});
 
-export async function PATCH(request: Request) {
+export const PATCH = withTenant(async (request: Request, _context, tenant) => {
   const admin = await requireSuperAdmin();
 
   if (!admin) {
@@ -172,10 +173,10 @@ export async function PATCH(request: Request) {
 
     const settings = await prisma.companySetting.upsert({
       where: {
-        id: "main",
+        tenantId: tenant.id,
       },
       create: {
-        id: "main",
+        tenantId: tenant.id,
         companyName,
         companySubtitle: companySubtitle || null,
         logoUrl: rawLogoUrl || null,
@@ -279,4 +280,4 @@ export async function PATCH(request: Request) {
       },
     );
   }
-}
+});

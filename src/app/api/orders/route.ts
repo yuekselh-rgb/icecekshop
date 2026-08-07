@@ -1,6 +1,7 @@
 import { getSession } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { withTenant } from "@/lib/tenant";
+import { NextRequest, NextResponse } from "next/server";
 
 type RequestedItem = {
   productId: string;
@@ -146,7 +147,7 @@ function normalizeItems(value: unknown): RequestedItem[] {
   );
 }
 
-export async function POST(request: Request) {
+export const POST = withTenant(async (request: NextRequest, _context, tenant) => {
   const language: "de" | "tr" =
     new URL(request.url).searchParams.get("lang") === "de" ? "de" : "tr";
 
@@ -493,6 +494,8 @@ export async function POST(request: Request) {
 
         await tx.stockMovement.create({
           data: {
+            tenantId: tenant.id,
+
             productId: item.productId,
 
             amount: -item.quantity,
@@ -504,6 +507,7 @@ export async function POST(request: Request) {
 
       const createdOrder = await tx.order.create({
         data: {
+          tenantId: tenant.id,
           orderNumber,
           userId: session.userId,
           status: "NEW",
@@ -533,6 +537,8 @@ export async function POST(request: Request) {
       if (pfandItems.length > 0 && pfandReturnAmount > 0) {
         await tx.pfandReturn.create({
           data: {
+            tenantId: tenant.id,
+
             userId: session.userId,
 
             orderId: createdOrder.id,
@@ -634,4 +640,4 @@ export async function POST(request: Request) {
       },
     );
   }
-}
+});

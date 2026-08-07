@@ -1,8 +1,9 @@
 import { verifySessionToken } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant";
 import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 async function getSuperAdminSession() {
   const cookieStore = await cookies();
@@ -19,7 +20,7 @@ async function getSuperAdminSession() {
   return session;
 }
 
-export async function POST(request: Request) {
+export const POST = withTenant(async (request: NextRequest) => {
   const session = await getSuperAdminSession();
 
   if (!session) {
@@ -106,4 +107,4 @@ export async function POST(request: Request) {
       },
     );
   }
-}
+});

@@ -1,5 +1,6 @@
 import { verifySessionToken } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
@@ -36,7 +37,7 @@ type ProductStockSummary = {
   currentQuantity: number;
 };
 
-export async function GET() {
+export const GET = withTenant(async () => {
   const session = await getDriverSession();
 
   if (!session) {
@@ -378,4 +379,4 @@ export async function GET() {
       },
     );
   }
-}
+});

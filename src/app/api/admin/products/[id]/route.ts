@@ -1,15 +1,16 @@
 import { requireAdminPermission } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { withTenant } from "@/lib/tenant";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function PATCH(
-  request: Request,
+export const PATCH = withTenant(async (
+  request: NextRequest,
   context: {
     params: Promise<{
       id: string;
     }>;
   },
-) {
+) => {
   const { id } = await context.params;
 
   const baseline = await requireAdminPermission("viewProducts");
@@ -480,16 +481,16 @@ export async function PATCH(
       },
     );
   }
-}
+});
 
-export async function DELETE(
-  _request: Request,
+export const DELETE = withTenant(async (
+  _request: NextRequest,
   context: {
     params: Promise<{
       id: string;
     }>;
   },
-) {
+) => {
   const admin = await requireAdminPermission("deleteProduct");
 
   if (!admin) {
@@ -527,4 +528,4 @@ export async function DELETE(
       },
     );
   }
-}
+});

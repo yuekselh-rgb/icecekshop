@@ -1,4 +1,5 @@
-import { verifySessionToken } from "@/lib/auth";
+import { verifySessionToken, type AuthRole } from "@/lib/auth";
+import { isPlatformHost } from "@/lib/tenant";
 import { NextRequest, NextResponse } from "next/server";
 
 function redirectTo(request: NextRequest, pathname: string) {
@@ -16,9 +17,7 @@ function apiError(message: string, status: 401 | 403) {
   );
 }
 
-function getHomePath(
-  role: "CUSTOMER" | "DRIVER" | "DEALER" | "ADMIN" | "SUPER_ADMIN",
-) {
+function getHomePath(role: AuthRole) {
   if (role === "DRIVER") {
     return "/sofor";
   }
@@ -31,6 +30,10 @@ function getHomePath(
     return "/super-admin";
   }
 
+  if (role === "PLATFORM_OWNER") {
+    return "/platform";
+  }
+
   return "/";
 }
 
@@ -40,6 +43,26 @@ export async function proxy(request: NextRequest) {
   const token = request.cookies.get("paketmarket_session")?.value;
 
   const session = token ? await verifySessionToken(token) : null;
+
+  const host = request.headers.get("host");
+  const isPlatform = isPlatformHost(host);
+
+  const isPlatformPage = pathname === "/platform" || pathname.startsWith("/platform/");
+  const isPlatformApi = pathname === "/api/platform" || pathname.startsWith("/api/platform/");
+
+  /*
+   * Die Platform-Host-Domain ist ausschließlich für den Platform-Owner-
+   * Bereich da. Auf Tenant-Domains ist /platform nicht erreichbar, und
+   * umgekehrt lässt der Platform-Host sonst nichts anderes durch.
+   */
+
+  if (isPlatform) {
+    if (!isPlatformPage && !isPlatformApi) {
+      return redirectTo(request, "/platform");
+    }
+  } else if (isPlatformPage || isPlatformApi) {
+    return NextResponse.redirect(new URL("/", `https://${host}`));
+  }
 
   const isAdminPage = pathname === "/admin" || pathname.startsWith("/admin/");
 
@@ -61,6 +84,18 @@ export async function proxy(request: NextRequest) {
    * API isteklerinde yönlendirme yapılmaz.
    * JSON olarak 401 veya 403 döndürülür.
    */
+
+  if (isPlatformApi && pathname !== "/api/platform/auth/login") {
+    if (!session) {
+      return apiError("Oturum açmanız gerekiyor.", 401);
+    }
+
+    if (session.role !== "PLATFORM_OWNER") {
+      return apiError("Bu alana erişim yetkiniz yok.", 403);
+    }
+
+    return NextResponse.next();
+  }
 
   if (isAdminApi) {
     if (!session) {
@@ -138,6 +173,18 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  if (isPlatformPage && pathname !== "/platform/giris") {
+    if (!session) {
+      return redirectTo(request, "/platform/giris");
+    }
+
+    if (session.role !== "PLATFORM_OWNER") {
+      return redirectTo(request, getHomePath(session.role));
+    }
+
+    return NextResponse.next();
+  }
+
   return NextResponse.next();
 }
 
@@ -146,9 +193,11 @@ export const config = {
     "/admin/:path*",
     "/super-admin/:path*",
     "/sofor/:path*",
+    "/platform/:path*",
 
     "/api/admin/:path*",
     "/api/super-admin/:path*",
     "/api/sofor/:path*",
+    "/api/platform/:path*",
   ],
 };

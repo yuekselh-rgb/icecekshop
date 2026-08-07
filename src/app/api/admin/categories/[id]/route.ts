@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { requireAdminPermission } from "@/lib/admin-auth";
+import { withTenant } from "@/lib/tenant";
 function createSlug(value: string) {
   return value
     .toLocaleLowerCase("tr")
@@ -23,10 +24,10 @@ const allowedTypes = [
   "OTHER",
 ] as const;
 
-export async function PUT(
-  request: Request,
+export const PUT = withTenant(async (
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
-) {
+) => {
   const admin = await requireAdminPermission("updateCategory");
 
   if (!admin) {
@@ -100,4 +101,4 @@ export async function PUT(
       },
     );
   }
-}
+});

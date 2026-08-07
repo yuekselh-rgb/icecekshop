@@ -1,7 +1,8 @@
 import { createSessionToken } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant";
 import bcrypt from "bcryptjs";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 function getRedirectPath(role: string) {
   if (role === "SUPER_ADMIN") {
@@ -19,7 +20,7 @@ function getRedirectPath(role: string) {
   return "/";
 }
 
-export async function POST(request: Request) {
+export const POST = withTenant(async (request: NextRequest, _context, tenant) => {
   let language: "de" | "tr" = "tr";
 
   try {
@@ -55,7 +56,7 @@ export async function POST(request: Request) {
 
     const password = String(rawPassword || "").trim();
 
-    const user = await prisma.user.findUnique({
+    const user = await prisma.user.findFirst({
       where: {
         email,
       },
@@ -209,6 +210,7 @@ export async function POST(request: Request) {
       userId: user.id,
       email: user.email,
       role: user.role,
+      tenantId: tenant.id,
     });
 
     /*
@@ -254,4 +256,4 @@ export async function POST(request: Request) {
       },
     );
   }
-}
+});

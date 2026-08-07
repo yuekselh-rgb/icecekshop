@@ -1,12 +1,13 @@
 import { getAdminWithPermissions } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant";
 import { createEndOfPeriodPdf } from "@/lib/pdf/end-of-period-report";
 import { put } from "@vercel/blob";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 const CONFIRM_TEXT = "NEHIR CAN";
 
-export async function DELETE(request: Request) {
+export const DELETE = withTenant(async (request: NextRequest) => {
   const admin = await getAdminWithPermissions();
 
   if (!admin || !admin.isSuperAdmin) {
@@ -211,4 +212,4 @@ export async function DELETE(request: Request) {
       },
     );
   }
-}
+});

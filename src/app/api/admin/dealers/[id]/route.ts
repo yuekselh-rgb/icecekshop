@@ -1,6 +1,7 @@
 import { getAdminWithPermissions } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { withTenant } from "@/lib/tenant";
+import { NextRequest, NextResponse } from "next/server";
 
 function nullableText(value: unknown) {
   const text = String(value ?? "").trim();
@@ -8,14 +9,14 @@ function nullableText(value: unknown) {
   return text || null;
 }
 
-export async function PATCH(
-  request: Request,
+export const PATCH = withTenant(async (
+  request: NextRequest,
   context: {
     params: Promise<{
       id: string;
     }>;
   },
-) {
+) => {
   const admin = await getAdminWithPermissions();
 
   if (!admin || (!admin.isSuperAdmin && !admin.permissions.updateDealer)) {
@@ -290,4 +291,4 @@ export async function PATCH(
       },
     );
   }
-}
+});

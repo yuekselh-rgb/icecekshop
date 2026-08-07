@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
-import { NextResponse } from "next/server";
+import { withTenant } from "@/lib/tenant";
+import { NextRequest, NextResponse } from "next/server";
 
 type RequestedPfandItem = {
   name: string;
@@ -75,7 +76,7 @@ function normalizeItems(
     );
 }
 
-export async function GET() {
+export const GET = withTenant(async () => {
   const session =
     await getSession();
 
@@ -168,11 +169,13 @@ export async function GET() {
       }
     );
   }
-}
+});
 
-export async function POST(
-  request: Request
-) {
+export const POST = withTenant(async (
+  request: NextRequest,
+  _context,
+  tenant
+) => {
   const session =
     await getSession();
 
@@ -291,6 +294,9 @@ export async function POST(
     const pfandReturn =
       await prisma.pfandReturn.create({
         data: {
+          tenantId:
+            tenant.id,
+
           userId:
             session.userId,
 
@@ -389,4 +395,4 @@ export async function POST(
       }
     );
   }
-}
+});

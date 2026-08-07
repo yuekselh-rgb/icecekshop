@@ -1,6 +1,7 @@
 import { requireAdminPermission } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { withTenant } from "@/lib/tenant";
+import { NextRequest, NextResponse } from "next/server";
 
 const allowedStatuses = [
   "PENDING",
@@ -105,14 +106,15 @@ const pfandInclude = {
   },
 };
 
-export async function PATCH(
-  request: Request,
+export const PATCH = withTenant(async (
+  request: NextRequest,
   context: {
     params: Promise<{
       id: string;
     }>;
   },
-) {
+  tenant,
+) => {
   const admin = await requireAdminPermission("managePfand");
 
   if (!admin) {
@@ -431,6 +433,7 @@ export async function PATCH(
 
         await extendedTransaction.pfandWarehouseMovement.create({
           data: {
+            tenantId: tenant.id,
             type: "IN",
 
             partyType: "CUSTOMER",
@@ -454,6 +457,7 @@ export async function PATCH(
         if (existing.order?.driverId) {
           await extendedTransaction.driverCashAdjustment.create({
             data: {
+              tenantId: tenant.id,
               driverId: existing.order.driverId,
 
               orderId: existing.order.id,
@@ -560,4 +564,4 @@ export async function PATCH(
       },
     );
   }
-}
+});

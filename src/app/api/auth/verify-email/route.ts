@@ -1,10 +1,11 @@
 import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant";
 import crypto from "crypto";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 const MAX_ATTEMPTS = 5;
 
-export async function POST(request: Request) {
+export const POST = withTenant(async (request: NextRequest) => {
   try {
     const { email, code } = await request.json();
 
@@ -20,7 +21,7 @@ export async function POST(request: Request) {
       .update(String(code))
       .digest("hex");
 
-    const user = await prisma.user.findUnique({
+    const user = await prisma.user.findFirst({
       where: {
         email: String(email).trim().toLowerCase(),
       },
@@ -120,4 +121,4 @@ export async function POST(request: Request) {
       },
     );
   }
-}
+});

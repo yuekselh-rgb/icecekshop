@@ -1,7 +1,8 @@
 import { getAdminWithPermissions } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant";
 import bcrypt from "bcryptjs";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 type RequestedItem = {
   productId: string;
@@ -123,7 +124,7 @@ function normalizeItems(value: unknown): RequestedItem[] {
   }));
 }
 
-export async function POST(request: Request) {
+export const POST = withTenant(async (request: NextRequest, _context, tenant) => {
   const admin = await getAdminWithPermissions();
 
   if (!admin || !admin.permissions.makeBarSale) {
@@ -145,7 +146,7 @@ export async function POST(request: Request) {
     idempotencyKey = String(body.idempotencyKey || "").trim() || null;
 
     if (idempotencyKey) {
-      const existing = await prisma.idempotencyKey.findUnique({
+      const existing = await prisma.idempotencyKey.findFirst({
         where: {
           key: idempotencyKey,
         },
@@ -362,13 +363,17 @@ export async function POST(request: Request) {
     const order = await prisma.$transaction(async (tx) => {
       const barCustomer = await tx.user.upsert({
         where: {
-          email: "bar-satis@paketmarket.local",
+          tenantId_email: {
+            tenantId: tenant.id,
+            email: "bar-satis@paketmarket.local",
+          },
         },
         update: {
           firstName: "Bar",
           lastName: "Satışı",
         },
         create: {
+          tenantId: tenant.id,
           email: "bar-satis@paketmarket.local",
           passwordHash: randomPassword,
           role: "CUSTOMER",
@@ -406,6 +411,7 @@ export async function POST(request: Request) {
 
         await tx.stockMovement.create({
           data: {
+            tenantId: tenant.id,
             productId: item.productId,
             amount: -item.quantity,
             reason: `Bar satışı ${orderNumber} - ${adminName}`,
@@ -415,6 +421,7 @@ export async function POST(request: Request) {
 
       const createdOrder = await tx.order.create({
         data: {
+          tenantId: tenant.id,
           orderNumber,
           userId: orderCustomerId,
           status: "DELIVERED",
@@ -459,6 +466,7 @@ export async function POST(request: Request) {
       if (idempotencyKey) {
         await tx.idempotencyKey.create({
           data: {
+            tenantId: tenant.id,
             key: idempotencyKey,
             scope: "bar-sale",
             resultId: createdOrder.id,
@@ -468,6 +476,7 @@ export async function POST(request: Request) {
 
       await tx.orderPayment.create({
         data: {
+          tenantId: tenant.id,
           orderId: createdOrder.id,
           customerId: orderCustomerId,
 
@@ -495,6 +504,7 @@ export async function POST(request: Request) {
 
         await tx.pfandReturn.create({
           data: {
+            tenantId: tenant.id,
             userId: orderCustomerId,
             orderId: createdOrder.id,
 
@@ -529,6 +539,7 @@ export async function POST(request: Request) {
 
             warehouseMovement: {
               create: {
+                tenantId: tenant.id,
                 type: "IN",
                 partyType: "CUSTOMER",
                 partyName: selectedCustomerName,
@@ -575,6 +586,7 @@ export async function POST(request: Request) {
           if (!existingCashMovement) {
             await tx.cashMovement.create({
               data: {
+                tenantId: tenant.id,
                 accountType: "BAR",
                 direction: "IN",
                 category: "BAR_SALE",
@@ -634,7 +646,7 @@ export async function POST(request: Request) {
       (error as { code?: string }).code === "P2002"
     ) {
       const existing = idempotencyKey
-        ? await prisma.idempotencyKey.findUnique({
+        ? await prisma.idempotencyKey.findFirst({
             where: { key: idempotencyKey },
           })
         : null;
@@ -690,4 +702,4 @@ export async function POST(request: Request) {
       },
     );
   }
-}
+});

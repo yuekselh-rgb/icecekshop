@@ -1,6 +1,7 @@
 import { requireAdminPermission } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { withTenant } from "@/lib/tenant";
+import { NextRequest, NextResponse } from "next/server";
 
 const allowedPfandTypes = [
   {
@@ -30,14 +31,15 @@ type RequestedPfandItem = {
   quantity?: unknown;
 };
 
-export async function POST(
-  request: Request,
+export const POST = withTenant(async (
+  request: NextRequest,
   context: {
     params: Promise<{
       id: string;
     }>;
   },
-) {
+  tenant,
+) => {
   const admin = await requireAdminPermission("updateOrder");
 
   if (!admin) {
@@ -203,6 +205,7 @@ export async function POST(
     const createdPfandReturn = await prisma.$transaction(async (tx) => {
       const pfandReturn = await tx.pfandReturn.create({
         data: {
+          tenantId: tenant.id,
           userId: order.user.id,
           orderId: order.id,
 
@@ -236,6 +239,7 @@ export async function POST(
 
       await tx.pfandWarehouseMovement.create({
         data: {
+          tenantId: tenant.id,
           type: "IN",
           partyType: "WHOLESALER",
 
@@ -296,4 +300,4 @@ export async function POST(
       },
     );
   }
-}
+});

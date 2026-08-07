@@ -3,8 +3,9 @@ import {
   requireAdminPermission,
 } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant";
 import bcrypt from "bcryptjs";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 function nullableText(value: unknown) {
   const text = String(value ?? "").trim();
@@ -12,7 +13,7 @@ function nullableText(value: unknown) {
   return text || null;
 }
 
-export async function GET() {
+export const GET = withTenant(async () => {
   const admin = await requireAdminPermission("viewDealers");
 
   if (!admin) {
@@ -99,9 +100,9 @@ export async function GET() {
       },
     );
   }
-}
+});
 
-export async function POST(request: Request) {
+export const POST = withTenant(async (request: NextRequest, _context, tenant) => {
   const admin = await getAdminWithPermissions();
 
   if (!admin || (!admin.isSuperAdmin && !admin.permissions.createDealer)) {
@@ -200,7 +201,7 @@ export async function POST(request: Request) {
     }
 
     const [existingEmail, existingDealerNumber] = await Promise.all([
-      prisma.user.findUnique({
+      prisma.user.findFirst({
         where: {
           email,
         },
@@ -210,7 +211,7 @@ export async function POST(request: Request) {
         },
       }),
 
-      prisma.dealerProfile.findUnique({
+      prisma.dealerProfile.findFirst({
         where: {
           dealerNumber,
         },
@@ -248,6 +249,7 @@ export async function POST(request: Request) {
     const dealer = await prisma.$transaction(async (tx) => {
       return tx.user.create({
         data: {
+          tenantId: tenant.id,
           email,
           passwordHash,
           role: "DEALER",
@@ -263,6 +265,7 @@ export async function POST(request: Request) {
 
           dealerProfile: {
             create: {
+              tenantId: tenant.id,
               dealerNumber,
               companyName,
               contactName: contactName || null,
@@ -339,4 +342,4 @@ export async function POST(request: Request) {
       },
     );
   }
-}
+});

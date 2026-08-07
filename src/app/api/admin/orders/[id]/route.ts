@@ -3,7 +3,8 @@ import {
   requireAdminPermission,
 } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { withTenant } from "@/lib/tenant";
+import { NextRequest, NextResponse } from "next/server";
 
 const allowedStatuses = [
   "NEW",
@@ -17,14 +18,15 @@ const allowedStatuses = [
 
 type OrderStatusValue = (typeof allowedStatuses)[number];
 
-export async function PATCH(
-  request: Request,
+export const PATCH = withTenant(async (
+  request: NextRequest,
   context: {
     params: Promise<{
       id: string;
     }>;
   },
-) {
+  tenant,
+) => {
   const admin = await getAdminWithPermissions();
 
   if (!admin) {
@@ -278,6 +280,7 @@ export async function PATCH(
 
           await tx.stockMovement.create({
             data: {
+              tenantId: tenant.id,
               productId: item.productId,
               amount: item.quantity,
               reason: `İptal edilen sipariş ${existingOrder.orderNumber}`,
@@ -312,6 +315,7 @@ export async function PATCH(
 
           await tx.stockMovement.create({
             data: {
+              tenantId: tenant.id,
               productId: item.productId,
               amount: -item.quantity,
               reason: `Yeniden açılan sipariş ${existingOrder.orderNumber}`,
@@ -385,6 +389,7 @@ export async function PATCH(
 
           pendingPayment = await tx.orderPayment.create({
             data: {
+              tenantId: tenant.id,
               orderId: existingOrder.id,
               customerId: existingOrder.userId,
               driverId: existingOrder.driverId,
@@ -475,6 +480,7 @@ export async function PATCH(
         if (!existingCashMovement) {
           await tx.cashMovement.create({
             data: {
+              tenantId: tenant.id,
               accountType: "BAR",
               direction: "IN",
               category: "MANUAL_INCOME",
@@ -677,16 +683,16 @@ export async function PATCH(
       },
     );
   }
-}
+});
 
-export async function DELETE(
-  _request: Request,
+export const DELETE = withTenant(async (
+  _request: NextRequest,
   context: {
     params: Promise<{
       id: string;
     }>;
   },
-) {
+) => {
   const admin = await requireAdminPermission("deleteOrder");
 
   if (!admin) {
@@ -746,4 +752,4 @@ export async function DELETE(
       },
     );
   }
-}
+});

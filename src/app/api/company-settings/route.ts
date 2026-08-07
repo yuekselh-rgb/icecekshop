@@ -1,8 +1,8 @@
 import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant";
 import { NextResponse } from "next/server";
 
 const fallbackSettings = {
-  id: "main",
   companyName: "Firma Adı",
   companySubtitle: null,
   logoUrl: null,
@@ -49,11 +49,11 @@ const fallbackSettings = {
   showOffers: true,
 };
 
-export async function GET() {
+export const GET = withTenant(async (_request, _context, tenant) => {
   try {
     const settings = await prisma.companySetting.findUnique({
       where: {
-        id: "main",
+        tenantId: tenant.id,
       },
     });
 
@@ -67,4 +67,4 @@ export async function GET() {
       settings: fallbackSettings,
     });
   }
-}
+});

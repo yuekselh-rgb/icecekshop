@@ -1,12 +1,11 @@
 import { prisma } from "@/lib/prisma";
 import { sendVerificationCode } from "@/lib/email";
+import { withTenant } from "@/lib/tenant";
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(
-  request: Request
-) {
+export const POST = withTenant(async (request: NextRequest, _context, tenant) => {
   let language: "de" | "tr" = "tr";
 
   try {
@@ -130,7 +129,7 @@ export async function POST(
         .toLowerCase();
 
     const existingUser =
-      await prisma.user.findUnique({
+      await prisma.user.findFirst({
         where: {
           email: normalizedEmail,
         },
@@ -170,6 +169,8 @@ export async function POST(
     const user =
       await prisma.user.create({
         data: {
+          tenantId: tenant.id,
+
           email:
             normalizedEmail,
 
@@ -205,6 +206,8 @@ export async function POST(
 
           addresses: {
             create: {
+              tenantId: tenant.id,
+
               street:
                 String(
                   street
@@ -266,6 +269,7 @@ export async function POST(
 
     await prisma.verificationCode.create({
       data: {
+        tenantId: tenant.id,
         userId: user.id,
         code: codeHash,
         type: "REGISTER",
@@ -312,4 +316,4 @@ export async function POST(
       }
     );
   }
-}
+});

@@ -1,9 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import { sendPasswordResetCode } from "@/lib/email";
+import { withTenant } from "@/lib/tenant";
 import crypto from "crypto";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(request: Request) {
+export const POST = withTenant(async (request: NextRequest, _context, tenant) => {
   try {
     const { email } = await request.json();
 
@@ -18,7 +19,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const user = await prisma.user.findUnique({
+    const user = await prisma.user.findFirst({
       where: {
         email: normalizedEmail,
       },
@@ -50,6 +51,7 @@ export async function POST(request: Request) {
 
       await prisma.verificationCode.create({
         data: {
+          tenantId: tenant.id,
           userId: user.id,
           code: codeHash,
           type: "RESET_PASSWORD",
@@ -78,4 +80,4 @@ export async function POST(request: Request) {
       },
     );
   }
-}
+});

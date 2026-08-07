@@ -2,7 +2,8 @@ import {
   requireAdminPermission,
 } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { withTenant } from "@/lib/tenant";
+import { NextRequest, NextResponse } from "next/server";
 
 const allowedTypes = [
   "DRINK",
@@ -28,7 +29,7 @@ function createSlug(value: string) {
     .replace(/^-+|-+$/g, "");
 }
 
-export async function GET() {
+export const GET = withTenant(async () => {
   const admin =
     await requireAdminPermission(
       "viewCategories"
@@ -64,11 +65,13 @@ export async function GET() {
   return NextResponse.json({
     categories,
   });
-}
+});
 
-export async function POST(
-  request: Request
-) {
+export const POST = withTenant(async (
+  request: NextRequest,
+  _context,
+  tenant,
+) => {
   const admin =
     await requireAdminPermission(
       "createCategory"
@@ -123,7 +126,7 @@ export async function POST(
     }
 
     const existing =
-      await prisma.category.findUnique({
+      await prisma.category.findFirst({
         where: {
           slug,
         },
@@ -144,6 +147,7 @@ export async function POST(
     const category =
       await prisma.category.create({
         data: {
+          tenantId: tenant.id,
           name: nameDe,
           nameTr,
           nameDe,
@@ -178,10 +182,10 @@ export async function POST(
       }
     );
   }
-}
+});
 
 
-export async function PUT(request: Request) {
+export const PUT = withTenant(async (request: NextRequest) => {
   const admin =
     await requireAdminPermission(
       "updateCategory"
@@ -244,4 +248,4 @@ export async function PUT(request: Request) {
       },
     );
   }
-}
+});

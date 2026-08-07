@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getCurrentTenant } from "@/lib/tenant";
 import AutoPrint from "./AutoPrint";
 
 export default async function DriverReceiptPage({
@@ -42,13 +43,17 @@ export default async function DriverReceiptPage({
           seeYouAgain: "Yine bekleriz.",
         };
 
-  const order = await prisma.order.findUnique({
-    where: { id },
-    include: {
-      user: true,
-      items: true,
-    },
-  });
+  const tenant = await getCurrentTenant();
+
+  const order = tenant
+    ? await prisma.order.findUnique({
+        where: { id, tenantId: tenant.id },
+        include: {
+          user: true,
+          items: true,
+        },
+      })
+    : null;
 
   if (!order) {
     return (

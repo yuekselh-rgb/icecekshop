@@ -3,6 +3,8 @@ import "dotenv/config";
 import bcrypt from "bcryptjs";
 import { prisma } from "../src/lib/prisma";
 
+const TENANT_ID = "tenant_fluss_getraenke";
+
 async function main() {
   const email = process.argv[2];
   const password = process.argv[3];
@@ -23,8 +25,9 @@ async function main() {
 
   const normalizedEmail = email.trim().toLowerCase();
 
-  const user = await prisma.user.findUnique({
+  const user = await prisma.user.findFirst({
     where: {
+      tenantId: TENANT_ID,
       email: normalizedEmail,
     },
   });
@@ -43,7 +46,7 @@ async function main() {
 
   await prisma.user.update({
     where: {
-      email: normalizedEmail,
+      id: user.id,
     },
     data: {
       passwordHash,

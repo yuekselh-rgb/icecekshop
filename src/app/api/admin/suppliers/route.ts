@@ -1,6 +1,7 @@
 import { getAdminWithPermissions } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { withTenant } from "@/lib/tenant";
+import { NextRequest, NextResponse } from "next/server";
 
 function cleanOptional(value: unknown) {
   const cleaned = String(value || "").trim();
@@ -8,7 +9,7 @@ function cleanOptional(value: unknown) {
   return cleaned || null;
 }
 
-export async function GET() {
+export const GET = withTenant(async () => {
   const admin = await getAdminWithPermissions();
 
   if (!admin || (!admin.isSuperAdmin && !admin.permissions.viewBarCash)) {
@@ -48,9 +49,9 @@ export async function GET() {
       },
     );
   }
-}
+});
 
-export async function POST(request: Request) {
+export const POST = withTenant(async (request: NextRequest, _context, tenant) => {
   const admin = await getAdminWithPermissions();
 
   if (
@@ -123,6 +124,7 @@ export async function POST(request: Request) {
 
     const supplier = await prisma.supplier.create({
       data: {
+        tenantId: tenant.id,
         name,
 
         contactName: cleanOptional(body.contactName),
@@ -171,4 +173,4 @@ export async function POST(request: Request) {
       },
     );
   }
-}
+});

@@ -1,5 +1,7 @@
 import { prisma } from "../src/lib/prisma";
 
+const TENANT_ID = "tenant_fluss_getraenke";
+
 const demoProducts: Record<string, string[]> = {
   Kaffee: [
     "Jacobs Krönung",
@@ -67,6 +69,7 @@ async function main() {
 
       await prisma.product.create({
         data: {
+          tenantId: TENANT_ID,
           name,
           slug: name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
           active: true,

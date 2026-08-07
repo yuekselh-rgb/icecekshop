@@ -1,8 +1,9 @@
 import { getSession } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant";
 import { NextResponse } from "next/server";
 
-export async function GET() {
+export const GET = withTenant(async () => {
   const session = await getSession();
 
   if (!session) {
@@ -89,4 +90,4 @@ export async function GET() {
   return NextResponse.json({
     user,
   });
-}
+});

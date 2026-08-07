@@ -1,11 +1,18 @@
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
+import { getCurrentTenant } from "@/lib/tenant";
 import CloseDayButton from "./CloseDayButton";
 
 export default async function GunSonuPage() {
   const session = await getSession();
 
   if (!session) {
+    return null;
+  }
+
+  const tenant = await getCurrentTenant();
+
+  if (!tenant) {
     return null;
   }
 
@@ -19,6 +26,7 @@ export default async function GunSonuPage() {
 
   const orders = await prisma.order.findMany({
     where: {
+      tenantId: tenant.id,
       status: "DELIVERED",
       driverId: session.userId,
       deliveredAt: {

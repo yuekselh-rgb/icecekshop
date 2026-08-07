@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant";
 import { NextResponse } from "next/server";
 
-export async function GET() {
+export const GET = withTenant(async () => {
   try {
     const categories = await prisma.category.findMany({
       orderBy: [
@@ -26,4 +27,4 @@ export async function GET() {
       }
     );
   }
-}
+});

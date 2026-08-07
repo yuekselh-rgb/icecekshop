@@ -1,8 +1,11 @@
 import { prisma } from "../src/lib/prisma";
 
+const TENANT_ID = "tenant_fluss_getraenke";
+
 async function main() {
   const product = await prisma.product.create({
     data: {
+      tenantId: TENANT_ID,
       name: "Coca-Cola 24x330ml",
       nameDe: "Coca-Cola 24x330ml",
       nameTr: "Coca-Cola 24x330ml",

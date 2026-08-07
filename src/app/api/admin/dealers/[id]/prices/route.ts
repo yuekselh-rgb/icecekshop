@@ -1,6 +1,7 @@
 import { requireAdminPermission } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { withTenant } from "@/lib/tenant";
+import { NextRequest, NextResponse } from "next/server";
 
 async function getDealer(id: string) {
   return prisma.user.findFirst({
@@ -23,14 +24,14 @@ async function getDealer(id: string) {
   });
 }
 
-export async function GET(
-  _request: Request,
+export const GET = withTenant(async (
+  _request: NextRequest,
   context: {
     params: Promise<{
       id: string;
     }>;
   },
-) {
+) => {
   const admin = await requireAdminPermission("manageDealerPrices");
 
   if (!admin) {
@@ -144,16 +145,17 @@ export async function GET(
       },
     );
   }
-}
+});
 
-export async function PUT(
-  request: Request,
+export const PUT = withTenant(async (
+  request: NextRequest,
   context: {
     params: Promise<{
       id: string;
     }>;
   },
-) {
+  tenant,
+) => {
   const admin = await requireAdminPermission("manageDealerPrices");
 
   if (!admin) {
@@ -296,6 +298,7 @@ export async function PUT(
         await tx.dealerPrice.createMany({
           data: pricesToSave.map(
             (item: { productId: string; price: number }) => ({
+              tenantId: tenant.id,
               dealerId: id,
               productId: item.productId,
               price: item.price,
@@ -322,4 +325,4 @@ export async function PUT(
       },
     );
   }
-}
+});

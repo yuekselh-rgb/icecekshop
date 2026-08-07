@@ -2,9 +2,10 @@ import {
   verifySessionToken,
 } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant";
 import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 async function getSuperAdminSession() {
   const cookieStore =
@@ -38,14 +39,14 @@ async function getSuperAdminSession() {
 /*
  * Aktif siparişi çöp kutusuna taşır.
  */
-export async function DELETE(
-  _request: Request,
+export const DELETE = withTenant(async (
+  _request: NextRequest,
   context: {
     params: Promise<{
       id: string;
     }>;
   }
-) {
+) => {
   const session =
     await getSuperAdminSession();
 
@@ -116,19 +117,19 @@ export async function DELETE(
       }
     );
   }
-}
+});
 
 /*
  * Çöp kutusundaki siparişi geri getirir.
  */
-export async function PATCH(
-  _request: Request,
+export const PATCH = withTenant(async (
+  _request: NextRequest,
   context: {
     params: Promise<{
       id: string;
     }>;
   }
-) {
+) => {
   const session =
     await getSuperAdminSession();
 
@@ -202,20 +203,20 @@ export async function PATCH(
       }
     );
   }
-}
+});
 
 /*
  * Çöp kutusundaki siparişi kalıcı olarak siler.
  * Super Admin şifresi zorunludur.
  */
-export async function POST(
-  request: Request,
+export const POST = withTenant(async (
+  request: NextRequest,
   context: {
     params: Promise<{
       id: string;
     }>;
   }
-) {
+) => {
   const session =
     await getSuperAdminSession();
 
@@ -390,4 +391,4 @@ export async function POST(
       }
     );
   }
-}
+});

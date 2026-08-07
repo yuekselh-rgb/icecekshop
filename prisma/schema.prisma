@@ -12,6 +12,7 @@ enum UserRole {
   DEALER
   ADMIN
   SUPER_ADMIN
+  PLATFORM_OWNER
 }
 
 enum StockUnit {
@@ -126,9 +127,55 @@ enum CashMovementCategory {
   OTHER_EXPENSE
 }
 
+model Tenant {
+  id        String   @id @default(cuid())
+  name      String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  domains TenantDomain[]
+
+  users                   User[]
+  addresses               Address[]
+  verificationCodes       VerificationCode[]
+  categories              Category[]
+  products                Product[]
+  orders                  Order[]
+  stockMovements          StockMovement[]
+  pfandReturns            PfandReturn[]
+  pfandWarehouseMovements PfandWarehouseMovement[]
+  companySetting          CompanySetting?
+  idempotencyKeys         IdempotencyKey[]
+  driverCashAdjustments   DriverCashAdjustment[]
+  driverLoads             DriverLoad[]
+  driverStocks            DriverStock[]
+  driverStockMovements    DriverStockMovement[]
+  orderPayments           OrderPayment[]
+  cashMovements           CashMovement[]
+  suppliers               Supplier[]
+  dealerProfiles          DealerProfile[]
+  dealerPrices            DealerPrice[]
+  stockUnitOptions        StockUnitOption[]
+  warehouseLogs           WarehouseLog[]
+}
+
+model TenantDomain {
+  id        String  @id @default(cuid())
+  tenantId  String
+  domain    String  @unique
+  isPrimary Boolean @default(false)
+  createdAt DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+}
+
 model User {
   id               String        @id @default(cuid())
-  email            String        @unique
+  tenantId         String?
+  email            String
   passwordHash     String
   role             UserRole      @default(CUSTOMER)
   customerType     CustomerType?
@@ -143,6 +190,8 @@ model User {
   lockedUntil      DateTime?
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
+
+  tenant Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   addresses             Address[]
   orders                Order[]                  @relation("CustomerOrders")
@@ -164,10 +213,13 @@ model User {
   createdDriverStockMovements DriverStockMovement[] @relation("DriverStockMovementCreatedBy")
 
   verificationCodes VerificationCode[]
+
+  @@unique([tenantId, email])
 }
 
 model Address {
   id           String   @id @default(cuid())
+  tenantId     String
   userId       String
   street       String
   houseNumber  String
@@ -180,11 +232,15 @@ model Address {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
 }
 
 model VerificationCode {
   id        String           @id @default(cuid())
+  tenantId  String
   userId    String
   code      String
   type      VerificationType
@@ -193,8 +249,10 @@ model VerificationCode {
   attempts  Int              @default(0)
   createdAt DateTime         @default(now())
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([tenantId])
   @@index([userId])
   @@index([code])
   @@index([type])
@@ -202,16 +260,20 @@ model VerificationCode {
 
 model Category {
   id        String       @id @default(cuid())
+  tenantId  String
   name      String
   nameTr    String?
   nameDe    String?
-  slug      String       @unique
+  slug      String
   type      CategoryType @default(OTHER)
   sortOrder Int          @default(0)
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
 
+  tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   products Product[]
+
+  @@unique([tenantId, slug])
 }
 
 enum CategoryType {
@@ -239,10 +301,11 @@ enum ProductStockUnit {
 
 model Product {
   id              String       @id @default(cuid())
+  tenantId        String
   name            String
   nameTr          String?
   nameDe          String?
-  slug            String       @unique
+  slug            String
   description     String?
   descriptionTr   String?
   descriptionDe   String?
@@ -271,6 +334,7 @@ model Product {
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
 
+  tenant         Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   category       Category        @relation(fields: [categoryId], references: [id])
   orderItems     OrderItem[]
   stockMovements StockMovement[]
@@ -281,11 +345,14 @@ model Product {
   driverLoadItems      DriverLoadItem[]
   driverStocks         DriverStock[]
   driverStockMovements DriverStockMovement[]
+
+  @@unique([tenantId, slug])
 }
 
 model Order {
   id              String      @id @default(cuid())
-  orderNumber     String      @unique
+  tenantId        String
+  orderNumber     String
   userId          String
   status          OrderStatus @default(NEW)
   subtotal        Decimal     @db.Decimal(10, 2)
@@ -317,6 +384,7 @@ model Order {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
+  tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   user         User          @relation("CustomerOrders", fields: [userId], references: [id], onDelete: Cascade)
   driver       User?         @relation("DriverOrders", fields: [driverId], references: [id], onDelete: SetNull)
   items        OrderItem[]
@@ -325,6 +393,7 @@ model Order {
   payments             OrderPayment[]
   driverStockMovements DriverStockMovement[]
 
+  @@unique([tenantId, orderNumber])
   @@index([driverId])
   @@index([status])
   @@index([userId])
@@ -346,16 +415,21 @@ model OrderItem {
 
 model StockMovement {
   id        String   @id @default(cuid())
+  tenantId  String
   productId String
   amount    Int
   reason    String
   createdAt DateTime @default(now())
 
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
 }
 
 model PfandReturn {
   id             String      @id @default(cuid())
+  tenantId       String
   userId         String
   orderId        String?
   status         PfandStatus @default(PENDING)
@@ -368,12 +442,14 @@ model PfandReturn {
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
 
+  tenant            Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   user              User                    @relation("CustomerPfandReturns", fields: [userId], references: [id], onDelete: Cascade)
   approvedBy        User?                   @relation("PfandApprovedBy", fields: [approvedById], references: [id], onDelete: SetNull)
   order             Order?                  @relation(fields: [orderId], references: [id])
   items             PfandReturnItem[]
   warehouseMovement PfandWarehouseMovement?
 
+  @@index([tenantId])
   @@index([approvedById])
   @@index([status])
 }
@@ -395,6 +471,7 @@ model PfandReturnItem {
 
 model PfandWarehouseMovement {
   id            String            @id @default(cuid())
+  tenantId      String
   type          PfandMovementType
   partyType     PfandPartyType
   partyName     String?
@@ -404,10 +481,12 @@ model PfandWarehouseMovement {
   totalAmount   Decimal           @db.Decimal(10, 2)
   createdAt     DateTime          @default(now())
 
+  tenant      Tenant                       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   pfandReturn PfandReturn?                 @relation(fields: [pfandReturnId], references: [id], onDelete: SetNull)
   createdBy   User                         @relation("PfandMovementCreatedBy", fields: [createdById], references: [id])
   items       PfandWarehouseMovementItem[]
 
+  @@index([tenantId])
   @@index([type])
   @@index([partyType])
   @@index([createdById])
@@ -429,7 +508,8 @@ model PfandWarehouseMovementItem {
 }
 
 model CompanySetting {
-  id              String  @id @default("main")
+  id              String  @id @default(cuid())
+  tenantId        String  @unique
   companyName     String  @default("Firma Adı")
   companySubtitle String?
   logoUrl         String?
@@ -481,15 +561,21 @@ model CompanySetting {
   showOffers Boolean  @default(true)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 }
 
 model IdempotencyKey {
   id        String   @id @default(cuid())
-  key       String   @unique
+  tenantId  String
+  key       String
   scope     String
   resultId  String
   createdAt DateTime @default(now())
 
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, key])
   @@index([scope])
 }
 
@@ -549,6 +635,7 @@ model AdminPermission {
 
 model DriverCashAdjustment {
   id               String   @id @default(cuid())
+  tenantId         String
   driverId         String
   orderId          String?
   pfandReturnId    String   @unique
@@ -559,6 +646,9 @@ model DriverCashAdjustment {
   note             String?
   createdAt        DateTime @default(now())
 
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
   @@index([driverId])
   @@index([orderId])
   @@index([createdAt])
@@ -567,6 +657,7 @@ model DriverCashAdjustment {
 model DriverLoad {
   id String @id @default(cuid())
 
+  tenantId    String
   driverId    String
   createdById String
 
@@ -579,12 +670,14 @@ model DriverLoad {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  tenant    Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   driver    User @relation("DriverLoadDriver", fields: [driverId], references: [id])
   createdBy User @relation("DriverLoadCreatedBy", fields: [createdById], references: [id])
 
   items     DriverLoadItem[]
   movements DriverStockMovement[]
 
+  @@index([tenantId])
   @@index([driverId])
   @@index([createdById])
   @@index([status])
@@ -611,6 +704,7 @@ model DriverLoadItem {
 model DriverStock {
   id String @id @default(cuid())
 
+  tenantId  String
   driverId  String
   productId String
   quantity  Int    @default(0)
@@ -618,10 +712,12 @@ model DriverStock {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   driver  User    @relation(fields: [driverId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@unique([driverId, productId])
+  @@index([tenantId])
   @@index([driverId])
   @@index([productId])
 }
@@ -629,6 +725,7 @@ model DriverStock {
 model DriverStockMovement {
   id String @id @default(cuid())
 
+  tenantId  String
   driverId  String
   productId String
 
@@ -643,6 +740,7 @@ model DriverStockMovement {
 
   createdAt DateTime @default(now())
 
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   driver User @relation("DriverStockMovementDriver", fields: [driverId], references: [id], onDelete: Cascade)
 
   createdBy User? @relation("DriverStockMovementCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
@@ -652,6 +750,7 @@ model DriverStockMovement {
   load  DriverLoad? @relation(fields: [loadId], references: [id], onDelete: SetNull)
   order Order?      @relation(fields: [orderId], references: [id], onDelete: SetNull)
 
+  @@index([tenantId])
   @@index([driverId])
   @@index([productId])
   @@index([loadId])
@@ -664,6 +763,7 @@ model DriverStockMovement {
 model OrderPayment {
   id String @id @default(cuid())
 
+  tenantId   String
   orderId    String
   customerId String
   driverId   String?
@@ -689,8 +789,10 @@ model OrderPayment {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  order  Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
+  @@index([tenantId])
   @@index([orderId])
   @@index([customerId])
   @@index([driverId])
@@ -703,6 +805,7 @@ model OrderPayment {
 
 model CashMovement {
   id          String                @id @default(cuid())
+  tenantId    String
   accountType CashAccountType
   direction   CashMovementDirection
   category    CashMovementCategory
@@ -720,6 +823,9 @@ model CashMovement {
 
   purchaseItems CashPurchaseItem[]
 
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
   @@index([accountType])
   @@index([direction])
   @@index([category])
@@ -751,7 +857,8 @@ model CashPurchaseItem {
 
 model Supplier {
   id             String   @id @default(cuid())
-  name           String   @unique
+  tenantId       String
+  name           String
   contactName    String?
   phone          String?
   email          String?
@@ -769,15 +876,18 @@ model Supplier {
 
   cashMovements CashMovement[]
 
-  @@index([name])
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, name])
   @@index([city])
   @@index([active])
 }
 
 model DealerProfile {
   id             String   @id @default(cuid())
+  tenantId       String
   userId         String   @unique
-  dealerNumber   String   @unique
+  dealerNumber   String
   companyName    String
   contactName    String?
   phone          String?
@@ -794,14 +904,17 @@ model DealerProfile {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@unique([tenantId, dealerNumber])
   @@index([companyName])
   @@index([active])
 }
 
 model DealerPrice {
   id        String   @id @default(cuid())
+  tenantId  String
   dealerId  String
   productId String
   price     Decimal  @db.Decimal(10, 2)
@@ -809,10 +922,12 @@ model DealerPrice {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   dealer  User    @relation("DealerUserPrices", fields: [dealerId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@unique([dealerId, productId])
+  @@index([tenantId])
   @@index([dealerId])
   @@index([productId])
   @@index([active])
@@ -820,7 +935,8 @@ model DealerPrice {
 
 model StockUnitOption {
   id        String   @id @default(cuid())
-  code      String   @unique
+  tenantId  String
+  code      String
   nameTr    String
   nameDe    String
   active    Boolean  @default(true)
@@ -828,6 +944,9 @@ model StockUnitOption {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, code])
   @@index([active, sortOrder])
 }
 
@@ -839,6 +958,7 @@ enum WarehouseLogType {
 model WarehouseLog {
   id String @id @default(cuid())
 
+  tenantId String
   type WarehouseLogType
 
   companyName    String?
@@ -855,6 +975,9 @@ model WarehouseLog {
 
   items WarehouseLogItem[]
 
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
   @@index([type])
   @@index([companyName])
   @@index([driverName])

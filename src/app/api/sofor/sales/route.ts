@@ -1,7 +1,8 @@
 import { verifySessionToken } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant";
 import { cookies } from "next/headers";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 type RequestedItem = {
   productId: string;
@@ -120,7 +121,7 @@ function normalizeItems(value: unknown): RequestedItem[] {
   }));
 }
 
-export async function POST(request: Request) {
+export const POST = withTenant(async (request: NextRequest, _context, tenant) => {
   const session = await getDriverSession();
 
   if (!session) {
@@ -442,6 +443,7 @@ export async function POST(request: Request) {
 
       const createdOrder = await tx.order.create({
         data: {
+          tenantId: tenant.id,
           orderNumber,
           userId: customer.id,
           driverId: driver.id,
@@ -539,6 +541,7 @@ export async function POST(request: Request) {
         if (!existingPendingPayment) {
           await tx.orderPayment.create({
             data: {
+              tenantId: tenant.id,
               orderId: createdOrder.id,
               customerId: customer.id,
               driverId: driver.id,
@@ -573,6 +576,7 @@ export async function POST(request: Request) {
       if (returnedPfandItems.length > 0 && returnedPfandAmount > 0) {
         await tx.pfandReturn.create({
           data: {
+            tenantId: tenant.id,
             userId: customer.id,
             orderId: createdOrder.id,
 
@@ -617,6 +621,7 @@ export async function POST(request: Request) {
       for (const item of preparedItems) {
         await tx.driverStockMovement.create({
           data: {
+            tenantId: tenant.id,
             driverId: session.userId,
             productId: item.productId,
             orderId: createdOrder.id,
@@ -734,4 +739,4 @@ export async function POST(request: Request) {
       },
     );
   }
-}
+});

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import DeleteCustomerButton from "./DeleteCustomerButton";
 import { prisma } from "@/lib/prisma";
+import { getCurrentTenant } from "@/lib/tenant";
 
 export default async function CustomerDetailPage({
   params,
@@ -8,10 +9,13 @@ export default async function CustomerDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const tenant = await getCurrentTenant();
 
-  const customer = await prisma.user.findUnique({
+  const customer = tenant
+    ? await prisma.user.findUnique({
     where: {
       id,
+      tenantId: tenant.id,
     },
 
     include: {
@@ -30,7 +34,8 @@ export default async function CustomerDetailPage({
         },
       },
     },
-  });
+  })
+    : null;
 
 
   if (!customer) {

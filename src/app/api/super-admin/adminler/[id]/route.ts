@@ -1,8 +1,9 @@
 import { verifySessionToken } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant";
 import { Prisma } from "@prisma/client";
 import { cookies } from "next/headers";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 async function getSuperAdminSession() {
   const cookieStore = await cookies();
@@ -28,7 +29,7 @@ type RouteContext = {
   }>;
 };
 
-export async function PATCH(request: Request, context: RouteContext) {
+export const PATCH = withTenant(async (request: NextRequest, context: RouteContext) => {
   const session = await getSuperAdminSession();
 
   if (!session) {
@@ -165,9 +166,9 @@ export async function PATCH(request: Request, context: RouteContext) {
       },
     );
   }
-}
+});
 
-export async function DELETE(_request: Request, context: RouteContext) {
+export const DELETE = withTenant(async (_request: NextRequest, context: RouteContext) => {
   const session = await getSuperAdminSession();
 
   if (!session) {
@@ -241,4 +242,4 @@ export async function DELETE(_request: Request, context: RouteContext) {
       },
     );
   }
-}
+});

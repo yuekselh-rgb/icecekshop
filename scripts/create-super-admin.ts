@@ -3,6 +3,8 @@ import "dotenv/config";
 import { prisma } from "../src/lib/prisma";
 import bcrypt from "bcryptjs";
 
+const TENANT_ID = "tenant_fluss_getraenke";
+
 async function main() {
   const email =
     process.argv[2];
@@ -45,8 +47,11 @@ async function main() {
   const user =
     await prisma.user.upsert({
       where: {
-        email:
-          normalizedEmail,
+        tenantId_email: {
+          tenantId: TENANT_ID,
+          email:
+            normalizedEmail,
+        },
       },
 
       update: {
@@ -56,6 +61,8 @@ async function main() {
       },
 
       create: {
+        tenantId:
+          TENANT_ID,
         email:
           normalizedEmail,
         passwordHash,

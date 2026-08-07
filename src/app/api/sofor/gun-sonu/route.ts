@@ -1,5 +1,6 @@
 import { verifySessionToken } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
@@ -21,7 +22,7 @@ async function getDriverSession() {
   return session;
 }
 
-export async function POST() {
+export const POST = withTenant(async () => {
   const session = await getDriverSession();
 
   if (!session) {
@@ -98,4 +99,4 @@ export async function POST() {
     orderCount: orders.length,
     message: "Gün sonu özeti hazırlandı.",
   });
-}
+});

@@ -2,6 +2,7 @@ import {
   requireAdminPermission,
 } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant";
 import { NextResponse } from "next/server";
 
 function serializePfandReturn(
@@ -72,7 +73,7 @@ function serializePfandReturn(
   };
 }
 
-export async function GET() {
+export const GET = withTenant(async () => {
   const admin =
     await requireAdminPermission(
       "managePfand"
@@ -386,4 +387,4 @@ export async function GET() {
       }
     );
   }
-}
+});

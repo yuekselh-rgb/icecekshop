@@ -1,5 +1,6 @@
 import { getAdminWithPermissions } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
+import { getCurrentTenant } from "@/lib/tenant";
 import { notFound, redirect } from "next/navigation";
 import PrintControls from "./PrintControls";
 
@@ -19,10 +20,13 @@ export default async function WarehousePrintPage({
   }
 
   const { id } = await params;
+  const tenant = await getCurrentTenant();
 
-  const log = await prisma.warehouseLog.findUnique({
+  const log = tenant
+    ? await prisma.warehouseLog.findUnique({
     where: {
       id,
+      tenantId: tenant.id,
     },
     include: {
       items: {
@@ -31,7 +35,8 @@ export default async function WarehousePrintPage({
         },
       },
     },
-  });
+  })
+    : null;
 
   if (!log) {
     notFound();

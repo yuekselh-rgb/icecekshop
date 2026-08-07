@@ -1,7 +1,8 @@
 import { verifySessionToken } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant";
 import { cookies } from "next/headers";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 async function getDriverSession() {
   const cookieStore = await cookies();
@@ -21,14 +22,15 @@ async function getDriverSession() {
   return session;
 }
 
-export async function PATCH(
-  request: Request,
+export const PATCH = withTenant(async (
+  request: NextRequest,
   context: {
     params: Promise<{
       id: string;
     }>;
   },
-) {
+  tenant,
+) => {
   const session = await getDriverSession();
 
   if (!session) {
@@ -309,6 +311,7 @@ export async function PATCH(
 
         await tx.orderPayment.create({
           data: {
+            tenantId: tenant.id,
             orderId: order.id,
             customerId: order.userId,
             driverId: session.userId,
@@ -587,6 +590,8 @@ export async function PATCH(
 
       await prisma.pfandReturn.create({
         data: {
+          tenantId: tenant.id,
+
           userId: order.userId,
 
           orderId: order.id,
@@ -935,6 +940,7 @@ export async function PATCH(
 
           await tx.driverStockMovement.create({
             data: {
+              tenantId: tenant.id,
               driverId: session.userId,
               productId: item.productId,
               orderId: updatedOrder.id,
@@ -979,7 +985,7 @@ export async function PATCH(
       },
     );
   }
-}
+});
 
 function serializeOrder(order: any) {
   return {

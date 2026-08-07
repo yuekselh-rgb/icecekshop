@@ -1,6 +1,7 @@
 import { requireAdminPermission } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { withTenant } from "@/lib/tenant";
+import { NextRequest, NextResponse } from "next/server";
 
 type RequestedLoadItem = {
   productId: string;
@@ -134,7 +135,7 @@ function serializeLoad(load: {
   };
 }
 
-export async function GET(request: Request) {
+export const GET = withTenant(async (request: NextRequest) => {
   const admin = await requireAdminPermission("viewDriverStock");
 
   if (!admin) {
@@ -875,9 +876,9 @@ export async function GET(request: Request) {
       },
     );
   }
-}
+});
 
-export async function POST(request: Request) {
+export const POST = withTenant(async (request: NextRequest, _context, tenant) => {
   const admin = await requireAdminPermission("manageDriverStock");
 
   if (!admin) {
@@ -1130,6 +1131,7 @@ export async function POST(request: Request) {
 
             await tx.stockMovement.create({
               data: {
+                tenantId: tenant.id,
                 productId: item.productId,
                 amount: item.returnedQuantity,
 
@@ -1142,6 +1144,7 @@ export async function POST(request: Request) {
 
             await tx.driverStockMovement.create({
               data: {
+                tenantId: tenant.id,
                 driverId,
                 productId: item.productId,
                 type: "RETURN",
@@ -1160,6 +1163,7 @@ export async function POST(request: Request) {
           if (missingQuantity > 0) {
             await tx.driverStockMovement.create({
               data: {
+                tenantId: tenant.id,
                 driverId,
                 productId: item.productId,
                 type: "ADJUSTMENT",
@@ -1326,6 +1330,7 @@ export async function POST(request: Request) {
 
           await tx.stockMovement.create({
             data: {
+              tenantId: tenant.id,
               productId: item.productId,
               amount: item.quantity,
 
@@ -1339,6 +1344,7 @@ export async function POST(request: Request) {
 
           await tx.driverStockMovement.create({
             data: {
+              tenantId: tenant.id,
               driverId,
               productId: item.productId,
               type: "RETURN",
@@ -1405,6 +1411,7 @@ export async function POST(request: Request) {
     const load = await prisma.$transaction(async (tx) => {
       const createdLoad = await tx.driverLoad.create({
         data: {
+          tenantId: tenant.id,
           driverId,
           createdById: admin.session.userId,
           status: "CONFIRMED",
@@ -1452,6 +1459,7 @@ export async function POST(request: Request) {
 
         await tx.stockMovement.create({
           data: {
+            tenantId: tenant.id,
             productId: item.productId,
             amount: -item.quantity,
 
@@ -1485,6 +1493,7 @@ export async function POST(request: Request) {
           },
 
           create: {
+            tenantId: tenant.id,
             driverId,
             productId: item.productId,
             quantity: item.quantity,
@@ -1493,6 +1502,7 @@ export async function POST(request: Request) {
 
         await tx.driverStockMovement.create({
           data: {
+            tenantId: tenant.id,
             driverId,
             productId: item.productId,
             loadId: createdLoad.id,
@@ -1620,4 +1630,4 @@ export async function POST(request: Request) {
       },
     );
   }
-}
+});

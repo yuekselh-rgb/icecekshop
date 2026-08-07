@@ -1,6 +1,7 @@
 import { requireAdminPermission } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { withTenant } from "@/lib/tenant";
+import { NextRequest, NextResponse } from "next/server";
 
 function createUnitCode(value: unknown) {
   return String(value ?? "")
@@ -16,7 +17,7 @@ function createUnitCode(value: unknown) {
     .replace(/^_+|_+$/g, "");
 }
 
-export async function GET() {
+export const GET = withTenant(async () => {
   const admin = await requireAdminPermission("viewProducts");
 
   if (!admin) {
@@ -60,9 +61,9 @@ export async function GET() {
       },
     );
   }
-}
+});
 
-export async function POST(request: Request) {
+export const POST = withTenant(async (request: NextRequest, _context, tenant) => {
   const admin = await requireAdminPermission("updateProduct");
 
   if (!admin) {
@@ -94,7 +95,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const existing = await prisma.stockUnitOption.findUnique({
+    const existing = await prisma.stockUnitOption.findFirst({
       where: {
         code,
       },
@@ -140,6 +141,7 @@ export async function POST(request: Request) {
 
     const unit = await prisma.stockUnitOption.create({
       data: {
+        tenantId: tenant.id,
         code,
         nameTr,
         nameDe,
@@ -168,9 +170,9 @@ export async function POST(request: Request) {
       },
     );
   }
-}
+});
 
-export async function PATCH(request: Request) {
+export const PATCH = withTenant(async (request: NextRequest) => {
   const admin = await requireAdminPermission("updateProduct");
 
   if (!admin) {
@@ -264,4 +266,4 @@ export async function PATCH(request: Request) {
       },
     );
   }
-}
+});

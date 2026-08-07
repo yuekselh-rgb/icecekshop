@@ -2,8 +2,9 @@ import {
   verifySessionToken,
 } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant";
 import { cookies } from "next/headers";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 async function getSuperAdminSession() {
   const cookieStore =
@@ -53,7 +54,7 @@ async function getSuperAdminSession() {
   return session;
 }
 
-export async function GET() {
+export const GET = withTenant(async () => {
   const session =
     await getSuperAdminSession();
 
@@ -559,11 +560,13 @@ export async function GET() {
       }
     );
   }
-}
+});
 
-export async function PATCH(
-  request: Request
-) {
+export const PATCH = withTenant(async (
+  request: NextRequest,
+  _context,
+  tenant,
+) => {
   const session =
     await getSuperAdminSession();
 
@@ -849,6 +852,9 @@ export async function PATCH(
           const movement =
             await tx.stockMovement.create({
               data: {
+                tenantId:
+                  tenant.id,
+
                 productId:
                   product.id,
 
@@ -981,5 +987,5 @@ export async function PATCH(
       }
     );
   }
-}
+});
 

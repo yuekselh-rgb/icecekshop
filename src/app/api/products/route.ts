@@ -1,7 +1,8 @@
 import { getPublicProducts } from "@/lib/public-products";
+import { withTenant } from "@/lib/tenant";
 import { NextResponse } from "next/server";
 
-export async function GET() {
+export const GET = withTenant(async () => {
   try {
     const products = await getPublicProducts();
 
@@ -20,4 +21,4 @@ export async function GET() {
       },
     );
   }
-}
+});

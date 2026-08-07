@@ -1,5 +1,6 @@
 import { getAdminWithPermissions } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
+import { getCurrentTenant } from "@/lib/tenant";
 import { redirect } from "next/navigation";
 import PrintControls from "./PrintControls";
 
@@ -29,7 +30,13 @@ export default async function WarehouseStockPrintPage() {
     redirect("/admin");
   }
 
-  const logs = await prisma.warehouseLog.findMany({
+  const tenant = await getCurrentTenant();
+
+  const logs = tenant
+    ? await prisma.warehouseLog.findMany({
+    where: {
+      tenantId: tenant.id,
+    },
     select: {
       type: true,
       items: {
@@ -43,7 +50,8 @@ export default async function WarehouseStockPrintPage() {
     orderBy: {
       createdAt: "asc",
     },
-  });
+  })
+    : [];
 
   const balanceMap = new Map<string, Balance>();
 

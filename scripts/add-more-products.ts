@@ -1,5 +1,7 @@
 import { prisma } from "../src/lib/prisma";
 
+const TENANT_ID = "tenant_fluss_getraenke";
+
 const categoryId = "cmsbr8kqx0000rybslvz1c7p6";
 
 const products = [
@@ -113,10 +115,16 @@ products.push(
 async function main() {
   for (const p of products) {
     await prisma.product.upsert({
-      where: { slug: p.slug },
+      where: {
+        tenantId_slug: {
+          tenantId: TENANT_ID,
+          slug: p.slug,
+        },
+      },
       update: {},
       create: {
         ...p,
+        tenantId: TENANT_ID,
         nameDe: p.name,
         nameTr: p.name,
         stockUnit: "KASA",

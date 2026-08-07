@@ -2,9 +2,10 @@ import {
   verifySessionToken,
 } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant";
 import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 async function getSuperAdminSession() {
   const cookieStore = await cookies();
@@ -29,7 +30,7 @@ async function getSuperAdminSession() {
   return session;
 }
 
-export async function GET() {
+export const GET = withTenant(async () => {
   const session =
     await getSuperAdminSession();
 
@@ -90,11 +91,13 @@ export async function GET() {
       }
     );
   }
-}
+});
 
-export async function POST(
-  request: Request
-) {
+export const POST = withTenant(async (
+  request: NextRequest,
+  _context,
+  tenant,
+) => {
   const session =
     await getSuperAdminSession();
 
@@ -170,7 +173,7 @@ export async function POST(
     }
 
     const existingUser =
-      await prisma.user.findUnique({
+      await prisma.user.findFirst({
         where: {
           email,
         },
@@ -197,6 +200,7 @@ export async function POST(
     const driver =
       await prisma.user.create({
         data: {
+          tenantId: tenant.id,
           firstName,
           lastName,
           email,
@@ -244,4 +248,4 @@ export async function POST(
       }
     );
   }
-}
+});

@@ -1,12 +1,18 @@
 import { SignJWT, jwtVerify } from "jose";
 
 export type AuthRole =
-  "CUSTOMER" | "DRIVER" | "DEALER" | "ADMIN" | "SUPER_ADMIN";
+  | "CUSTOMER"
+  | "DRIVER"
+  | "DEALER"
+  | "ADMIN"
+  | "SUPER_ADMIN"
+  | "PLATFORM_OWNER";
 
 export type SessionPayload = {
   userId: string;
   email: string;
   role: AuthRole;
+  tenantId: string | null;
 };
 
 function getSecret() {
@@ -24,6 +30,7 @@ export async function createSessionToken(payload: SessionPayload) {
     userId: payload.userId,
     email: payload.email,
     role: payload.role,
+    tenantId: payload.tenantId,
   })
     .setProtectedHeader({
       alg: "HS256",
@@ -46,7 +53,9 @@ export async function verifySessionToken(
         payload.role !== "DRIVER" &&
         payload.role !== "DEALER" &&
         payload.role !== "ADMIN" &&
-        payload.role !== "SUPER_ADMIN")
+        payload.role !== "SUPER_ADMIN" &&
+        payload.role !== "PLATFORM_OWNER") ||
+      (payload.tenantId !== null && typeof payload.tenantId !== "string")
     ) {
       return null;
     }
@@ -55,6 +64,7 @@ export async function verifySessionToken(
       userId: payload.userId,
       email: payload.email,
       role: payload.role,
+      tenantId: payload.tenantId ?? null,
     };
   } catch {
     return null;

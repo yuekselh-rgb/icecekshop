@@ -1,14 +1,15 @@
 import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { withTenant } from "@/lib/tenant";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(
-  _request: Request,
+export const GET = withTenant(async (
+  _request: NextRequest,
   context: {
     params: Promise<{
       id: string;
     }>;
   },
-) {
+) => {
   try {
     const { id } = await context.params;
 
@@ -117,4 +118,4 @@ export async function GET(
       },
     );
   }
-}
+});

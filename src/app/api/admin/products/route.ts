@@ -1,8 +1,9 @@
 import { requireAdminPermission } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { withTenant } from "@/lib/tenant";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function GET() {
+export const GET = withTenant(async () => {
   const admin = await requireAdminPermission("viewProducts");
 
   if (!admin) {
@@ -52,9 +53,9 @@ return NextResponse.json({
 
     products,
   });
-}
+});
 
-export async function POST(request: Request) {
+export const POST = withTenant(async (request: NextRequest, _context, tenant) => {
   const admin = await requireAdminPermission("createProduct");
 
   if (!admin) {
@@ -152,7 +153,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const existing = await prisma.product.findUnique({
+    const existing = await prisma.product.findFirst({
       where: {
         slug,
       },
@@ -201,6 +202,7 @@ export async function POST(request: Request) {
 
     const product = await prisma.product.create({
       data: {
+        tenantId: tenant.id,
         name: nameDe,
         nameTr,
         nameDe,
@@ -285,4 +287,4 @@ export async function POST(request: Request) {
       },
     );
   }
-}
+});

@@ -2,6 +2,8 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+const TENANT_ID = "tenant_fluss_getraenke";
+
 const units = [
   {
     code: "KASA",
@@ -33,7 +35,10 @@ async function main() {
   for (const unit of units) {
     await prisma.stockUnitOption.upsert({
       where: {
-        code: unit.code,
+        tenantId_code: {
+          tenantId: TENANT_ID,
+          code: unit.code,
+        },
       },
       update: {
         nameTr: unit.nameTr,
@@ -43,6 +48,7 @@ async function main() {
       },
       create: {
         ...unit,
+        tenantId: TENANT_ID,
         active: true,
       },
     });

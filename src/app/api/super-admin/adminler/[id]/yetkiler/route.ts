@@ -1,7 +1,8 @@
 import { verifySessionToken } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant";
 import { cookies } from "next/headers";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 const permissionNames = [
   "viewProducts",
@@ -63,12 +64,12 @@ async function requireSuperAdmin() {
   return session?.role === "SUPER_ADMIN" ? session : null;
 }
 
-export async function GET(
-  _request: Request,
+export const GET = withTenant(async (
+  _request: NextRequest,
   context: {
     params: Promise<{ id: string }>;
   },
-) {
+) => {
   const session = await requireSuperAdmin();
 
   if (!session) {
@@ -96,14 +97,14 @@ export async function GET(
   }
 
   return NextResponse.json({ admin });
-}
+});
 
-export async function PATCH(
-  request: Request,
+export const PATCH = withTenant(async (
+  request: NextRequest,
   context: {
     params: Promise<{ id: string }>;
   },
-) {
+) => {
   const session = await requireSuperAdmin();
 
   if (!session) {
@@ -247,4 +248,4 @@ export async function PATCH(
     message: "Admin yetkileri güncellendi.",
     permissions,
   });
-}
+});

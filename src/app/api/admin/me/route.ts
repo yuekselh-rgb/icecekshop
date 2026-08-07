@@ -1,7 +1,8 @@
 import { getAdminWithPermissions } from "@/lib/admin-auth";
+import { withTenant } from "@/lib/tenant";
 import { NextResponse } from "next/server";
 
-export async function GET() {
+export const GET = withTenant(async () => {
   const admin =
     await getAdminWithPermissions();
 
@@ -22,4 +23,4 @@ export async function GET() {
     permissions:
       admin.permissions,
   });
-}
+});

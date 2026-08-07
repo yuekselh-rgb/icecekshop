@@ -1,8 +1,16 @@
 import { prisma } from "@/lib/prisma";
+import { getCurrentTenant } from "@/lib/tenant";
 
 export async function getPublicProducts() {
+  const tenant = await getCurrentTenant();
+
+  if (!tenant) {
+    return [];
+  }
+
   const products = await prisma.product.findMany({
     where: {
+      tenantId: tenant.id,
       active: true,
     },
     include: {

@@ -2,6 +2,7 @@ import {
   verifySessionToken,
 } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
@@ -33,7 +34,7 @@ async function getSuperAdminSession() {
   return session;
 }
 
-export async function GET() {
+export const GET = withTenant(async () => {
   const session =
     await getSuperAdminSession();
 
@@ -126,4 +127,4 @@ export async function GET() {
       }
     );
   }
-}
+});

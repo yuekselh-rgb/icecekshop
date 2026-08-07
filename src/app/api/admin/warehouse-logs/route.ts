@@ -1,13 +1,14 @@
 import { getAdminWithPermissions } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { withTenant } from "@/lib/tenant";
+import { NextRequest, NextResponse } from "next/server";
 
 function cleanOptional(value: unknown) {
   const cleaned = String(value || "").trim();
   return cleaned || null;
 }
 
-export async function GET() {
+export const GET = withTenant(async () => {
   const admin = await getAdminWithPermissions();
 
   if (!admin || (!admin.isSuperAdmin && !admin.permissions.viewStock)) {
@@ -62,9 +63,9 @@ export async function GET() {
       },
     );
   }
-}
+});
 
-export async function POST(request: Request) {
+export const POST = withTenant(async (request: NextRequest, _context, tenant) => {
   const admin = await getAdminWithPermissions();
 
   if (!admin || (!admin.isSuperAdmin && !admin.permissions.addStock)) {
@@ -113,6 +114,7 @@ export async function POST(request: Request) {
 
     const log = await prisma.warehouseLog.create({
       data: {
+        tenantId: tenant.id,
         type,
         companyName: cleanOptional(body.companyName),
         driverName: cleanOptional(body.driverName),
@@ -176,4 +178,4 @@ export async function POST(request: Request) {
       },
     );
   }
-}
+});

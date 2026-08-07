@@ -2,9 +2,10 @@ import {
   requireAdminPermission,
 } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant";
 import { NextResponse } from "next/server";
 
-export async function GET() {
+export const GET = withTenant(async () => {
   const admin =
     await requireAdminPermission(
       "viewOrders"
@@ -66,4 +67,4 @@ export async function GET() {
       }
     );
   }
-}
+});

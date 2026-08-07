@@ -1,5 +1,6 @@
 import { requireAdminPermission } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
+import { withTenant } from "@/lib/tenant";
 import { NextResponse } from "next/server";
 
 function getNoteValue(
@@ -53,7 +54,7 @@ function parseAmount(
     : 0;
 }
 
-export async function GET() {
+export const GET = withTenant(async () => {
   const admin =
     await requireAdminPermission(
       "viewBarSalesReport"
@@ -434,4 +435,4 @@ export async function GET() {
       }
     );
   }
-}
+});

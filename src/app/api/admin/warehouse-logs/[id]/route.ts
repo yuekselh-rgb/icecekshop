@@ -1,15 +1,16 @@
 import { requireAdminPermission } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { withTenant } from "@/lib/tenant";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function DELETE(
-  _request: Request,
+export const DELETE = withTenant(async (
+  _request: NextRequest,
   context: {
     params: Promise<{
       id: string;
     }>;
   },
-) {
+) => {
   const admin = await requireAdminPermission("deleteWarehouseLog");
 
   if (!admin) {
@@ -67,4 +68,4 @@ export async function DELETE(
       },
     );
   }
-}
+});
