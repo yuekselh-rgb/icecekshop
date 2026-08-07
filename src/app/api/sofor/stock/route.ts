@@ -23,7 +23,7 @@ async function getDriverSession() {
 
 type ProductStockSummary = {
   productId: string;
-  displayName: string;
+  displayName: { tr: string; de: string };
   stockUnit: string;
   packageInfo: string | null;
   imageUrl: string | null;
@@ -333,8 +333,10 @@ export async function GET() {
         return {
           productId: stock.product.id,
 
-          displayName:
-            stock.product.nameTr || stock.product.nameDe || stock.product.name,
+          displayName: {
+            tr: stock.product.nameTr || stock.product.name,
+            de: stock.product.nameDe || stock.product.name,
+          },
 
           stockUnit: stock.product.stockUnit,
           packageInfo: stock.product.packageInfo,
@@ -354,7 +356,7 @@ export async function GET() {
         };
       })
       .sort((first, second) =>
-        first.displayName.localeCompare(second.displayName, "tr"),
+        first.displayName.tr.localeCompare(second.displayName.tr, "tr"),
       );
 
     return NextResponse.json({

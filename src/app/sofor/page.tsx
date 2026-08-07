@@ -50,7 +50,7 @@ type DriverStockApiSummary = {
 
 type DriverStockSummary = {
   productId: string;
-  displayName: string;
+  displayName: { tr: string; de: string };
   stockUnit: string;
   packageInfo: string | null;
   imageUrl: string | null;
@@ -548,7 +548,7 @@ export default function DriverPage() {
 
       if (item.quantity > stock.currentQuantity) {
         setDriverSaleError(
-          `${stock.displayName} için araçta en fazla ` +
+          `${stock.displayName[language]} için araçta en fazla ` +
             `${stock.currentQuantity} ${getDriverStockUnitLabel(
               stock.stockUnit,
             )} bulunuyor.`,
@@ -1602,7 +1602,7 @@ export default function DriverPage() {
                             <div className="flex min-w-0 items-center justify-between gap-2">
                               <div className="min-w-0 flex-1">
                                 <p className="break-words text-[13px] font-black leading-4 text-slate-950">
-                                  {stock.displayName}
+                                  {stock.displayName[language]}
                                 </p>
 
                                 <p className="mt-0.5 break-words text-[10px] leading-3 text-slate-500">
@@ -1738,7 +1738,7 @@ export default function DriverPage() {
                               >
                                 <div className="min-w-0">
                                   <p className="break-words font-black text-slate-950">
-                                    {stock.displayName}
+                                    {stock.displayName[language]}
                                   </p>
 
                                   <p className="mt-1 break-words text-xs text-slate-500">
@@ -2207,7 +2207,7 @@ export default function DriverPage() {
                         <div className="flex min-w-0 items-start justify-between gap-3 border-b border-slate-100 bg-slate-50 px-4 py-3">
                           <div className="min-w-0 flex-1">
                             <p className="break-words text-sm font-black leading-5 text-slate-950">
-                              {stock.displayName}
+                              {stock.displayName[language]}
                             </p>
 
                             <p className="mt-0.5 break-words text-[10px] leading-4 text-slate-500">
@@ -2314,7 +2314,7 @@ export default function DriverPage() {
                           >
                             <div className="min-w-0">
                               <p className="break-words font-black text-slate-950">
-                                {stock.displayName}
+                                {stock.displayName[language]}
                               </p>
 
                               <p className="mt-1 break-words text-xs text-slate-500">
