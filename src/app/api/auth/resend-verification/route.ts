@@ -24,47 +24,47 @@ export async function POST(request: Request) {
       },
     });
 
-    if (!user) {
-      return NextResponse.json(
-        { error: "Kullanıcı bulunamadı." },
-        { status: 404 },
-      );
-    }
-
-    if (user.emailVerified) {
+    if (user && user.emailVerified) {
       return NextResponse.json(
         { error: "Bu hesap zaten doğrulanmış." },
         { status: 400 },
       );
     }
 
-    await prisma.verificationCode.deleteMany({
-      where: {
-        userId: user.id,
-        type: "REGISTER",
-      },
-    });
+    /*
+     * Hesap bulunamasa bile aynı genel mesaj döndürülür.
+     * Aksi halde bu uç nokta e-posta adreslerinin sistemde
+     * kayıtlı olup olmadığını taramak için kullanılabilir.
+     */
+    if (user) {
+      await prisma.verificationCode.deleteMany({
+        where: {
+          userId: user.id,
+          type: "REGISTER",
+        },
+      });
 
-    const code = generateCode();
+      const code = generateCode();
 
-    const codeHash = crypto
-      .createHash("sha256")
-      .update(code)
-      .digest("hex");
+      const codeHash = crypto
+        .createHash("sha256")
+        .update(code)
+        .digest("hex");
 
-    await prisma.verificationCode.create({
-      data: {
-        userId: user.id,
-        code: codeHash,
-        type: "REGISTER",
-        expiresAt: new Date(Date.now() + 10 * 60 * 1000),
-      },
-    });
+      await prisma.verificationCode.create({
+        data: {
+          userId: user.id,
+          code: codeHash,
+          type: "REGISTER",
+          expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+        },
+      });
 
-    await sendVerificationCode(user.email, code);
+      await sendVerificationCode(user.email, code);
+    }
 
     return NextResponse.json({
-      message: "Yeni doğrulama kodu gönderildi.",
+      message: "Bu e-posta adresine ait bir hesap varsa, yeni kod gönderildi.",
     });
 
   } catch (error) {
