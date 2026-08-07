@@ -337,7 +337,7 @@ export default function Header() {
       <span>{t.pfand}</span>
     </Link>
 
-    <Link href="/giris" className="flex items-center gap-3 rounded-xl px-4 py-3 font-semibold transition hover:bg-sky-50 hover:text-sky-600">
+    <Link href={currentUser ? "/siparislerim" : "/giris"} className="flex items-center gap-3 rounded-xl px-4 py-3 font-semibold transition hover:bg-sky-50 hover:text-sky-600">
       <UserRound size={20}/>
       <span>{t.account}</span>
     </Link>
@@ -442,7 +442,7 @@ export default function Header() {
             </button>
 
             <Link
-              href="/giris"
+              href={currentUser ? "/siparislerim" : "/giris"}
               aria-label={t.account}
               className="rounded-full border border-slate-200 p-2.5 transition hover:border-sky-500 hover:text-sky-500"
             >

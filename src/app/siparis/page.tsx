@@ -59,6 +59,7 @@ export default function CheckoutPage() {
           thankYou: "Vielen Dank für Ihre Bestellung",
           orderNumber: "Ihre Bestellnummer lautet:",
           continueShopping: "Weiter einkaufen",
+          myOrders: "Meine Bestellungen",
           eyebrow: "Bestellung",
           checkoutTitle: "Bestellung abschließen",
           checkoutDescription: "Prüfen Sie Ihre Lieferdaten und senden Sie anschließend Ihre Bestellung ab.",
@@ -110,6 +111,7 @@ export default function CheckoutPage() {
           thankYou: "Siparişiniz alındı",
           orderNumber: "Sipariş numaranız:",
           continueShopping: "Alışverişe devam et",
+          myOrders: "Siparişlerim",
           eyebrow: "Sipariş",
           checkoutTitle: "Siparişi Tamamla",
           checkoutDescription: "Teslimat bilgilerinizi kontrol edin ve siparişinizi gönderin.",
@@ -371,6 +373,13 @@ export default function CheckoutPage() {
                 className="rounded-xl bg-slate-950 px-6 py-3 font-black text-white"
               >
                 {t.continueShopping}
+              </Link>
+
+              <Link
+                href="/siparislerim"
+                className="rounded-xl border border-slate-200 px-6 py-3 font-black text-slate-950 transition hover:border-orange-500 hover:text-orange-500"
+              >
+                {t.myOrders}
               </Link>
             </div>
           </div>
