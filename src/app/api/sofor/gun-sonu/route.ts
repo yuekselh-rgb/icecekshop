@@ -1,9 +1,28 @@
-import { NextResponse } from "next/server";
+import { verifySessionToken } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/session";
+import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
+
+async function getDriverSession() {
+  const cookieStore = await cookies();
+
+  const token = cookieStore.get("paketmarket_session")?.value;
+
+  if (!token) {
+    return null;
+  }
+
+  const session = await verifySessionToken(token);
+
+  if (!session || session.role !== "DRIVER") {
+    return null;
+  }
+
+  return session;
+}
 
 export async function POST() {
-  const session = await getSession();
+  const session = await getDriverSession();
 
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -11,10 +30,19 @@ export async function POST() {
 
   const now = new Date();
 
+  const startOfToday = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+  );
+
   const orders = await prisma.order.findMany({
     where: {
       status: "DELIVERED",
       driverId: session.userId,
+      deliveredAt: {
+        gte: startOfToday,
+      },
     },
     include: {
       payments: true,
@@ -27,11 +55,17 @@ export async function POST() {
     0,
   );
 
+  const open = orders
+    .filter((o) => o.paymentStatus === "OPEN")
+    .reduce((t, o) => t + Number(o.totalAmount), 0);
+
   const cash = orders.reduce(
     (t, o) =>
       t +
       o.payments
-        .filter((p) => p.paymentMethod === "CASH")
+        .filter(
+          (p) => p.paymentMethod === "CASH" && p.status !== "REJECTED",
+        )
         .reduce((x, p) => x + Number(p.amount), 0),
     0,
   );
@@ -40,7 +74,9 @@ export async function POST() {
     (t, o) =>
       t +
       o.payments
-        .filter((p) => p.paymentMethod === "CARD")
+        .filter(
+          (p) => p.paymentMethod === "CARD" && p.status !== "REJECTED",
+        )
         .reduce((x, p) => x + Number(p.amount), 0),
     0,
   );
@@ -48,19 +84,9 @@ export async function POST() {
   const pfand = orders.reduce(
     (t, o) =>
       t +
-      o.pfandReturns.reduce(
-        (x, p) => x + Number(p.totalAmount),
-        0,
-      ),
+      o.pfandReturns.reduce((x, p) => x + Number(p.totalAmount), 0),
     0,
   );
-
-
-  const open = Math.max(
-    0,
-    totalSales - pfand - cash - card,
-  );
-
 
   return NextResponse.json({
     closedAt: now,
@@ -69,6 +95,7 @@ export async function POST() {
     card,
     open,
     pfand,
-    message: "Gün sonu hazır.",
+    orderCount: orders.length,
+    message: "Gün sonu özeti hazırlandı.",
   });
 }

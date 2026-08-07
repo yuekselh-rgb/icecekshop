@@ -219,6 +219,10 @@ export default function DriverPage() {
     {},
   );
 
+  const [paymentMethods, setPaymentMethods] = useState<
+    Record<string, "CASH" | "CARD">
+  >({});
+
   const [pfandQuantities, setPfandQuantities] = useState<
     Record<string, number>
   >({});
@@ -734,6 +738,7 @@ export default function DriverPage() {
           ...(action === "PAID"
             ? {
                 amount: reportedAmount,
+                paymentMethod: paymentMethods[order.id] || "CASH",
               }
             : {}),
         }),
@@ -2751,6 +2756,38 @@ export default function DriverPage() {
                                       </span>
                                     </div>
                                   </label>
+
+                                  <div className="mt-2 flex gap-2">
+                                    {(["CASH", "CARD"] as const).map(
+                                      (method) => {
+                                        const selected =
+                                          (paymentMethods[order.id] ||
+                                            "CASH") === method;
+
+                                        return (
+                                          <button
+                                            key={method}
+                                            type="button"
+                                            onClick={() =>
+                                              setPaymentMethods((current) => ({
+                                                ...current,
+                                                [order.id]: method,
+                                              }))
+                                            }
+                                            className={`flex-1 rounded-xl border px-3 py-2 text-xs font-black transition ${
+                                              selected
+                                                ? "border-green-600 bg-green-600 text-white"
+                                                : "border-slate-200 bg-white text-slate-500"
+                                            }`}
+                                          >
+                                            {method === "CASH"
+                                              ? "Nakit"
+                                              : "Kart"}
+                                          </button>
+                                        );
+                                      },
+                                    )}
+                                  </div>
 
                                   {Number(paymentAmounts[order.id] || 0) > 0 ? (
                                     <div className="mt-2 rounded-xl bg-red-50 px-3 py-2">

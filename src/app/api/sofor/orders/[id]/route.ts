@@ -261,6 +261,9 @@ export async function PATCH(
 
       const collectedAmount = Number(Number(body.amount).toFixed(2));
 
+      const paymentMethod =
+        body.paymentMethod === "CARD" ? "CARD" : "CASH";
+
       if (!Number.isFinite(collectedAmount) || collectedAmount <= 0) {
         return NextResponse.json(
           {
@@ -311,6 +314,7 @@ export async function PATCH(
             driverId: session.userId,
 
             amount: collectedAmount,
+            paymentMethod,
 
             status: "PENDING",
 
