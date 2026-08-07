@@ -99,6 +99,16 @@ export async function GET() {
             },
           },
 
+          payments: {
+            orderBy: {
+              reportedAt: "desc",
+            },
+            take: 1,
+            select: {
+              paymentMethod: true,
+            },
+          },
+
           pfandReturns: {
             orderBy: {
               createdAt: "desc",
@@ -181,17 +191,37 @@ export async function GET() {
               : order.user.phone
           );
 
+        /*
+         * Yapısal OrderPayment kaydı varsa (bar-sales/route.ts artık
+         * her satışta bir tane oluşturuyor) ödeme yöntemi oradan
+         * okunur. Bu kayıt yalnızca bu düzeltmeden önce oluşturulmuş
+         * eski satışlarda yoktur; onlar için not metnindeki eski
+         * yönteme geri dönülür.
+         */
+        const structuredPaymentMethod =
+          order.payments[0]?.paymentMethod ?? null;
+
+        const notePaymentValue = getNoteValue(
+          order.customerNote,
+          "Ödeme:",
+        )?.toLocaleLowerCase("tr-TR");
+
+        const paymentMethodKey: "CASH" | "CARD" | "OPEN" =
+          structuredPaymentMethod ||
+          (notePaymentValue?.includes("kart")
+            ? "CARD"
+            : notePaymentValue?.includes("nakit")
+              ? "CASH"
+              : order.paymentStatus === "PAID"
+                ? "CASH"
+                : "OPEN");
+
         const paymentMethod =
-          getNoteValue(
-            order.customerNote,
-            "Ödeme:"
-          ) ||
-          (
-            order.paymentStatus ===
-            "PAID"
-              ? "Ödendi"
-              : "Açık Hesap"
-          );
+          paymentMethodKey === "CASH"
+            ? "Nakit"
+            : paymentMethodKey === "CARD"
+              ? "Kart"
+              : "Açık Hesap";
 
         const notePfandReturn =
           parseAmount(
@@ -248,6 +278,7 @@ export async function GET() {
           },
 
           paymentMethod,
+          paymentMethodKey,
           paymentStatus:
             order.paymentStatus,
           subtotal,
@@ -333,20 +364,10 @@ export async function GET() {
       current.totalAmount +=
         sale.totalAmount;
 
-      const payment =
-        sale.paymentMethod
-          .toLocaleLowerCase(
-            "tr-TR"
-          );
-
-      if (
-        payment.includes("nakit")
-      ) {
+      if (sale.paymentMethodKey === "CASH") {
         current.cashAmount +=
           sale.totalAmount;
-      } else if (
-        payment.includes("kart")
-      ) {
+      } else if (sale.paymentMethodKey === "CARD") {
         current.cardAmount +=
           sale.totalAmount;
       } else {

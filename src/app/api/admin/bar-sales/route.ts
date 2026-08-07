@@ -425,6 +425,30 @@ export async function POST(request: Request) {
         },
       });
 
+      await tx.orderPayment.create({
+        data: {
+          orderId: createdOrder.id,
+          customerId: orderCustomerId,
+
+          amount: totalAmount,
+          paymentMethod,
+
+          status: paymentMethod === "OPEN" ? "PENDING" : "APPROVED",
+
+          reportedById: admin.user.id,
+          reporterRole: "ADMIN",
+
+          ...(paymentMethod === "OPEN"
+            ? {}
+            : {
+                approvedById: admin.user.id,
+                approvedAt: new Date(),
+              }),
+
+          note: `Bar satışı ${orderNumber}. Satışı yapan: ${adminName}.`,
+        },
+      });
+
       if (pfandItems.length > 0 && pfandReturnAmount > 0) {
         const receivedAt = new Date();
 

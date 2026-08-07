@@ -48,6 +48,7 @@ type Sale = {
   };
 
   paymentMethod: string;
+  paymentMethodKey: "CASH" | "CARD" | "OPEN";
   paymentStatus: "OPEN" | "PAID";
   subtotal: number;
   newPfand: number;
@@ -182,24 +183,15 @@ export default function BarSalesReportPage() {
       ),
 
       cashAmount: filteredSales
-        .filter((sale) =>
-          sale.paymentMethod.toLocaleLowerCase("tr-TR").includes("nakit"),
-        )
+        .filter((sale) => sale.paymentMethodKey === "CASH")
         .reduce((total, sale) => total + sale.totalAmount, 0),
 
       cardAmount: filteredSales
-        .filter((sale) =>
-          sale.paymentMethod.toLocaleLowerCase("tr-TR").includes("kart"),
-        )
+        .filter((sale) => sale.paymentMethodKey === "CARD")
         .reduce((total, sale) => total + sale.totalAmount, 0),
 
       openAmount: filteredSales
-        .filter(
-          (sale) =>
-            sale.paymentStatus === "OPEN" ||
-            (!sale.paymentMethod.toLocaleLowerCase("tr-TR").includes("nakit") &&
-              !sale.paymentMethod.toLocaleLowerCase("tr-TR").includes("kart")),
-        )
+        .filter((sale) => sale.paymentMethodKey === "OPEN")
         .reduce((total, sale) => total + sale.totalAmount, 0),
     }),
     [filteredSales],
