@@ -797,44 +797,49 @@ export async function PATCH(
             );
           }
 
-          const updatedProduct =
-            addsStock
-              ? await tx.product.update({
-                  where: {
-                    id:
-                      productId,
-                  },
+          if (addsStock) {
+            await tx.product.update({
+              where: {
+                id: productId,
+              },
 
-                  data: {
-                    stock: {
-                      increment:
-                        quantity,
-                    },
-                  },
+              data: {
+                stock: {
+                  increment: quantity,
+                },
+              },
+            });
+          } else {
+            const updated = await tx.product.updateMany({
+              where: {
+                id: productId,
+                stock: {
+                  gte: quantity,
+                },
+              },
 
-                  select: {
-                    id: true,
-                    stock: true,
-                  },
-                })
-              : await tx.product.update({
-                  where: {
-                    id:
-                      productId,
-                  },
+              data: {
+                stock: {
+                  decrement: quantity,
+                },
+              },
+            });
 
-                  data: {
-                    stock: {
-                      decrement:
-                        quantity,
-                    },
-                  },
+            if (updated.count !== 1) {
+              throw new Error("INSUFFICIENT_STOCK");
+            }
+          }
 
-                  select: {
-                    id: true,
-                    stock: true,
-                  },
-                });
+          const updatedProduct = await tx.product.findUniqueOrThrow({
+            where: {
+              id: productId,
+            },
+
+            select: {
+              id: true,
+              stock: true,
+            },
+          });
 
           const productName =
             product.nameTr ||
