@@ -13,7 +13,14 @@ import {
   WalletCards,
 } from "lucide-react";
 import Link from "next/link";
-import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import {
+  FormEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 type PurchaseItem = {
   id?: string;
@@ -376,6 +383,14 @@ const categoryLabels: Record<string, string> =
   });
 
   const [permissions, setPermissions] = useState<Permissions | null>(null);
+
+  /*
+   * Aynı kasa hareketi denemesi için sabit kalır, böylece hızlı çift
+   * tıklama veya yeniden deneme aynı anahtarı gönderir ve sunucu
+   * tarafında tekrar kayıt oluşmasını engeller. Kayıt başarıyla
+   * tamamlanınca bir sonraki hareket için yenilenir.
+   */
+  const movementIdempotencyKeyRef = useRef<string | null>(null);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -816,6 +831,10 @@ const categoryLabels: Record<string, string> =
       return field?.value || "";
     };
 
+    if (!movementIdempotencyKeyRef.current) {
+      movementIdempotencyKeyRef.current = crypto.randomUUID();
+    }
+
     setSaving(true);
     setError("");
     setSuccess("");
@@ -823,6 +842,8 @@ const categoryLabels: Record<string, string> =
     try {
       const body = isGoodsPurchase
         ? {
+            idempotencyKey: movementIdempotencyKeyRef.current,
+
             direction: "OUT",
             category: "GOODS_PURCHASE",
 
@@ -835,6 +856,8 @@ const categoryLabels: Record<string, string> =
             purchaseItems,
           }
         : {
+            idempotencyKey: movementIdempotencyKeyRef.current,
+
             direction,
             category,
             amount: getFieldValue("amount"),
@@ -879,6 +902,8 @@ const categoryLabels: Record<string, string> =
       setPurchaseItems([createEmptyPurchaseItem()]);
 
       setSuccess(data.message);
+
+      movementIdempotencyKeyRef.current = null;
 
       await loadCash();
     } catch {

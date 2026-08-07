@@ -483,6 +483,16 @@ model CompanySetting {
   updatedAt  DateTime @updatedAt
 }
 
+model IdempotencyKey {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  scope     String
+  resultId  String
+  createdAt DateTime @default(now())
+
+  @@index([scope])
+}
+
 model AdminPermission {
   id     String @id @default(cuid())
   userId String @unique

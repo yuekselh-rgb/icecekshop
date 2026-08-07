@@ -164,8 +164,38 @@ export async function POST(request: Request) {
     );
   }
 
+  let idempotencyKey: string | null = null;
+
   try {
     const body = await request.json();
+
+    idempotencyKey = String(body.idempotencyKey || "").trim() || null;
+
+    if (idempotencyKey) {
+      const existingKey = await prisma.idempotencyKey.findUnique({
+        where: {
+          key: idempotencyKey,
+        },
+      });
+
+      if (existingKey) {
+        const existingMovement = await prisma.cashMovement.findUnique({
+          where: {
+            id: existingKey.resultId,
+          },
+          include: {
+            purchaseItems: true,
+          },
+        });
+
+        if (existingMovement) {
+          return NextResponse.json({
+            message: "Kasa hareketi kaydedildi.",
+            movement: serializeMovement(existingMovement),
+          });
+        }
+      }
+    }
 
     const direction = String(body.direction || "");
 
@@ -590,6 +620,16 @@ export async function POST(request: Request) {
           },
         });
 
+        if (idempotencyKey) {
+          await tx.idempotencyKey.create({
+            data: {
+              key: idempotencyKey,
+              scope: "bar-cash-movement",
+              resultId: createdMovement.id,
+            },
+          });
+        }
+
         for (const item of preparedItems) {
           await tx.product.update({
             where: {
@@ -661,25 +701,39 @@ export async function POST(request: Request) {
       );
     }
 
-    const movement = await prisma.cashMovement.create({
-      data: {
-        accountType: "BAR",
-        direction,
-        category,
-        amount: Number(amount.toFixed(2)),
+    const movement = await prisma.$transaction(async (tx) => {
+      const createdMovement = await tx.cashMovement.create({
+        data: {
+          accountType: "BAR",
+          direction,
+          category,
+          amount: Number(amount.toFixed(2)),
 
-        supplierId: supplierId || null,
+          supplierId: supplierId || null,
 
-        companyName: companyName || null,
+          companyName: companyName || null,
 
-        description: description || null,
+          description: description || null,
 
-        createdById: admin.user.id,
-      },
+          createdById: admin.user.id,
+        },
 
-      include: {
-        purchaseItems: true,
-      },
+        include: {
+          purchaseItems: true,
+        },
+      });
+
+      if (idempotencyKey) {
+        await tx.idempotencyKey.create({
+          data: {
+            key: idempotencyKey,
+            scope: "bar-cash-movement",
+            resultId: createdMovement.id,
+          },
+        });
+      }
+
+      return createdMovement;
     });
 
     return NextResponse.json(
@@ -697,6 +751,37 @@ export async function POST(request: Request) {
     );
   } catch (error) {
     console.error("CREATE_REAL_CASH_ERROR", error);
+
+    /*
+     * Aynı idempotency key ile eşzamanlı iki istek gelirse biri bu
+     * kaydı oluşturur, diğeri benzersizlik kısıtına çarpar. Hata
+     * döndürmek yerine kazanan isteğin hareketini döndürüyoruz.
+     */
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      (error as { code?: string }).code === "P2002" &&
+      idempotencyKey
+    ) {
+      const existingKey = await prisma.idempotencyKey.findUnique({
+        where: { key: idempotencyKey },
+      });
+
+      const existingMovement = existingKey
+        ? await prisma.cashMovement.findUnique({
+            where: { id: existingKey.resultId },
+            include: { purchaseItems: true },
+          })
+        : null;
+
+      if (existingMovement) {
+        return NextResponse.json({
+          message: "Kasa hareketi kaydedildi.",
+          movement: serializeMovement(existingMovement),
+        });
+      }
+    }
 
     return NextResponse.json(
       {

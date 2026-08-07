@@ -192,6 +192,15 @@ export default function BarSalesPage() {
 
   const [cart, setCart] = useState<CartItem[]>([]);
 
+  /*
+   * Aynı satış denemesi için sabit kalır, böylece hızlı çift
+   * tıklama veya yeniden deneme aynı anahtarı gönderir ve sunucu
+   * tarafında tekrar sipariş oluşmasını engeller. Satış başarıyla
+   * tamamlanınca (sepet sıfırlanınca) bir sonraki satış için
+   * yenilenir.
+   */
+  const saleIdempotencyKeyRef = useRef<string | null>(null);
+
   const [customers, setCustomers] = useState<Customer[]>([]);
 
   const [selectedCustomerId, setSelectedCustomerId] = useState("");
@@ -735,6 +744,10 @@ const adminName =
       return;
     }
 
+    if (!saleIdempotencyKeyRef.current) {
+      saleIdempotencyKeyRef.current = crypto.randomUUID();
+    }
+
     setSaving(true);
     setError("");
     setSuccess("");
@@ -746,6 +759,8 @@ const adminName =
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          idempotencyKey: saleIdempotencyKeyRef.current,
+
           paymentMethod,
 
           customerId: paymentMethod === "OPEN" ? selectedCustomerId : null,
@@ -772,6 +787,8 @@ const adminName =
       }
 
       setSuccess(`Satış kaydedildi. Sipariş: ${data.order.orderNumber}`);
+
+      saleIdempotencyKeyRef.current = null;
 
       setCart([]);
       setSearch("");

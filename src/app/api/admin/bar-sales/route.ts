@@ -137,8 +137,39 @@ export async function POST(request: Request) {
     );
   }
 
+  let idempotencyKey: string | null = null;
+
   try {
     const body = await request.json();
+
+    idempotencyKey = String(body.idempotencyKey || "").trim() || null;
+
+    if (idempotencyKey) {
+      const existing = await prisma.idempotencyKey.findUnique({
+        where: {
+          key: idempotencyKey,
+        },
+      });
+
+      if (existing) {
+        const existingOrder = await prisma.order.findUnique({
+          where: {
+            id: existing.resultId,
+          },
+        });
+
+        if (existingOrder) {
+          return NextResponse.json({
+            message: "Bar satışı başarıyla kaydedildi.",
+            order: {
+              id: existingOrder.id,
+              orderNumber: existingOrder.orderNumber,
+              totalAmount: Number(existingOrder.totalAmount),
+            },
+          });
+        }
+      }
+    }
 
     const items = normalizeItems(body.items);
 
@@ -425,6 +456,16 @@ export async function POST(request: Request) {
         },
       });
 
+      if (idempotencyKey) {
+        await tx.idempotencyKey.create({
+          data: {
+            key: idempotencyKey,
+            scope: "bar-sale",
+            resultId: createdOrder.id,
+          },
+        });
+      }
+
       await tx.orderPayment.create({
         data: {
           orderId: createdOrder.id,
@@ -580,6 +621,39 @@ export async function POST(request: Request) {
     );
   } catch (error) {
     console.error("BAR_SALE_ERROR", error);
+
+    /*
+     * Aynı idempotency key ile eşzamanlı iki istek gelirse biri bu
+     * kaydı oluşturur, diğeri benzersizlik kısıtına çarpar. Hata
+     * döndürmek yerine kazanan isteğin siparişini döndürüyoruz.
+     */
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      (error as { code?: string }).code === "P2002"
+    ) {
+      const existing = idempotencyKey
+        ? await prisma.idempotencyKey.findUnique({
+            where: { key: idempotencyKey },
+          })
+        : null;
+
+      const existingOrder = existing
+        ? await prisma.order.findUnique({ where: { id: existing.resultId } })
+        : null;
+
+      if (existingOrder) {
+        return NextResponse.json({
+          message: "Bar satışı başarıyla kaydedildi.",
+          order: {
+            id: existingOrder.id,
+            orderNumber: existingOrder.orderNumber,
+            totalAmount: Number(existingOrder.totalAmount),
+          },
+        });
+      }
+    }
 
     const message = error instanceof Error ? error.message : "";
 
