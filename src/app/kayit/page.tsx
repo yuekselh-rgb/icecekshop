@@ -160,6 +160,8 @@ export default function RegisterPage() {
         formData.get(
           "doorbellName"
         ),
+
+      language,
     };
 
     try {

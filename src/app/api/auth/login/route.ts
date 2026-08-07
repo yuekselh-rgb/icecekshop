@@ -20,6 +20,8 @@ function getRedirectPath(role: string) {
 }
 
 export async function POST(request: Request) {
+  let language: "de" | "tr" = "tr";
+
   try {
     const contentType = request.headers.get("content-type") || "";
 
@@ -44,6 +46,7 @@ export async function POST(request: Request) {
 
       rawEmail = body.email;
       rawPassword = body.password;
+      language = body.language === "de" ? "de" : "tr";
     }
 
     const email = String(rawEmail || "")
@@ -69,7 +72,10 @@ export async function POST(request: Request) {
 
       return NextResponse.json(
         {
-          error: "E-posta veya şifre hatalı.",
+          error:
+            language === "de"
+              ? "E-Mail oder Passwort ist falsch."
+              : "E-posta veya şifre hatalı.",
         },
         {
           status: 401,
@@ -92,7 +98,9 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           error:
-            "Çok fazla hatalı deneme. Lütfen birkaç dakika sonra tekrar deneyin.",
+            language === "de"
+              ? "Zu viele fehlgeschlagene Versuche. Bitte versuchen Sie es in ein paar Minuten erneut."
+              : "Çok fazla hatalı deneme. Lütfen birkaç dakika sonra tekrar deneyin.",
         },
         {
           status: 429,
@@ -131,7 +139,10 @@ export async function POST(request: Request) {
 
       return NextResponse.json(
         {
-          error: "E-posta veya şifre hatalı.",
+          error:
+            language === "de"
+              ? "E-Mail oder Passwort ist falsch."
+              : "E-posta veya şifre hatalı.",
         },
         {
           status: 401,
@@ -149,7 +160,10 @@ export async function POST(request: Request) {
 
       return NextResponse.json(
         {
-          error: "Lütfen önce e-posta adresinizi doğrulayın.",
+          error:
+            language === "de"
+              ? "Bitte bestätigen Sie zuerst Ihre E-Mail-Adresse."
+              : "Lütfen önce e-posta adresinizi doğrulayın.",
           code: "EMAIL_NOT_VERIFIED",
         },
         {
@@ -168,7 +182,10 @@ export async function POST(request: Request) {
 
       return NextResponse.json(
         {
-          error: "Bu hesap Super Admin tarafından kapatılmıştır.",
+          error:
+            language === "de"
+              ? "Dieses Konto wurde vom Super Admin deaktiviert."
+              : "Bu hesap Super Admin tarafından kapatılmıştır.",
         },
         {
           status: 403,
@@ -227,7 +244,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json(
       {
-        error: "Giriş sırasında beklenmeyen bir hata oluştu.",
+        error:
+          language === "de"
+            ? "Bei der Anmeldung ist ein unerwarteter Fehler aufgetreten."
+            : "Giriş sırasında beklenmeyen bir hata oluştu.",
       },
       {
         status: 500,

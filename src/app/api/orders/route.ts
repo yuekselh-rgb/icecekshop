@@ -147,12 +147,18 @@ function normalizeItems(value: unknown): RequestedItem[] {
 }
 
 export async function POST(request: Request) {
+  const language: "de" | "tr" =
+    new URL(request.url).searchParams.get("lang") === "de" ? "de" : "tr";
+
   const session = await getSession();
 
   if (!session) {
     return NextResponse.json(
       {
-        error: "Sipariş vermek için giriş yapmalısınız.",
+        error:
+          language === "de"
+            ? "Bitte melden Sie sich an, um eine Bestellung aufzugeben."
+            : "Sipariş vermek için giriş yapmalısınız.",
       },
       {
         status: 401,
@@ -163,7 +169,10 @@ export async function POST(request: Request) {
   if (!["CUSTOMER", "DEALER"].includes(session.role)) {
     return NextResponse.json(
       {
-        error: "Bu hesapla sipariş oluşturulamaz.",
+        error:
+          language === "de"
+            ? "Mit diesem Konto kann keine Bestellung erstellt werden."
+            : "Bu hesapla sipariş oluşturulamaz.",
       },
       {
         status: 403,
@@ -181,7 +190,10 @@ export async function POST(request: Request) {
     if (items.length === 0) {
       return NextResponse.json(
         {
-          error: "Sipariş sepeti boş veya geçersiz.",
+          error:
+            language === "de"
+              ? "Der Warenkorb ist leer oder ungültig."
+              : "Sipariş sepeti boş veya geçersiz.",
         },
         {
           status: 400,
@@ -234,7 +246,10 @@ export async function POST(request: Request) {
     if (isDealer && !dealerProfile) {
       return NextResponse.json(
         {
-          error: "Aktif bayi profili bulunamadı.",
+          error:
+            language === "de"
+              ? "Kein aktives Händlerprofil gefunden."
+              : "Aktif bayi profili bulunamadı.",
         },
         {
           status: 404,
@@ -255,7 +270,10 @@ export async function POST(request: Request) {
     ) {
       return NextResponse.json(
         {
-          error: "Teslimat ve iletişim bilgilerini eksiksiz doldurun.",
+          error:
+            language === "de"
+              ? "Bitte füllen Sie die Liefer- und Kontaktdaten vollständig aus."
+              : "Teslimat ve iletişim bilgilerini eksiksiz doldurun.",
         },
         {
           status: 400,
@@ -266,7 +284,10 @@ export async function POST(request: Request) {
     if (!isDealer && !/^\d{5}$/.test(postalCode)) {
       return NextResponse.json(
         {
-          error: "Geçerli bir 5 haneli posta kodu girin.",
+          error:
+            language === "de"
+              ? "Geben Sie eine gültige 5-stellige Postleitzahl ein."
+              : "Geçerli bir 5 haneli posta kodu girin.",
         },
         {
           status: 400,
@@ -298,7 +319,10 @@ export async function POST(request: Request) {
     if (products.length !== productIds.length) {
       return NextResponse.json(
         {
-          error: "Sepette artık satışta olmayan bir ürün bulunuyor.",
+          error:
+            language === "de"
+              ? "Ein Produkt in Ihrem Warenkorb ist nicht mehr verfügbar."
+              : "Sepette artık satışta olmayan bir ürün bulunuyor.",
         },
         {
           status: 409,
@@ -389,7 +413,9 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           error:
-            "Beyan edilen Pfand iadesi çok yüksek. Lütfen büyük miktarlardaki iadeleri şoförünüzle yerinde gerçekleştirin.",
+            language === "de"
+              ? "Die angegebene Pfandrückgabe ist zu hoch. Bitte wickeln Sie größere Rückgaben persönlich mit dem Fahrer ab."
+              : "Beyan edilen Pfand iadesi çok yüksek. Lütfen büyük miktarlardaki iadeleri şoförünüzle yerinde gerçekleştirin.",
         },
         {
           status: 400,
@@ -569,7 +595,10 @@ export async function POST(request: Request) {
 
       return NextResponse.json(
         {
-          error: `${productName} için yeterli stok yok. Mevcut stok: ${stock}.`,
+          error:
+            language === "de"
+              ? `Nicht genügend Lagerbestand für ${productName}. Verfügbar: ${stock}.`
+              : `${productName} için yeterli stok yok. Mevcut stok: ${stock}.`,
         },
         {
           status: 409,
@@ -582,7 +611,10 @@ export async function POST(request: Request) {
 
       return NextResponse.json(
         {
-          error: `${productName} ürününün stok durumu değişti. Sepetinizi kontrol edin.`,
+          error:
+            language === "de"
+              ? `Der Lagerbestand von ${productName} hat sich geändert. Bitte prüfen Sie Ihren Warenkorb.`
+              : `${productName} ürününün stok durumu değişti. Sepetinizi kontrol edin.`,
         },
         {
           status: 409,
@@ -592,7 +624,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json(
       {
-        error: "Sipariş oluşturulurken beklenmeyen bir hata oluştu.",
+        error:
+          language === "de"
+            ? "Bei der Bestellung ist ein unerwarteter Fehler aufgetreten."
+            : "Sipariş oluşturulurken beklenmeyen bir hata oluştu.",
       },
       {
         status: 500,

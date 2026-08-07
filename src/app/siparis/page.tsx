@@ -285,7 +285,7 @@ export default function CheckoutPage() {
     setError("");
 
     try {
-      const response = await fetch("/api/orders", {
+      const response = await fetch(`/api/orders?lang=${language}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

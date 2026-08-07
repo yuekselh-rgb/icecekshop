@@ -68,6 +68,7 @@ export default function LoginPage() {
         body: JSON.stringify({
           email,
           password: formData.get("password"),
+          language,
         }),
       });
 

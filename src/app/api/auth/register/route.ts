@@ -7,9 +7,13 @@ import { NextResponse } from "next/server";
 export async function POST(
   request: Request
 ) {
+  let language: "de" | "tr" = "tr";
+
   try {
     const body =
       await request.json();
+
+    language = body.language === "de" ? "de" : "tr";
 
     const {
       email,
@@ -44,7 +48,9 @@ export async function POST(
       return NextResponse.json(
         {
           error:
-            "Lütfen tüm zorunlu alanları doldurun.",
+            language === "de"
+              ? "Bitte füllen Sie alle Pflichtfelder aus."
+              : "Lütfen tüm zorunlu alanları doldurun.",
         },
         {
           status: 400,
@@ -59,7 +65,9 @@ export async function POST(
       return NextResponse.json(
         {
           error:
-            "Geçersiz müşteri türü.",
+            language === "de"
+              ? "Ungültiger Kundentyp."
+              : "Geçersiz müşteri türü.",
         },
         {
           status: 400,
@@ -74,7 +82,9 @@ export async function POST(
       return NextResponse.json(
         {
           error:
-            "Firma adı zorunludur.",
+            language === "de"
+              ? "Firmenname ist erforderlich."
+              : "Firma adı zorunludur.",
         },
         {
           status: 400,
@@ -90,7 +100,9 @@ export async function POST(
       return NextResponse.json(
         {
           error:
-            "Geçerli bir 5 haneli Alman posta kodu girin.",
+            language === "de"
+              ? "Geben Sie eine gültige 5-stellige deutsche Postleitzahl ein."
+              : "Geçerli bir 5 haneli Alman posta kodu girin.",
         },
         {
           status: 400,
@@ -102,7 +114,9 @@ export async function POST(
       return NextResponse.json(
         {
           error:
-            "Şifre en az 8 karakter olmalıdır.",
+            language === "de"
+              ? "Das Passwort muss mindestens 8 Zeichen lang sein."
+              : "Şifre en az 8 karakter olmalıdır.",
         },
         {
           status: 400,
@@ -126,7 +140,9 @@ export async function POST(
       return NextResponse.json(
         {
           error:
-            "Bu e-posta adresi zaten kayıtlı.",
+            language === "de"
+              ? "Diese E-Mail-Adresse ist bereits registriert."
+              : "Bu e-posta adresi zaten kayıtlı.",
         },
         {
           status: 409,
@@ -287,7 +303,9 @@ export async function POST(
     return NextResponse.json(
       {
         error:
-          "Kayıt sırasında beklenmeyen bir hata oluştu.",
+          language === "de"
+            ? "Bei der Registrierung ist ein unerwarteter Fehler aufgetreten."
+            : "Kayıt sırasında beklenmeyen bir hata oluştu.",
       },
       {
         status: 500,
