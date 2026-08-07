@@ -130,17 +130,128 @@ export default async function CustomerDetailPage({
             Sipariş Geçmişi
           </h2>
 
-          <p className="text-slate-500">
-            Müşteri ID: {id}
-          </p>
+          {customer.orders.length === 0 ? (
+            <p className="text-slate-500">
+              Bu müşteriye ait henüz sipariş bulunmuyor.
+            </p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead>
+                  <tr className="border-b border-slate-200 text-xs font-bold uppercase text-slate-400">
+                    <th className="py-2 pr-4">Sipariş No</th>
+                    <th className="py-2 pr-4">Tarih</th>
+                    <th className="py-2 pr-4">Durum</th>
+                    <th className="py-2 pr-4">Ödeme</th>
+                    <th className="py-2 pr-4">Ürün</th>
+                    <th className="py-2 text-right">Tutar</th>
+                  </tr>
+                </thead>
 
-          <p className="mt-3 text-slate-400">
-            Bir sonraki adımda tüm siparişler, ödemeler,
-            cari hareketler ve pfand geçmişi burada gösterilecek.
-          </p>
+                <tbody>
+                  {customer.orders.map((order) => (
+                    <tr
+                      key={order.id}
+                      className="border-b border-slate-100 last:border-b-0"
+                    >
+                      <td className="py-3 pr-4 font-bold text-slate-900">
+                        {order.orderNumber}
+                      </td>
+
+                      <td className="py-3 pr-4 text-slate-600">
+                        {new Date(order.createdAt).toLocaleDateString(
+                          "de-DE",
+                        )}
+                      </td>
+
+                      <td className="py-3 pr-4 text-slate-600">
+                        {order.status}
+                      </td>
+
+                      <td className="py-3 pr-4">
+                        <span
+                          className={`rounded-full px-2.5 py-1 text-xs font-bold ${
+                            order.paymentStatus === "PAID"
+                              ? "bg-green-50 text-green-700"
+                              : "bg-red-50 text-red-600"
+                          }`}
+                        >
+                          {order.paymentStatus === "PAID"
+                            ? "Ödendi"
+                            : "Açık"}
+                        </span>
+                      </td>
+
+                      <td className="py-3 pr-4 text-slate-600">
+                        {order.items.length}
+                      </td>
+
+                      <td className="py-3 text-right font-bold text-slate-900">
+                        {Number(order.totalAmount).toFixed(2)} €
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        <div className="rounded-2xl bg-white p-6 shadow">
+          <h2 className="mb-4 text-2xl font-black">
+            Pfand İadeleri
+          </h2>
+
+          {customer.pfandReturns.length === 0 ? (
+            <p className="text-slate-500">
+              Bu müşteriye ait henüz Pfand iadesi bulunmuyor.
+            </p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead>
+                  <tr className="border-b border-slate-200 text-xs font-bold uppercase text-slate-400">
+                    <th className="py-2 pr-4">Tarih</th>
+                    <th className="py-2 pr-4">Durum</th>
+                    <th className="py-2 pr-4">Talep Edilen</th>
+                    <th className="py-2 text-right">Onaylanan</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {customer.pfandReturns.map((pfandReturn) => (
+                    <tr
+                      key={pfandReturn.id}
+                      className="border-b border-slate-100 last:border-b-0"
+                    >
+                      <td className="py-3 pr-4 text-slate-600">
+                        {new Date(
+                          pfandReturn.createdAt,
+                        ).toLocaleDateString("de-DE")}
+                      </td>
+
+                      <td className="py-3 pr-4 text-slate-600">
+                        {pfandReturn.status}
+                      </td>
+
+                      <td className="py-3 pr-4 text-slate-600">
+                        {Number(pfandReturn.totalAmount).toFixed(2)} €
+                      </td>
+
+                      <td className="py-3 text-right font-bold text-slate-900">
+                        {pfandReturn.approvedAmount !== null
+                          ? `${Number(pfandReturn.approvedAmount).toFixed(2)} €`
+                          : "—"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
 
       </div>
     </main>
   );
-}  
+}
