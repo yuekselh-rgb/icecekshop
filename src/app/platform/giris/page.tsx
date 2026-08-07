@@ -37,7 +37,7 @@ export default function PlatformLoginPage() {
         return;
       }
 
-      router.push("/platform");
+      router.push("/");
       router.refresh();
     } catch {
       setError("Anmeldung fehlgeschlagen.");

@@ -54,11 +54,32 @@ export async function proxy(request: NextRequest) {
    * Die Platform-Host-Domain ist ausschließlich für den Platform-Owner-
    * Bereich da. Auf Tenant-Domains ist /platform nicht erreichbar, und
    * umgekehrt lässt der Platform-Host sonst nichts anderes durch.
+   *
+   * Auf dem Platform-Host selbst werden "/" und "/giris" transparent auf
+   * "/platform" bzw. "/platform/giris" umgeschrieben (rewrite, keine
+   * sichtbare Weiterleitung), damit man ohne "/platform"-Präfix auskommt —
+   * der Host dient ja ohnehin ausschließlich diesem Bereich.
    */
 
   if (isPlatform) {
+    if (pathname === "/giris") {
+      return NextResponse.rewrite(new URL("/platform/giris", request.url));
+    }
+
+    if (pathname === "/") {
+      if (!session) {
+        return NextResponse.rewrite(new URL("/platform/giris", request.url));
+      }
+
+      if (session.role !== "PLATFORM_OWNER") {
+        return redirectTo(request, getHomePath(session.role));
+      }
+
+      return NextResponse.rewrite(new URL("/platform", request.url));
+    }
+
     if (!isPlatformPage && !isPlatformApi) {
-      return redirectTo(request, "/platform");
+      return redirectTo(request, "/");
     }
   } else if (isPlatformPage || isPlatformApi) {
     return NextResponse.redirect(new URL("/", `https://${host}`));
@@ -175,7 +196,7 @@ export async function proxy(request: NextRequest) {
 
   if (isPlatformPage && pathname !== "/platform/giris") {
     if (!session) {
-      return redirectTo(request, "/platform/giris");
+      return redirectTo(request, "/giris");
     }
 
     if (session.role !== "PLATFORM_OWNER") {
@@ -190,6 +211,9 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
+    "/",
+    "/giris",
+
     "/admin/:path*",
     "/super-admin/:path*",
     "/sofor/:path*",
