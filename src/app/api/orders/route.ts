@@ -63,7 +63,7 @@ function normalizePfandItems(value: unknown): RequestedPfandItem[] {
       !name ||
       !Number.isInteger(quantity) ||
       quantity <= 0 ||
-      quantity > 9999 ||
+      quantity > 500 ||
       !Number.isFinite(rawUnitAmount)
     ) {
       continue;
@@ -177,11 +177,6 @@ export async function POST(request: Request) {
     const items = normalizeItems(body.items);
 
     const pfandItems = normalizePfandItems(body.pfandItems);
-
-    console.log("ORDER_PFAND_DEBUG", {
-      raw: body.pfandItems,
-      normalized: pfandItems,
-    });
 
     if (items.length === 0) {
       return NextResponse.json(
@@ -389,6 +384,18 @@ export async function POST(request: Request) {
         .reduce((total, item) => total + item.quantity * item.unitAmount, 0)
         .toFixed(2),
     );
+
+    if (pfandReturnAmount > 500) {
+      return NextResponse.json(
+        {
+          error:
+            "Beyan edilen Pfand iadesi çok yüksek. Lütfen büyük miktarlardaki iadeleri şoförünüzle yerinde gerçekleştirin.",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
 
     /*
      * Bayiler siparişi depodan kendileri teslim alır.
