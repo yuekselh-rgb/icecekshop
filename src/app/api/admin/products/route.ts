@@ -119,6 +119,14 @@ export async function POST(request: Request) {
       );
     }
 
+    const canSetPrice = admin.isSuperAdmin || admin.permissions.changePrice;
+
+    const canSetStock = admin.isSuperAdmin || admin.permissions.addStock;
+
+    const finalPrice = canSetPrice ? requestedPrice : 0;
+
+    const finalStock = canSetStock ? Number(body.stock || 0) : 0;
+
     const nameTr = String(body.nameTr || body.name || "").trim();
 
     const nameDe = String(body.nameDe || body.name || "").trim();
@@ -208,14 +216,14 @@ export async function POST(request: Request) {
           ? String(body.descriptionDe).trim()
           : null,
 
-        price: requestedPrice,
+        price: finalPrice,
 
         oldPrice: requestedOldPrice,
         isOffer: requestedIsOffer,
 
         pfandAmount: Number(body.pfandAmount || 0),
 
-        stock: Number(body.stock || 0),
+        stock: finalStock,
 
         stockUnit: String(body.stockUnit || "ADET") as
           "KASA" | "KARTON" | "PAKET" | "ADET",

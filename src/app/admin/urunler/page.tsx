@@ -1080,7 +1080,7 @@ export default function AdminProductsPage() {
                 label={language === "de" ? "Preis *" : "Fiyat *"}
                 type="number"
                 step="0.01"
-                disabled={Boolean(editingProduct) && !permissions?.changePrice}
+                disabled={!permissions?.changePrice}
                 value={form.price}
                 onChange={(value) => updateProductForm("price", value)}
               />
@@ -1487,9 +1487,9 @@ export default function AdminProductsPage() {
                 })`}
                 type="number"
                 disabled={
-                  Boolean(editingProduct) &&
-                  !permissions?.addStock &&
-                  !permissions?.reduceStock
+                  editingProduct
+                    ? !permissions?.addStock && !permissions?.reduceStock
+                    : !permissions?.addStock
                 }
                 value={form.stock}
                 onChange={(value) => updateProductForm("stock", value)}
