@@ -3,6 +3,8 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { NextResponse } from "next/server";
 
+const MAX_ATTEMPTS = 5;
+
 export async function POST(request: Request) {
   try {
     const { email, code, password } = await request.json();
@@ -39,8 +41,10 @@ export async function POST(request: Request) {
     const verification = await prisma.verificationCode.findFirst({
       where: {
         userId: user.id,
-        code: codeHash,
         type: "RESET_PASSWORD",
+      },
+      orderBy: {
+        createdAt: "desc",
       },
     });
 
@@ -54,6 +58,31 @@ export async function POST(request: Request) {
     if (verification.expiresAt < new Date()) {
       return NextResponse.json(
         { error: "Kodun süresi dolmuş." },
+        { status: 400 },
+      );
+    }
+
+    if (verification.attempts >= MAX_ATTEMPTS) {
+      return NextResponse.json(
+        { error: "Çok fazla hatalı deneme. Lütfen yeni bir kod isteyin." },
+        { status: 429 },
+      );
+    }
+
+    if (verification.code !== codeHash) {
+      await prisma.verificationCode.update({
+        where: {
+          id: verification.id,
+        },
+        data: {
+          attempts: {
+            increment: 1,
+          },
+        },
+      });
+
+      return NextResponse.json(
+        { error: "Kod hatalı." },
         { status: 400 },
       );
     }

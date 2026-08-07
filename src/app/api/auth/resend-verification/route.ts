@@ -4,7 +4,7 @@ import crypto from "crypto";
 import { NextResponse } from "next/server";
 
 function generateCode() {
-  return Math.floor(100000 + Math.random() * 900000).toString();
+  return crypto.randomInt(100000, 1000000).toString();
 }
 
 export async function POST(request: Request) {

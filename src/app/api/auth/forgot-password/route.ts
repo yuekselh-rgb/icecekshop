@@ -42,9 +42,7 @@ export async function POST(request: Request) {
       },
     });
 
-    const code = Math.floor(
-      100000 + Math.random() * 900000,
-    ).toString();
+    const code = crypto.randomInt(100000, 1000000).toString();
 
     const codeHash = crypto
       .createHash("sha256")
