@@ -1847,12 +1847,15 @@ export default function AdminProductsPage() {
                         </p>
 
                         <p className="mt-2 font-bold text-slate-500">
-                          {product.packageInfo || "Keine Verpackungsinformation"}
+                          {product.packageInfo ||
+                            (language === "de"
+                              ? "Keine Verpackungsinformation"
+                              : "Ambalaj bilgisi yok")}
                         </p>
 
                         {product.isOffer ? (
                           <span className="mt-3 inline-flex rounded-full bg-green-100 px-3 py-1 text-xs font-black text-green-700">
-                            Angebot aktiv
+                            {language === "de" ? "Angebot aktiv" : "Kampanya aktif"}
                           </span>
                         ) : null}
                       </div>
@@ -1863,20 +1866,27 @@ export default function AdminProductsPage() {
                         </p>
 
                         <p className="text-sm text-slate-500">
-                          Lagerbestand: {product.stock}{" "}
-                          {
-                            {
-                              KASA: "kasa",
-                              KARTON: "karton",
-                              PAKET: "paket",
-                              ADET: "adet",
-                            }[product.stockUnit || "ADET"]
-                          }
+                          {language === "de" ? "Lagerbestand" : "Stok"}:{" "}
+                          {product.stock}{" "}
+                          {language === "de"
+                            ? {
+                                KASA: "Kiste",
+                                KARTON: "Karton",
+                                PAKET: "Paket",
+                                ADET: "Stück",
+                              }[product.stockUnit || "ADET"]
+                            : {
+                                KASA: "kasa",
+                                KARTON: "karton",
+                                PAKET: "paket",
+                                ADET: "adet",
+                              }[product.stockUnit || "ADET"]}
                         </p>
 
                         <p className="mt-1 text-xs font-semibold text-slate-400">
-                          Verpackungsinhalt: {product.unitsPerPackage || 1} Verkauf
-                          birimi
+                          {language === "de"
+                            ? `Verpackungsinhalt: ${product.unitsPerPackage || 1} Verkaufseinheiten`
+                            : `Paket içeriği: ${product.unitsPerPackage || 1} satış birimi`}
                         </p>
 
                         {Number(product.pfandAmount) > 0 ? (
@@ -1906,8 +1916,12 @@ export default function AdminProductsPage() {
                             }`}
                           >
                             {product.isOffer
-                              ? "Aus Angebot entfernen"
-                              : "Zum Angebot hinzufügen"}
+                              ? language === "de"
+                                ? "Aus Angebot entfernen"
+                                : "Kampanyadan Kaldır"
+                              : language === "de"
+                                ? "Zum Angebot hinzufügen"
+                                : "Kampanyaya Ekle"}
                           </button>
                         ) : null}
 
