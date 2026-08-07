@@ -651,9 +651,11 @@ export default function DriverPage() {
     }
   }
 
-  async function loadOrders() {
-    setLoading(true);
-    setError("");
+  async function loadOrders(silent = false) {
+    if (!silent) {
+      setLoading(true);
+      setError("");
+    }
 
     try {
       const response = await fetch("/api/sofor/orders");
@@ -661,15 +663,21 @@ export default function DriverPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Teslimatlar yüklenemedi.");
+        if (!silent) {
+          setError(data.error || "Teslimatlar yüklenemedi.");
+        }
         return;
       }
 
       setOrders(data.orders);
     } catch {
-      setError("Teslimatlar yüklenirken hata oluştu.");
+      if (!silent) {
+        setError("Teslimatlar yüklenirken hata oluştu.");
+      }
     } finally {
-      setLoading(false);
+      if (!silent) {
+        setLoading(false);
+      }
     }
   }
 
@@ -679,6 +687,12 @@ export default function DriverPage() {
     loadOrders();
     loadDriverStocks();
     loadCustomers();
+
+    const interval = setInterval(() => {
+      loadOrders(true);
+    }, 30000);
+
+    return () => clearInterval(interval);
   }, []);
 
 
