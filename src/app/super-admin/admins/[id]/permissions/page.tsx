@@ -20,6 +20,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useLanguage } from "@/context/LanguageContext";
+import type { Language } from "@/i18n/translations";
 
 type PermissionKey =
   | "viewProducts"
@@ -116,116 +117,235 @@ const defaultPermissions: Permissions = {
   deleteBarCashMovement: false,
 };
 
-const permissionGroups = [
-  {
-    title: "Ürün Yönetimi",
-    description: "Ürün ekleme, düzenleme, fiyat ve silme yetkileri.",
-    icon: ShoppingBasket,
-    permissions: [
-      ["viewProducts", "Ürünleri görüntüleme"],
-      ["createProduct", "Ürün ekleme"],
-      ["updateProduct", "Ürün bilgilerini düzenleme"],
-      ["changePrice", "Fiyat değiştirme"],
-      ["manageOffers", "Kampanyalı ürünleri yönetme"],
-      ["deleteProduct", "Ürün silme"],
-    ] satisfies [PermissionKey, string][],
-  },
-  {
-    title: "Kategori Yönetimi",
-    description: "Kategori ekleme, değiştirme ve silme yetkileri.",
-    icon: Tags,
-    permissions: [
-      ["viewCategories", "Kategorileri görüntüleme"],
-      ["createCategory", "Kategori ekleme"],
-      ["updateCategory", "Kategori düzenleme"],
-      ["deleteCategory", "Kategori silme"],
-    ] satisfies [PermissionKey, string][],
-  },
-  {
-    title: "Stok Yönetimi",
-    description: "Stok miktarlarını görüntüleme ve değiştirme.",
-    icon: Boxes,
-    permissions: [
-      ["viewStock", "Stokları görüntüleme"],
-      ["addStock", "Stok ekleme"],
-      ["reduceStock", "Stok azaltma"],
-      ["deleteWarehouseLog", "Bağımsız depo kaydı silme"],
-    ] satisfies [PermissionKey, string][],
-  },
-  {
-    title: "Şoför Stok Yönetimi",
-    description:
-      "Şoförlere ürün yükleme, araç stoğunu görüntüleme ve stok düzeltme yetkileri.",
-    icon: PackagePlus,
-    permissions: [
-      ["viewDriverStock", "Şoför stoklarını görüntüleme"],
-      ["manageDriverStock", "Şoföre stok yükleme ve düzeltme"],
-    ] satisfies [PermissionKey, string][],
-  },
-  {
-    title: "Sipariş Yönetimi",
-    description: "Siparişleri görüntüleme ve işlem yapma.",
-    icon: ClipboardList,
-    permissions: [
-      ["viewOrders", "Siparişleri görüntüleme"],
-      ["updateOrder", "Sipariş durumunu değiştirme"],
-      ["approveCustomerPayment", "Müşteri tahsilatını onaylama"],
-      ["printOrder", "Sipariş yazdırma"],
-      ["deleteOrder", "Sipariş silme"],
-    ] satisfies [PermissionKey, string][],
-  },
-  {
-    title: "Bar Satışı",
-    description: "Bar satış işlemi ve bar satış raporu yetkileri.",
-    icon: ShoppingBasket,
-    permissions: [
-      ["makeBarSale", "Bar satışı yapma"],
-      ["viewBarSalesReport", "Bar satış raporunu görüntüleme"],
-    ] satisfies [PermissionKey, string][],
-  },
-  {
-    title: "Bar Kasası",
-    description:
-      "Bar kasasını görüntüleme, para girişi ve para çıkışı işlemleri.",
-    icon: WalletCards,
-    permissions: [
-      ["viewBarCash", "Bar kasasını görüntüleme"],
-      ["createBarCashIncome", "Kasaya manuel para girişi yapma"],
-      ["createBarCashExpense", "Kasadan para çıkışı yapma"],
-      ["deleteBarCashMovement", "Kasa hareketini silme"],
-    ] satisfies [PermissionKey, string][],
-  },
-  {
-    title: "Raporlar",
-    description: "Sipariş ve tahsilat raporlarını görüntüleme.",
-    icon: WalletCards,
-    permissions: [
-      ["viewOrderReport", "Sipariş ve tahsilat raporunu görüntüleme"],
-    ] satisfies [PermissionKey, string][],
-  },
-  {
-    title: "Bayi Yönetimi",
-    description:
-      "Bayileri, bayi hesaplarını ve bayiye özel ürün fiyatlarını yönetme.",
-    icon: Users,
-    permissions: [
-      ["viewDealers", "Bayileri görüntüleme"],
-      ["createDealer", "Yeni bayi oluşturma"],
-      ["updateDealer", "Bayi bilgilerini düzenleme"],
-      ["manageDealerPrices", "Bayi özel fiyatlarını değiştirme"],
-      ["viewDealerAccounts", "Bayi hesap ve bakiye bilgilerini görüntüleme"],
-    ] satisfies [PermissionKey, string][],
-  },
-  {
-    title: "Müşteri ve Pfand",
-    description: "Müşteri bilgileri ve Pfand iadeleri.",
-    icon: Users,
-    permissions: [
-      ["viewCustomers", "Müşterileri görüntüleme"],
-      ["managePfand", "Pfand iadelerini yönetme"],
-    ] satisfies [PermissionKey, string][],
-  },
-];
+function getPermissionGroups(language: Language) {
+  return language === "de"
+    ? [
+        {
+          title: "Produktverwaltung",
+          description:
+            "Berechtigungen zum Hinzufügen, Bearbeiten, Bepreisen und Löschen von Produkten.",
+          icon: ShoppingBasket,
+          permissions: [
+            ["viewProducts", "Produkte anzeigen"],
+            ["createProduct", "Produkt hinzufügen"],
+            ["updateProduct", "Produktdaten bearbeiten"],
+            ["changePrice", "Preis ändern"],
+            ["manageOffers", "Aktionsprodukte verwalten"],
+            ["deleteProduct", "Produkt löschen"],
+          ] satisfies [PermissionKey, string][],
+        },
+        {
+          title: "Kategorienverwaltung",
+          description:
+            "Berechtigungen zum Hinzufügen, Ändern und Löschen von Kategorien.",
+          icon: Tags,
+          permissions: [
+            ["viewCategories", "Kategorien anzeigen"],
+            ["createCategory", "Kategorie hinzufügen"],
+            ["updateCategory", "Kategorie bearbeiten"],
+            ["deleteCategory", "Kategorie löschen"],
+          ] satisfies [PermissionKey, string][],
+        },
+        {
+          title: "Lagerverwaltung",
+          description: "Lagerbestände anzeigen und ändern.",
+          icon: Boxes,
+          permissions: [
+            ["viewStock", "Lagerbestand anzeigen"],
+            ["addStock", "Lagerbestand hinzufügen"],
+            ["reduceStock", "Lagerbestand reduzieren"],
+            ["deleteWarehouseLog", "Eigenständigen Lagerbucheintrag löschen"],
+          ] satisfies [PermissionKey, string][],
+        },
+        {
+          title: "Fahrzeugbestand-Verwaltung",
+          description:
+            "Berechtigungen zum Beladen der Fahrer mit Produkten, Anzeigen des Fahrzeugbestands und Korrigieren des Bestands.",
+          icon: PackagePlus,
+          permissions: [
+            ["viewDriverStock", "Fahrzeugbestände anzeigen"],
+            ["manageDriverStock", "Fahrzeugbestand beladen und korrigieren"],
+          ] satisfies [PermissionKey, string][],
+        },
+        {
+          title: "Bestellverwaltung",
+          description: "Bestellungen anzeigen und bearbeiten.",
+          icon: ClipboardList,
+          permissions: [
+            ["viewOrders", "Bestellungen anzeigen"],
+            ["updateOrder", "Bestellstatus ändern"],
+            ["approveCustomerPayment", "Kundenzahlung bestätigen"],
+            ["printOrder", "Bestellung drucken"],
+            ["deleteOrder", "Bestellung löschen"],
+          ] satisfies [PermissionKey, string][],
+        },
+        {
+          title: "Barverkauf",
+          description:
+            "Berechtigungen für den Barverkauf und den Barverkaufsbericht.",
+          icon: ShoppingBasket,
+          permissions: [
+            ["makeBarSale", "Barverkauf durchführen"],
+            ["viewBarSalesReport", "Barverkaufsbericht anzeigen"],
+          ] satisfies [PermissionKey, string][],
+        },
+        {
+          title: "Barkasse",
+          description:
+            "Barkasse anzeigen sowie Ein- und Auszahlungen vornehmen.",
+          icon: WalletCards,
+          permissions: [
+            ["viewBarCash", "Barkasse anzeigen"],
+            ["createBarCashIncome", "Manuelle Einzahlung in die Kasse vornehmen"],
+            ["createBarCashExpense", "Auszahlung aus der Kasse vornehmen"],
+            ["deleteBarCashMovement", "Kassenbewegung löschen"],
+          ] satisfies [PermissionKey, string][],
+        },
+        {
+          title: "Berichte",
+          description: "Bestell- und Zahlungsberichte anzeigen.",
+          icon: WalletCards,
+          permissions: [
+            ["viewOrderReport", "Bestell- und Zahlungsbericht anzeigen"],
+          ] satisfies [PermissionKey, string][],
+        },
+        {
+          title: "Händlerverwaltung",
+          description:
+            "Händler, Händlerkonten und händlerspezifische Produktpreise verwalten.",
+          icon: Users,
+          permissions: [
+            ["viewDealers", "Händler anzeigen"],
+            ["createDealer", "Neuen Händler anlegen"],
+            ["updateDealer", "Händlerdaten bearbeiten"],
+            ["manageDealerPrices", "Händlerspezifische Preise ändern"],
+            ["viewDealerAccounts", "Händlerkonten und Salden anzeigen"],
+          ] satisfies [PermissionKey, string][],
+        },
+        {
+          title: "Kunden und Pfand",
+          description: "Kundendaten und Pfandrückgaben.",
+          icon: Users,
+          permissions: [
+            ["viewCustomers", "Kunden anzeigen"],
+            ["managePfand", "Pfandrückgaben verwalten"],
+          ] satisfies [PermissionKey, string][],
+        },
+      ]
+    : [
+        {
+          title: "Ürün Yönetimi",
+          description: "Ürün ekleme, düzenleme, fiyat ve silme yetkileri.",
+          icon: ShoppingBasket,
+          permissions: [
+            ["viewProducts", "Ürünleri görüntüleme"],
+            ["createProduct", "Ürün ekleme"],
+            ["updateProduct", "Ürün bilgilerini düzenleme"],
+            ["changePrice", "Fiyat değiştirme"],
+            ["manageOffers", "Kampanyalı ürünleri yönetme"],
+            ["deleteProduct", "Ürün silme"],
+          ] satisfies [PermissionKey, string][],
+        },
+        {
+          title: "Kategori Yönetimi",
+          description: "Kategori ekleme, değiştirme ve silme yetkileri.",
+          icon: Tags,
+          permissions: [
+            ["viewCategories", "Kategorileri görüntüleme"],
+            ["createCategory", "Kategori ekleme"],
+            ["updateCategory", "Kategori düzenleme"],
+            ["deleteCategory", "Kategori silme"],
+          ] satisfies [PermissionKey, string][],
+        },
+        {
+          title: "Stok Yönetimi",
+          description: "Stok miktarlarını görüntüleme ve değiştirme.",
+          icon: Boxes,
+          permissions: [
+            ["viewStock", "Stokları görüntüleme"],
+            ["addStock", "Stok ekleme"],
+            ["reduceStock", "Stok azaltma"],
+            ["deleteWarehouseLog", "Bağımsız depo kaydı silme"],
+          ] satisfies [PermissionKey, string][],
+        },
+        {
+          title: "Şoför Stok Yönetimi",
+          description:
+            "Şoförlere ürün yükleme, araç stoğunu görüntüleme ve stok düzeltme yetkileri.",
+          icon: PackagePlus,
+          permissions: [
+            ["viewDriverStock", "Şoför stoklarını görüntüleme"],
+            ["manageDriverStock", "Şoföre stok yükleme ve düzeltme"],
+          ] satisfies [PermissionKey, string][],
+        },
+        {
+          title: "Sipariş Yönetimi",
+          description: "Siparişleri görüntüleme ve işlem yapma.",
+          icon: ClipboardList,
+          permissions: [
+            ["viewOrders", "Siparişleri görüntüleme"],
+            ["updateOrder", "Sipariş durumunu değiştirme"],
+            ["approveCustomerPayment", "Müşteri tahsilatını onaylama"],
+            ["printOrder", "Sipariş yazdırma"],
+            ["deleteOrder", "Sipariş silme"],
+          ] satisfies [PermissionKey, string][],
+        },
+        {
+          title: "Bar Satışı",
+          description: "Bar satış işlemi ve bar satış raporu yetkileri.",
+          icon: ShoppingBasket,
+          permissions: [
+            ["makeBarSale", "Bar satışı yapma"],
+            ["viewBarSalesReport", "Bar satış raporunu görüntüleme"],
+          ] satisfies [PermissionKey, string][],
+        },
+        {
+          title: "Bar Kasası",
+          description:
+            "Bar kasasını görüntüleme, para girişi ve para çıkışı işlemleri.",
+          icon: WalletCards,
+          permissions: [
+            ["viewBarCash", "Bar kasasını görüntüleme"],
+            ["createBarCashIncome", "Kasaya manuel para girişi yapma"],
+            ["createBarCashExpense", "Kasadan para çıkışı yapma"],
+            ["deleteBarCashMovement", "Kasa hareketini silme"],
+          ] satisfies [PermissionKey, string][],
+        },
+        {
+          title: "Raporlar",
+          description: "Sipariş ve tahsilat raporlarını görüntüleme.",
+          icon: WalletCards,
+          permissions: [
+            ["viewOrderReport", "Sipariş ve tahsilat raporunu görüntüleme"],
+          ] satisfies [PermissionKey, string][],
+        },
+        {
+          title: "Bayi Yönetimi",
+          description:
+            "Bayileri, bayi hesaplarını ve bayiye özel ürün fiyatlarını yönetme.",
+          icon: Users,
+          permissions: [
+            ["viewDealers", "Bayileri görüntüleme"],
+            ["createDealer", "Yeni bayi oluşturma"],
+            ["updateDealer", "Bayi bilgilerini düzenleme"],
+            ["manageDealerPrices", "Bayi özel fiyatlarını değiştirme"],
+            [
+              "viewDealerAccounts",
+              "Bayi hesap ve bakiye bilgilerini görüntüleme",
+            ],
+          ] satisfies [PermissionKey, string][],
+        },
+        {
+          title: "Müşteri ve Pfand",
+          description: "Müşteri bilgileri ve Pfand iadeleri.",
+          icon: Users,
+          permissions: [
+            ["viewCustomers", "Müşterileri görüntüleme"],
+            ["managePfand", "Pfand iadelerini yönetme"],
+          ] satisfies [PermissionKey, string][],
+        },
+      ];
+}
 
 export default function AdminPermissionsPage() {
   const { language } = useLanguage();
@@ -247,6 +367,11 @@ export default function AdminPermissionsPage() {
     [permissions],
   );
 
+  const permissionGroups = useMemo(
+    () => getPermissionGroups(language),
+    [language],
+  );
+
   useEffect(() => {
     async function loadPermissions() {
       try {
@@ -257,7 +382,12 @@ export default function AdminPermissionsPage() {
         const data: AdminResponse & { error?: string } = await response.json();
 
         if (!response.ok) {
-          setError(data.error || "Admin yetkileri yüklenemedi.");
+          setError(
+            data.error ||
+              (language === "de"
+                ? "Admin-Berechtigungen konnten nicht geladen werden."
+                : "Admin yetkileri yüklenemedi."),
+          );
           return;
         }
 
@@ -268,7 +398,11 @@ export default function AdminPermissionsPage() {
           ...(data.admin.adminPermission || {}),
         });
       } catch {
-        setError("Admin yetkileri yüklenemedi.");
+        setError(
+          language === "de"
+            ? "Admin-Berechtigungen konnten nicht geladen werden."
+            : "Admin yetkileri yüklenemedi.",
+        );
       } finally {
         setLoading(false);
       }
@@ -458,13 +592,26 @@ export default function AdminPermissionsPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Yetkiler kaydedilemedi.");
+        setError(
+          data.error ||
+            (language === "de"
+              ? "Berechtigungen konnten nicht gespeichert werden."
+              : "Yetkiler kaydedilemedi."),
+        );
         return;
       }
 
-      setSuccess("Admin yetkileri başarıyla güncellendi.");
+      setSuccess(
+        language === "de"
+          ? "Admin-Berechtigungen wurden erfolgreich aktualisiert."
+          : "Admin yetkileri başarıyla güncellendi.",
+      );
     } catch {
-      setError("Yetkiler kaydedilemedi.");
+      setError(
+        language === "de"
+          ? "Berechtigungen konnten nicht gespeichert werden."
+          : "Yetkiler kaydedilemedi.",
+      );
     } finally {
       setSaving(false);
     }
@@ -475,7 +622,9 @@ export default function AdminPermissionsPage() {
       <main className="flex min-h-screen items-center justify-center bg-slate-100">
         <div className="flex items-center gap-3 font-bold text-slate-600">
           <Loader2 className="animate-spin" />
-          Yetkiler yükleniyor...
+          {language === "de"
+            ? "Berechtigungen werden geladen..."
+            : "Yetkiler yükleniyor..."}
         </div>
       </main>
     );
@@ -489,7 +638,7 @@ export default function AdminPermissionsPage() {
           className="inline-flex items-center gap-2 font-bold text-slate-600 transition hover:text-orange-500"
         >
           <ArrowLeft size={18} />
-          Admin Yönetimi
+          {language === "de" ? "Administratorverwaltung" : "Admin Yönetimi"}
         </Link>
 
         <section className="mt-6 rounded-[32px] bg-slate-950 p-7 text-white sm:p-10">
@@ -520,7 +669,9 @@ export default function AdminPermissionsPage() {
               </div>
 
               <p className="mt-4 text-sm text-slate-300">
-                {enabledCount} / {Object.keys(permissions).length} yetki açık
+                {language === "de"
+                  ? `${enabledCount} / ${Object.keys(permissions).length} Berechtigungen aktiv`
+                  : `${enabledCount} / ${Object.keys(permissions).length} yetki açık`}
               </p>
             </div>
           </div>
@@ -532,7 +683,7 @@ export default function AdminPermissionsPage() {
             onClick={enableAll}
             className="rounded-xl bg-green-600 px-5 py-3 font-bold text-white transition hover:bg-green-700"
           >
-            Tümünü Aç
+            {language === "de" ? "Alle aktivieren" : "Tümünü Aç"}
           </button>
 
           <button
@@ -540,7 +691,7 @@ export default function AdminPermissionsPage() {
             onClick={disableAll}
             className="rounded-xl bg-white px-5 py-3 font-bold text-slate-700 shadow-sm transition hover:text-red-500"
           >
-            Tümünü Kapat
+            {language === "de" ? "Alle deaktivieren" : "Tümünü Kapat"}
           </button>
         </div>
 
@@ -626,12 +777,12 @@ export default function AdminPermissionsPage() {
             {saving ? (
               <>
                 <Loader2 size={20} className="animate-spin" />
-                Kaydediliyor...
+                {language === "de" ? "Wird gespeichert..." : "Kaydediliyor..."}
               </>
             ) : (
               <>
                 <Save size={20} />
-                Yetkileri Kaydet
+                {language === "de" ? "Berechtigungen speichern" : "Yetkileri Kaydet"}
               </>
             )}
           </button>

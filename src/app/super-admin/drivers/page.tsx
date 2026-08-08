@@ -31,6 +31,49 @@ type Driver = {
 export default function DriverManagementPage() {
   const { language } = useLanguage();
 
+  const t =
+    language === "de"
+      ? {
+          back: "Super Admin",
+          title: "Fahrerverwaltung",
+          subtitle: "Fahrerkonten für Lieferungen anlegen und einsehen.",
+          newDriver: "Neuer Fahrer",
+          firstName: "Vorname",
+          lastName: "Nachname",
+          email: "E-Mail",
+          phone: "Telefon",
+          password: "Temporäres Passwort",
+          creating: "Wird erstellt...",
+          createAccount: "Fahrerkonto erstellen",
+          drivers: "Fahrer",
+          loading: "Wird geladen...",
+          noDrivers: "Noch kein Fahrerkonto vorhanden.",
+          assignedOrders: "Zugewiesene Bestellungen:",
+          loadFailed: "Fahrer konnten nicht geladen werden.",
+          createFailed: "Fahrer konnte nicht erstellt werden.",
+          createSuccess: "Fahrerkonto wurde erfolgreich erstellt.",
+        }
+      : {
+          back: "Super Admin",
+          title: "Şoför Yönetimi",
+          subtitle: "Teslimat yapacak şoför hesaplarını oluşturun ve görüntüleyin.",
+          newDriver: "Yeni Şoför",
+          firstName: "Ad",
+          lastName: "Soyad",
+          email: "E-posta",
+          phone: "Telefon",
+          password: "Geçici şifre",
+          creating: "Oluşturuluyor...",
+          createAccount: "Şoför Hesabı Oluştur",
+          drivers: "Şoförler",
+          loading: "Yükleniyor...",
+          noDrivers: "Henüz şoför hesabı bulunmuyor.",
+          assignedOrders: "Atanan sipariş:",
+          loadFailed: "Şoförler yüklenemedi.",
+          createFailed: "Şoför oluşturulamadı.",
+          createSuccess: "Şoför hesabı başarıyla oluşturuldu.",
+        };
+
   const [
     drivers,
     setDrivers,
@@ -71,7 +114,7 @@ export default function DriverManagementPage() {
       if (!response.ok) {
         setError(
           data.error ||
-            "Şoförler yüklenemedi."
+            t.loadFailed
         );
         return;
       }
@@ -81,7 +124,7 @@ export default function DriverManagementPage() {
       );
     } catch {
       setError(
-        "Şoförler yüklenemedi."
+        t.loadFailed
       );
     } finally {
       setLoading(false);
@@ -155,13 +198,13 @@ export default function DriverManagementPage() {
       if (!response.ok) {
         setError(
           data.error ||
-            "Şoför oluşturulamadı."
+            t.createFailed
         );
         return;
       }
 
       setSuccess(
-        "Şoför hesabı başarıyla oluşturuldu."
+        t.createSuccess
       );
 
       form.reset();
@@ -169,7 +212,7 @@ export default function DriverManagementPage() {
       await loadDrivers();
     } catch {
       setError(
-        "Şoför oluşturulamadı."
+        t.createFailed
       );
     } finally {
       setSaving(false);
@@ -184,7 +227,7 @@ export default function DriverManagementPage() {
           className="inline-flex items-center gap-2 font-bold text-slate-600 hover:text-orange-500"
         >
           <ArrowLeft size={18} />
-          Super Admin
+          {t.back}
         </Link>
 
         <div className="mt-6 rounded-[32px] bg-slate-950 p-7 text-white sm:p-10">
@@ -193,11 +236,11 @@ export default function DriverManagementPage() {
           </div>
 
           <h1 className="mt-5 text-4xl font-black">
-            Şoför Yönetimi
+            {t.title}
           </h1>
 
           <p className="mt-3 text-slate-400">
-            Teslimat yapacak şoför hesaplarını oluşturun ve görüntüleyin.
+            {t.subtitle}
           </p>
         </div>
 
@@ -207,7 +250,7 @@ export default function DriverManagementPage() {
               <Plus className="text-orange-500" />
 
               <h2 className="text-2xl font-black text-slate-950">
-                Yeni Şoför
+                {t.newDriver}
               </h2>
             </div>
 
@@ -218,14 +261,14 @@ export default function DriverManagementPage() {
               <input
                 required
                 name="firstName"
-                placeholder={language==="de"?"Vorname":"Ad"}
+                placeholder={t.firstName}
                 className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-orange-500"
               />
 
               <input
                 required
                 name="lastName"
-                placeholder={language==="de"?"Nachname":"Soyad"}
+                placeholder={t.lastName}
                 className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-orange-500"
               />
 
@@ -233,14 +276,14 @@ export default function DriverManagementPage() {
                 required
                 name="email"
                 type="email"
-                placeholder={language==="de"?"E-Mail":"E-posta"}
+                placeholder={t.email}
                 className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-orange-500"
               />
 
               <input
                 name="phone"
                 type="tel"
-                placeholder={language==="de"?"Telefon":"Telefon"}
+                placeholder={t.phone}
                 className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-orange-500"
               />
 
@@ -249,7 +292,7 @@ export default function DriverManagementPage() {
                 name="password"
                 type="password"
                 minLength={8}
-                placeholder={language==="de"?"Temporäres Passwort":"Geçici şifre"}
+                placeholder={t.password}
                 className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-orange-500"
               />
 
@@ -276,12 +319,12 @@ export default function DriverManagementPage() {
                       size={19}
                       className="animate-spin"
                     />
-                    Oluşturuluyor...
+                    {t.creating}
                   </>
                 ) : (
                   <>
                     <Plus size={19} />
-                    Şoför Hesabı Oluştur
+                    {t.createAccount}
                   </>
                 )}
               </button>
@@ -290,7 +333,7 @@ export default function DriverManagementPage() {
 
           <section className="rounded-[28px] bg-white p-6">
             <h2 className="text-2xl font-black text-slate-950">
-              Şoförler
+              {t.drivers}
             </h2>
 
             {loading ? (
@@ -299,11 +342,11 @@ export default function DriverManagementPage() {
                   className="animate-spin"
                   size={20}
                 />
-                Yükleniyor...
+                {t.loading}
               </div>
             ) : drivers.length === 0 ? (
               <p className="mt-6 text-slate-500">
-                Henüz şoför hesabı bulunmuyor.
+                {t.noDrivers}
               </p>
             ) : (
               <div className="mt-6 space-y-3">
@@ -340,7 +383,7 @@ export default function DriverManagementPage() {
                         </span>
 
                         <p className="mt-2 text-sm font-semibold text-slate-500">
-                          Atanan sipariş:{" "}
+                          {t.assignedOrders}{" "}
                           {
                             driver._count
                               .driverOrders

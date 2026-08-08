@@ -214,6 +214,257 @@ type StockMovement = {
 export default function SuperAdminStockPage() {
   const { language } = useLanguage();
 
+  const t =
+    language === "de"
+      ? {
+          loadError:
+            "Bestandsdaten konnten nicht geladen werden.",
+          invalidPurchasePrice:
+            "Bitte geben Sie einen gültigen Einkaufspreis ein.",
+          invalidQuantity:
+            "Bitte geben Sie eine gültige Menge ein.",
+          exceedsStock:
+            "Es kann nicht mehr abgebucht werden, als auf Lager ist.",
+          actionFailed:
+            "Lagerbuchung fehlgeschlagen.",
+          stockUpdated:
+            "Lagerbestand aktualisiert.",
+          actionError:
+            "Lagerbuchung konnte nicht durchgeführt werden.",
+          loadingStock:
+            "Lagerbestand wird geladen...",
+          pageTitle:
+            "Lagerverwaltung",
+          pageSubtitle:
+            "Sehen Sie sich Produktbestände an, fügen Sie Bestand hinzu, buchen Sie ihn ab und verfolgen Sie Lagerbewegungen.",
+          productCountLabel:
+            "Produktanzahl",
+          totalStockLabel:
+            "Gesamtbestand",
+          stockPurchaseValueLabel:
+            "Warenwert im Lager",
+          byPurchasePrice:
+            "Nach Einkaufspreis",
+          todayProfitLabel:
+            "Tagesgewinn",
+          fromTodaySales:
+            "Aus heutigen Verkäufen",
+          monthlyProfitLabel:
+            "Monatsgewinn",
+          fromMonthSales:
+            "Aus Verkäufen dieses Monats",
+          yearlyProfitLabel:
+            "Jahresgewinn",
+          sinceJan1:
+            "Seit dem 1. Januar",
+          criticalStockLabel:
+            "Kritischer Bestand",
+          outOfStockLabel:
+            "Nicht auf Lager",
+          searchPlaceholder:
+            "Produkt oder Kategorie suchen",
+          noProductsFound:
+            "Kein Produkt gefunden.",
+          colProduct:
+            "Produkt",
+          colStock:
+            "Bestand",
+          colPurchasePrice:
+            "Einkaufspreis",
+          colSalePrice:
+            "Verkaufspreis",
+          colStockValue:
+            "Bestandswert",
+          colToday:
+            "Heute",
+          colThisMonth:
+            "Diesen Monat",
+          colTodayProfit:
+            "Gewinn heute",
+          colMonthlyProfit:
+            "Gewinn im Monat",
+          colActions:
+            "Aktionen",
+          categoryLabel:
+            "Kategorie",
+          stockValueBadge:
+            "Warenwert",
+          noPackageInfo:
+            "Keine Verpackungsinfo",
+          inactiveBadge:
+            "Inaktiv",
+          minLabel:
+            "Min:",
+          saveBtn:
+            "Speichern",
+          registerPriceLabel:
+            "Kassenpreis",
+          revenueSuffix:
+            "Umsatz",
+          dailyLabel:
+            "Täglich",
+          monthlyLabel:
+            "Monatlich",
+          addStockBtn:
+            "+ Bestand",
+          returnBtn:
+            "Retoure",
+          brokenBtn:
+            "Bruch",
+          expiredBtn:
+            "Verfallen",
+          dialogAriaLabel:
+            "Fenster für Lagerbewegung",
+          dialogEyebrow:
+            "Lagerbuchung",
+          currentStockLabel:
+            "Aktueller Bestand:",
+          closeBtn:
+            "Schließen",
+          actionTitleAdd:
+            "Bestand erhöhen",
+          actionTitleReturn:
+            "Rückgabe an Lieferanten",
+          actionTitleBroken:
+            "Beschädigte Ware",
+          actionTitleExpired:
+            "Abgelaufene Ware",
+          actionDescAdd:
+            "Die eingegebene Menge wird dem aktuellen Bestand hinzugefügt.",
+          actionDescReduce:
+            "Die eingegebene Menge wird vom aktuellen Bestand abgezogen.",
+          quantityLabel:
+            "Menge",
+          quantityPlaceholder:
+            "Menge eingeben",
+          submitBtn:
+            "Buchung speichern",
+        }
+      : {
+          loadError:
+            "Stok bilgileri yüklenemedi.",
+          invalidPurchasePrice:
+            "Geçerli bir alış fiyatı girin.",
+          invalidQuantity:
+            "Geçerli bir miktar girin.",
+          exceedsStock:
+            "Mevcut stoktan daha fazla ürün düşülemez.",
+          actionFailed:
+            "Stok işlemi başarısız.",
+          stockUpdated:
+            "Stok güncellendi.",
+          actionError:
+            "Stok işlemi gerçekleştirilemedi.",
+          loadingStock:
+            "Stoklar yükleniyor...",
+          pageTitle:
+            "Stok Yönetimi",
+          pageSubtitle:
+            "Ürün stoklarını görüntüleyin, ekleyin, azaltın ve stok hareketlerini takip edin.",
+          productCountLabel:
+            "Ürün Sayısı",
+          totalStockLabel:
+            "Toplam Stok",
+          stockPurchaseValueLabel:
+            "Stoktaki Mal Değeri",
+          byPurchasePrice:
+            "Alış fiyatına göre",
+          todayProfitLabel:
+            "Bugünkü Kâr",
+          fromTodaySales:
+            "Bugünkü satışlardan",
+          monthlyProfitLabel:
+            "Aylık Kâr",
+          fromMonthSales:
+            "Bu ayki satışlardan",
+          yearlyProfitLabel:
+            "Yıllık Kâr",
+          sinceJan1:
+            "1 Ocak'tan bugüne",
+          criticalStockLabel:
+            "Kritik Stok",
+          outOfStockLabel:
+            "Stok Bitti",
+          searchPlaceholder:
+            "Ürün veya kategori ara",
+          noProductsFound:
+            "Ürün bulunamadı.",
+          colProduct:
+            "Ürün",
+          colStock:
+            "Stok",
+          colPurchasePrice:
+            "Alış Fiyatı",
+          colSalePrice:
+            "Satış Fiyatı",
+          colStockValue:
+            "Stok Değeri",
+          colToday:
+            "Bugün",
+          colThisMonth:
+            "Bu Ay",
+          colTodayProfit:
+            "Bugün Kâr",
+          colMonthlyProfit:
+            "Aylık Kâr",
+          colActions:
+            "İşlemler",
+          categoryLabel:
+            "Kategori",
+          stockValueBadge:
+            "Mal Değeri",
+          noPackageInfo:
+            "Paket bilgisi yok",
+          inactiveBadge:
+            "Pasif",
+          minLabel:
+            "Min:",
+          saveBtn:
+            "Kaydet",
+          registerPriceLabel:
+            "Kasadaki fiyat",
+          revenueSuffix:
+            "ciro",
+          dailyLabel:
+            "Günlük",
+          monthlyLabel:
+            "Aylık",
+          addStockBtn:
+            "+ Stok",
+          returnBtn:
+            "İade",
+          brokenBtn:
+            "Kırık",
+          expiredBtn:
+            "Tarihi",
+          dialogAriaLabel:
+            "Stok işlemi penceresi",
+          dialogEyebrow:
+            "Stok İşlemi",
+          currentStockLabel:
+            "Mevcut stok:",
+          closeBtn:
+            "Kapat",
+          actionTitleAdd:
+            "Stok artır",
+          actionTitleReturn:
+            "Tedarikçiye ürün iadesi",
+          actionTitleBroken:
+            "Kırılan ürün",
+          actionTitleExpired:
+            "Tarihi geçen ürün",
+          actionDescAdd:
+            "Girilen miktar mevcut stoğa eklenecek.",
+          actionDescReduce:
+            "Girilen miktar mevcut stoktan düşülecek.",
+          quantityLabel:
+            "Miktar",
+          quantityPlaceholder:
+            "Miktar girin",
+          submitBtn:
+            "İşlemi Kaydet",
+        };
+
   const [
     products,
     setProducts,
@@ -288,7 +539,7 @@ export default function SuperAdminStockPage() {
       if (!response.ok) {
         setError(
           data.error ||
-            "Stok bilgileri yüklenemedi."
+            t.loadError
         );
         return;
       }
@@ -304,7 +555,7 @@ export default function SuperAdminStockPage() {
       );
     } catch {
       setError(
-        "Stok bilgileri yüklenemedi."
+        t.loadError
       );
     } finally {
       if (!silent) {
@@ -580,7 +831,7 @@ export default function SuperAdminStockPage() {
         purchasePrice < 0
       ) {
         setError(
-          "Geçerli bir alış fiyatı girin."
+          t.invalidPurchasePrice
         );
         return;
       }
@@ -591,7 +842,7 @@ export default function SuperAdminStockPage() {
       quantity <= 0
     ) {
       setError(
-        "Geçerli bir miktar girin."
+        t.invalidQuantity
       );
       return;
     }
@@ -607,7 +858,7 @@ export default function SuperAdminStockPage() {
         product.stock
     ) {
       setError(
-        "Mevcut stoktan daha fazla ürün düşülemez."
+        t.exceedsStock
       );
       return;
     }
@@ -652,7 +903,7 @@ export default function SuperAdminStockPage() {
       if (!response.ok) {
         setError(
           data.error ||
-            "Stok işlemi başarısız."
+            t.actionFailed
         );
         return;
       }
@@ -683,7 +934,7 @@ export default function SuperAdminStockPage() {
 
       setSuccess(
         data.message ||
-          "Stok güncellendi."
+          t.stockUpdated
       );
 
       form.reset();
@@ -702,7 +953,7 @@ export default function SuperAdminStockPage() {
       );
     } catch {
       setError(
-        "Stok işlemi gerçekleştirilemedi."
+        t.actionError
       );
     } finally {
       setSavingProductId(
@@ -718,7 +969,7 @@ export default function SuperAdminStockPage() {
           <Loader2
             className="animate-spin"
           />
-          Stoklar yükleniyor...
+          {t.loadingStock}
         </div>
       </main>
     );
@@ -744,20 +995,18 @@ export default function SuperAdminStockPage() {
           />
 
           <h1 className="mt-4 text-4xl font-black">
-            Stok Yönetimi
+            {t.pageTitle}
           </h1>
 
           <p className="mt-3 text-slate-400">
-            Ürün stoklarını görüntüleyin,
-            ekleyin, azaltın ve stok
-            hareketlerini takip edin.
+            {t.pageSubtitle}
           </p>
         </section>
 
         <section className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-8">
           <div className="rounded-2xl bg-white p-4 shadow-sm">
             <p className="text-xs font-black uppercase text-slate-500">
-              Ürün Sayısı
+              {t.productCountLabel}
             </p>
 
             <p className="mt-1 text-2xl font-black text-slate-950">
@@ -769,7 +1018,7 @@ export default function SuperAdminStockPage() {
 
           <div className="rounded-2xl bg-slate-950 p-4 text-white shadow-sm">
             <p className="text-xs font-black uppercase text-slate-400">
-              Toplam Stok
+              {t.totalStockLabel}
             </p>
 
             <p className="mt-1 text-2xl font-black">
@@ -781,7 +1030,7 @@ export default function SuperAdminStockPage() {
 
           <div className="rounded-2xl bg-amber-50 p-4 shadow-sm">
             <p className="text-xs font-black uppercase text-amber-700">
-              Stoktaki Mal Değeri
+              {t.stockPurchaseValueLabel}
             </p>
 
             <p className="mt-1 text-2xl font-black text-amber-900">
@@ -798,13 +1047,13 @@ export default function SuperAdminStockPage() {
             </p>
 
             <p className="mt-1 text-[10px] font-bold text-amber-700">
-              Alış fiyatına göre
+              {t.byPurchasePrice}
             </p>
           </div>
 
           <div className="rounded-2xl bg-emerald-50 p-4 shadow-sm">
             <p className="text-xs font-black uppercase text-emerald-700">
-              Bugünkü Kâr
+              {t.todayProfitLabel}
             </p>
 
             <p
@@ -828,13 +1077,13 @@ export default function SuperAdminStockPage() {
             </p>
 
             <p className="mt-1 text-[10px] font-bold text-emerald-700">
-              Bugünkü satışlardan
+              {t.fromTodaySales}
             </p>
           </div>
 
           <div className="rounded-2xl bg-green-100 p-4 shadow-sm">
             <p className="text-xs font-black uppercase text-green-700">
-              Aylık Kâr
+              {t.monthlyProfitLabel}
             </p>
 
             <p
@@ -858,13 +1107,13 @@ export default function SuperAdminStockPage() {
             </p>
 
             <p className="mt-1 text-[10px] font-bold text-green-700">
-              Bu ayki satışlardan
+              {t.fromMonthSales}
             </p>
           </div>
 
           <div className="rounded-2xl bg-teal-50 p-4 shadow-sm">
             <p className="text-xs font-black uppercase text-teal-700">
-              Yıllık Kâr
+              {t.yearlyProfitLabel}
             </p>
 
             <p
@@ -888,13 +1137,13 @@ export default function SuperAdminStockPage() {
             </p>
 
             <p className="mt-1 text-[10px] font-bold text-teal-700">
-              1 Ocak&apos;tan bugüne
+              {t.sinceJan1}
             </p>
           </div>
 
           <div className="rounded-2xl bg-orange-50 p-4 shadow-sm">
             <p className="text-xs font-black uppercase text-orange-700">
-              Kritik Stok
+              {t.criticalStockLabel}
             </p>
 
             <p className="mt-1 text-2xl font-black text-orange-900">
@@ -906,7 +1155,7 @@ export default function SuperAdminStockPage() {
 
           <div className="rounded-2xl bg-red-50 p-4 shadow-sm">
             <p className="text-xs font-black uppercase text-red-700">
-              Stok Bitti
+              {t.outOfStockLabel}
             </p>
 
             <p className="mt-1 text-2xl font-black text-red-900">
@@ -948,7 +1197,7 @@ export default function SuperAdminStockPage() {
                   event.target.value
                 )
               }
-              placeholder={language==="de"?"Produkt oder Kategorie suchen":"Ürün veya kategori ara"}
+              placeholder={t.searchPlaceholder}
               className="w-full rounded-xl border border-slate-200 py-3 pl-11 pr-4 font-bold outline-none focus:border-orange-500"
             />
           </div>
@@ -958,50 +1207,50 @@ export default function SuperAdminStockPage() {
           {filteredProducts.length ===
           0 ? (
             <div className="p-8 text-center text-slate-500">
-              Ürün bulunamadı.
+              {t.noProductsFound}
             </div>
           ) : (
             <div className="w-full min-w-0">
               <div className="w-full min-w-0">
                 <div className="grid grid-cols-[minmax(155px,1.35fr)_78px_104px_92px_105px_86px_86px_100px_100px_230px] items-center gap-3 border-b border-slate-200 bg-slate-100 px-4 py-3.5 text-[11px] font-black uppercase tracking-wide text-slate-500">
                   <div>
-                    Ürün
+                    {t.colProduct}
                   </div>
 
                   <div className="text-center">
-                    Stok
+                    {t.colStock}
                   </div>
 
                   <div className="text-center">
-                    Alış Fiyatı
+                    {t.colPurchasePrice}
                   </div>
 
                   <div className="text-center">
-                    Satış Fiyatı
+                    {t.colSalePrice}
                   </div>
 
                   <div className="text-center">
-                    Stok Değeri
+                    {t.colStockValue}
                   </div>
 
                   <div className="text-center">
-                    Bugün
+                    {t.colToday}
                   </div>
 
                   <div className="text-center">
-                    Bu Ay
+                    {t.colThisMonth}
                   </div>
 
                   <div className="text-center">
-                    Bugün Kâr
+                    {t.colTodayProfit}
                   </div>
 
                   <div className="text-center">
-                    Aylık Kâr
+                    {t.colMonthlyProfit}
                   </div>
 
                   <div className="text-center">
-                    İşlemler
+                    {t.colActions}
                   </div>
                 </div>
 
@@ -1084,7 +1333,7 @@ export default function SuperAdminStockPage() {
                                       categoryTheme.label
                                     }`}
                                   >
-                                    Kategori
+                                    {t.categoryLabel}
                                   </p>
 
                                   <h2
@@ -1111,7 +1360,7 @@ export default function SuperAdminStockPage() {
                                     </p>
 
                                     <p className="mt-1 text-[9px] font-black uppercase">
-                                      Ürün
+                                      {t.colProduct}
                                     </p>
                                   </div>
 
@@ -1127,7 +1376,7 @@ export default function SuperAdminStockPage() {
                                     </p>
 
                                     <p className="mt-1 text-[9px] font-black uppercase">
-                                      Stok
+                                      {t.colStock}
                                     </p>
                                   </div>
 
@@ -1150,7 +1399,7 @@ export default function SuperAdminStockPage() {
                                     </p>
 
                                     <p className="mt-1 text-[9px] font-black uppercase">
-                                      Mal Değeri
+                                      {t.stockValueBadge}
                                     </p>
                                   </div>
                                 </div>
@@ -1180,12 +1429,12 @@ export default function SuperAdminStockPage() {
 
                             <p className="mt-0.5 truncate text-xs text-slate-500">
                               {product.packageInfo ||
-                                "Paket bilgisi yok"}
+                                t.noPackageInfo}
                             </p>
 
                             {!product.active ? (
                               <span className="mt-1 inline-flex rounded-full bg-slate-200 px-2 py-0.5 text-[9px] font-black text-slate-600">
-                                Pasif
+                                {t.inactiveBadge}
                               </span>
                             ) : null}
                           </div>
@@ -1207,7 +1456,7 @@ export default function SuperAdminStockPage() {
                             </p>
 
                             <p className="mt-1.5 text-[10px] font-bold leading-none">
-                              Min:{" "}
+                              {t.minLabel}{" "}
                               {
                                 product.minStock
                               }
@@ -1246,7 +1495,7 @@ export default function SuperAdminStockPage() {
                               }
                               className="h-9 rounded-lg bg-amber-500 px-3 text-xs font-black text-white transition hover:bg-amber-600 disabled:opacity-50"
                             >
-                              Kaydet
+                              {t.saveBtn}
                             </button>
                           </form>
 
@@ -1259,7 +1508,7 @@ export default function SuperAdminStockPage() {
                             </p>
 
                             <p className="mt-1 text-[9px] font-bold text-slate-500">
-                              Kasadaki fiyat
+                              {t.registerPriceLabel}
                             </p>
                           </div>
 
@@ -1306,7 +1555,7 @@ export default function SuperAdminStockPage() {
                               {product.soldTodayRevenue.toFixed(
                                 2
                               )}{" "}
-                              € ciro
+                              € {t.revenueSuffix}
                             </p>
                           </div>
 
@@ -1321,7 +1570,7 @@ export default function SuperAdminStockPage() {
                               {product.soldThisMonthRevenue.toFixed(
                                 2
                               )}{" "}
-                              € ciro
+                              € {t.revenueSuffix}
                             </p>
                           </div>
 
@@ -1341,7 +1590,7 @@ export default function SuperAdminStockPage() {
                             </p>
 
                             <p className="mt-1 text-[9px] font-bold">
-                              Günlük
+                              {t.dailyLabel}
                             </p>
                           </div>
 
@@ -1361,7 +1610,7 @@ export default function SuperAdminStockPage() {
                             </p>
 
                             <p className="mt-1 text-[9px] font-bold">
-                              Aylık
+                              {t.monthlyLabel}
                             </p>
                           </div>
 
@@ -1380,7 +1629,7 @@ export default function SuperAdminStockPage() {
                               }
                               className="rounded-xl bg-green-600 px-3 py-3 text-xs font-black text-white transition hover:bg-green-700 disabled:opacity-50"
                             >
-                              + Stok
+                              {t.addStockBtn}
                             </button>
 
                             <button
@@ -1399,7 +1648,7 @@ export default function SuperAdminStockPage() {
                               }
                               className="rounded-xl bg-blue-600 px-3 py-3 text-xs font-black text-white transition hover:bg-blue-700 disabled:opacity-40"
                             >
-                              İade
+                              {t.returnBtn}
                             </button>
 
                             <button
@@ -1418,7 +1667,7 @@ export default function SuperAdminStockPage() {
                               }
                               className="rounded-xl bg-red-600 px-3 py-3 text-xs font-black text-white transition hover:bg-red-700 disabled:opacity-40"
                             >
-                              Kırık
+                              {t.brokenBtn}
                             </button>
 
                             <button
@@ -1437,7 +1686,7 @@ export default function SuperAdminStockPage() {
                               }
                               className="rounded-xl bg-orange-500 px-3 py-3 text-xs font-black text-white transition hover:bg-orange-600 disabled:opacity-40"
                             >
-                              Tarihi
+                              {t.expiredBtn}
                             </button>
                           </div>
                           </article>
@@ -1454,7 +1703,7 @@ export default function SuperAdminStockPage() {
 
         {actionDialog ? (
           <div
-            aria-label={language==="de"?"Fenster für Lagerbewegung":"Stok işlemi penceresi"}
+            aria-label={t.dialogAriaLabel}
             className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm"
             onMouseDown={() =>
               setActionDialog(
@@ -1473,7 +1722,7 @@ export default function SuperAdminStockPage() {
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-xs font-black uppercase text-orange-500">
-                    Stok İşlemi
+                    {t.dialogEyebrow}
                   </p>
 
                   <h2 className="mt-1 text-xl font-black text-slate-950">
@@ -1483,7 +1732,7 @@ export default function SuperAdminStockPage() {
                   </h2>
 
                   <p className="mt-1 text-sm text-slate-500">
-                    Mevcut stok:{" "}
+                    {t.currentStockLabel}{" "}
                     <strong>
                       {
                         actionDialog.product.stock
@@ -1501,7 +1750,7 @@ export default function SuperAdminStockPage() {
                   }
                   className="rounded-xl bg-slate-100 px-3 py-2 text-sm font-black text-slate-600"
                 >
-                  Kapat
+                  {t.closeBtn}
                 </button>
               </div>
 
@@ -1509,21 +1758,21 @@ export default function SuperAdminStockPage() {
                 <p className="font-black text-slate-950">
                   {actionDialog.action ===
                   "STOCK_ADD"
-                    ? "Stok artır"
+                    ? t.actionTitleAdd
                     : actionDialog.action ===
                         "RETURN"
-                      ? "Tedarikçiye ürün iadesi"
+                      ? t.actionTitleReturn
                       : actionDialog.action ===
                           "BROKEN"
-                        ? "Kırılan ürün"
-                        : "Tarihi geçen ürün"}
+                        ? t.actionTitleBroken
+                        : t.actionTitleExpired}
                 </p>
 
                 <p className="mt-1 text-sm text-slate-500">
                   {actionDialog.action ===
                   "STOCK_ADD"
-                    ? "Girilen miktar mevcut stoğa eklenecek."
-                    : "Girilen miktar mevcut stoktan düşülecek."}
+                    ? t.actionDescAdd
+                    : t.actionDescReduce}
                 </p>
               </div>
 
@@ -1541,7 +1790,7 @@ export default function SuperAdminStockPage() {
               >
                 <label className="block">
                   <span className="text-sm font-black text-slate-700">
-                    Miktar
+                    {t.quantityLabel}
                   </span>
 
                   <input
@@ -1558,7 +1807,7 @@ export default function SuperAdminStockPage() {
                     step="1"
                     type="number"
                     name="quantity"
-                    placeholder={language==="de"?"Menge eingeben":"Miktar girin"}
+                    placeholder={t.quantityPlaceholder}
                     className="mt-2 h-12 w-full rounded-xl border border-slate-200 px-4 text-lg font-black outline-none focus:border-orange-500"
                   />
                 </label>
@@ -1599,7 +1848,7 @@ export default function SuperAdminStockPage() {
                     />
                   )}
 
-                  İşlemi Kaydet
+                  {t.submitBtn}
                 </button>
               </form>
             </div>

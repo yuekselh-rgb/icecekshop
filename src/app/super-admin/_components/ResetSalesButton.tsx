@@ -23,6 +23,101 @@ const CONFIRM_TEXT = "NEHIR CAN";
 export default function ResetSalesButton() {
   const { language } = useLanguage();
 
+  const t =
+    language === "de"
+      ? {
+          periodResetLabel: "Periodenrücksetzung",
+          resetAllSales: "Alle Verkäufe endgültig löschen",
+          resetButton: "Verkäufe zurücksetzen",
+          irreversibleAction: "Nicht rückgängig zu machende Aktion",
+          confirmTitle:
+            "Sollen wirklich alle Verkäufe endgültig gelöscht werden?",
+          warningIntro:
+            "Nach dieser Aktion können die Datensätze in keiner Weise wiederhergestellt werden.",
+          preservedTitle: "Diese Daten bleiben erhalten",
+          preservedItems: [
+            "Produkte bleiben erhalten",
+            "Hauptlagerbestände bleiben erhalten",
+            "Kunden bleiben erhalten",
+            "Händler bleiben erhalten",
+            "Admins bleiben erhalten",
+            "Fahrer bleiben erhalten",
+            "Firmeneinstellungen bleiben erhalten",
+          ],
+          confirmInstruction:
+            "Geben Sie zum Fortfahren den folgenden Text vollständig ein:",
+          confirmPlaceholder: "Bestätigungstext hier eingeben",
+          cancel: "Abbrechen",
+          deleting: "Wird endgültig gelöscht...",
+          permanentDelete: "Endgültig löschen",
+          resultOrders: "Gelöschte Bestellungen",
+          resultCashMovements: "Gelöschte Kassenbewegungen",
+          resultPfandReturns: "Gelöschte Pfanddatensätze",
+          resultDriverStockMovements: "Gelöschte Fahrzeugverkaufsbewegungen",
+          resultStockMovements: "Gelöschte Hauptlagerbewegungen",
+          resultResetDriverStocks: "Zurückgesetzte Fahrzeugbestandszeilen",
+          downloadReport: "Periodenabschlussbericht herunterladen (PDF)",
+          close: "Schließen",
+          deleteError: "Verkäufe konnten nicht gelöscht werden.",
+          deleteSuccess: "Alle Verkäufe wurden endgültig gelöscht.",
+          serverError:
+            "Der Server konnte nicht erreicht werden. Verkäufe konnten nicht gelöscht werden.",
+          bullets: [
+            "Es wird kein Datenbank-Backup erstellt.",
+            "Bestellungen werden nicht in den Papierkorb verschoben.",
+            "Barverkäufe werden dauerhaft gelöscht.",
+            "Fahrzeugverkäufe der Fahrer werden dauerhaft gelöscht.",
+            "Offene Konten und Zahlungsdaten werden gelöscht.",
+            "Pfanddatensätze der Verkäufe werden gelöscht.",
+            "Fahrerfahrzeugbestände werden zurückgesetzt.",
+          ],
+        }
+      : {
+          periodResetLabel: "Dönem sıfırlama",
+          resetAllSales: "Tüm satışları kalıcı sil",
+          resetButton: "Satışları Sıfırla",
+          irreversibleAction: "Geri alınamaz işlem",
+          confirmTitle: "Bütün satışlar kalıcı olarak silinsin mi?",
+          warningIntro:
+            "Bu işlemden sonra kayıtlar hiçbir şekilde geri getirilemez.",
+          preservedTitle: "Bu veriler korunacaktır",
+          preservedItems: [
+            "Ürünler korunacak",
+            "Ana depo stokları korunacak",
+            "Müşteriler korunacak",
+            "Bayiler korunacak",
+            "Adminler korunacak",
+            "Şoförler korunacak",
+            "Şirket ayarları korunacak",
+          ],
+          confirmInstruction:
+            "Devam etmek için aşağıdaki metni eksiksiz yazın:",
+          confirmPlaceholder: "Onay metnini buraya yazın",
+          cancel: "Vazgeç",
+          deleting: "Kalıcı olarak siliniyor...",
+          permanentDelete: "Kalıcı Olarak Sil",
+          resultOrders: "Silinen sipariş",
+          resultCashMovements: "Silinen kasa hareketi",
+          resultPfandReturns: "Silinen Pfand kaydı",
+          resultDriverStockMovements: "Silinen şoför satış hareketi",
+          resultStockMovements: "Silinen ana stok hareketi",
+          resultResetDriverStocks: "Sıfırlanan araç stok satırı",
+          downloadReport: "Dönem sonu raporunu indir (PDF)",
+          close: "Kapat",
+          deleteError: "Satışlar silinemedi.",
+          deleteSuccess: "Bütün satışlar kalıcı olarak silindi.",
+          serverError: "Sunucuya ulaşılamadı. Satışlar silinemedi.",
+          bullets: [
+            "Hiçbir veritabanı yedeği alınmayacak.",
+            "Siparişler çöp kutusuna taşınmayacak.",
+            "Bar satışları kalıcı olarak silinecek.",
+            "Şoför araç satışları kalıcı olarak silinecek.",
+            "Açık hesap ve ödeme kayıtları silinecek.",
+            "Satışlara bağlı Pfand kayıtları silinecek.",
+            "Şoför araç stokları sıfırlanacak.",
+          ],
+        };
+
   const [open, setOpen] = useState(false);
   const [confirmation, setConfirmation] = useState("");
   const [deleting, setDeleting] = useState(false);
@@ -67,17 +162,17 @@ export default function ResetSalesButton() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Satışlar silinemedi.");
+        setError(data.error || t.deleteError);
         return;
       }
 
-      setSuccess(data.message || "Bütün satışlar kalıcı olarak silindi.");
+      setSuccess(data.message || t.deleteSuccess);
 
       setResult(data.result || null);
       setReportUrl(data.reportUrl || "");
       setConfirmation("");
     } catch {
-      setError("Sunucuya ulaşılamadı. Satışlar silinemedi.");
+      setError(t.serverError);
     } finally {
       setDeleting(false);
     }
@@ -94,11 +189,11 @@ export default function ResetSalesButton() {
 
             <div className="min-w-0 flex-1">
               <p className="text-xs font-black uppercase tracking-wide text-red-300">
-                Dönem sıfırlama
+                {t.periodResetLabel}
               </p>
 
               <p className="mt-1 text-sm font-bold text-white">
-                Tüm satışları kalıcı sil
+                {t.resetAllSales}
               </p>
             </div>
           </div>
@@ -114,7 +209,7 @@ export default function ResetSalesButton() {
             className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-3 text-sm font-black text-white transition hover:bg-red-500"
           >
             <Trash2 size={17} />
-            Satışları Sıfırla
+            {t.resetButton}
           </button>
         </div>
       </div>
@@ -137,11 +232,11 @@ export default function ResetSalesButton() {
 
                 <div>
                   <p className="text-sm font-black uppercase tracking-wide text-red-600">
-                    Geri alınamaz işlem
+                    {t.irreversibleAction}
                   </p>
 
                   <h2 className="mt-1 text-2xl font-black text-slate-950">
-                    Bütün satışlar kalıcı olarak silinsin mi?
+                    {t.confirmTitle}
                   </h2>
                 </div>
               </div>
@@ -158,51 +253,23 @@ export default function ResetSalesButton() {
 
             <div className="space-y-5 p-6">
               <div className="rounded-2xl border border-red-200 bg-red-50 p-5">
-                <p className="font-black text-red-800">
-                  Bu işlemden sonra kayıtlar hiçbir şekilde geri getirilemez.
-                </p>
+                <p className="font-black text-red-800">{t.warningIntro}</p>
 
                 <ul className="mt-3 space-y-1 text-sm font-semibold text-red-700">
-                  <li>• {language==="de"?"Es wird kein Datenbank-Backup erstellt.":"Hiçbir veritabanı yedeği alınmayacak."}</li>
-                  <li>• {language==="de"?"Bestellungen werden nicht in den Papierkorb verschoben.":"Siparişler çöp kutusuna taşınmayacak."}</li>
-                  <li>• {language==="de"?"Barverkäufe werden dauerhaft gelöscht.":"Bar satışları kalıcı olarak silinecek."}</li>
-                  <li>• {language==="de"?"Fahrzeugverkäufe der Fahrer werden dauerhaft gelöscht.":"Şoför araç satışları kalıcı olarak silinecek."}</li>
-                  <li>• {language==="de"?"Offene Konten und Zahlungsdaten werden gelöscht.":"Açık hesap ve ödeme kayıtları silinecek."}</li>
-                  <li>• {language==="de"?"Pfanddatensätze der Verkäufe werden gelöscht.":"Satışlara bağlı Pfand kayıtları silinecek."}</li>
-                  <li>• {language==="de"?"Fahrerfahrzeugbestände werden zurückgesetzt.":"Şoför araç stokları sıfırlanacak."}</li>
+                  {t.bullets.map((bullet) => (
+                    <li key={bullet}>• {bullet}</li>
+                  ))}
                 </ul>
               </div>
 
               <div className="rounded-2xl border border-green-200 bg-green-50 p-5">
-                <p className="font-black text-green-800">
-                  Bu veriler korunacaktır
-                </p>
+                <p className="font-black text-green-800">{t.preservedTitle}</p>
 
                 <ul className="mt-3 space-y-1 text-sm font-semibold text-green-700">
-                  <li>✓ Ürünler korunacak</li>
-                  <li>✓ Ana depo stokları korunacak</li>
-                  <li>✓ Müşteriler korunacak</li>
-                  <li>✓ Bayiler korunacak</li>
-                  <li>✓ Adminler korunacak</li>
-                  <li>✓ Şoförler korunacak</li>
-                  <li>✓ Şirket ayarları korunacak</li>
-                                  </ul>
-              </div>
-
-              <div className="rounded-2xl border border-green-200 bg-green-50 p-5">
-                <p className="font-black text-green-800">
-                  Bu veriler korunacaktır
-                </p>
-
-                <ul className="mt-3 space-y-1 text-sm font-semibold text-green-700">
-                  <li>✓ Ürünler korunacak</li>
-                  <li>✓ Ana depo stokları korunacak</li>
-                  <li>✓ Müşteriler korunacak</li>
-                  <li>✓ Bayiler korunacak</li>
-                  <li>✓ Adminler korunacak</li>
-                  <li>✓ Şoförler korunacak</li>
-                  <li>✓ Şirket ayarları korunacak</li>
-                                  </ul>
+                  {t.preservedItems.map((item) => (
+                    <li key={item}>✓ {item}</li>
+                  ))}
+                </ul>
               </div>
 
               {!success ? (
@@ -212,7 +279,7 @@ export default function ResetSalesButton() {
                       htmlFor="permanent-sales-reset-confirmation"
                       className="text-sm font-black text-slate-700"
                     >
-                      Devam etmek için aşağıdaki metni eksiksiz yazın:
+                      {t.confirmInstruction}
                     </label>
 
                     <div className="mt-2 select-all rounded-xl bg-slate-950 px-4 py-3 text-sm font-black text-white">
@@ -225,7 +292,7 @@ export default function ResetSalesButton() {
                       onChange={(event) => setConfirmation(event.target.value)}
                       disabled={deleting}
                       autoComplete="off"
-                      placeholder={language==="de"?"Bestätigungstext hier eingeben":"Onay metnini buraya yazın"}
+                      placeholder={t.confirmPlaceholder}
                       className="mt-3 w-full rounded-xl border-2 border-slate-200 px-4 py-3 font-bold text-slate-950 outline-none transition focus:border-red-500 disabled:bg-slate-100"
                     />
                   </div>
@@ -243,7 +310,7 @@ export default function ResetSalesButton() {
                       disabled={deleting}
                       className="rounded-xl bg-slate-100 px-5 py-3 font-black text-slate-700 transition hover:bg-slate-200 disabled:opacity-50"
                     >
-                      Vazgeç
+                      {t.cancel}
                     </button>
 
                     <button
@@ -255,12 +322,12 @@ export default function ResetSalesButton() {
                       {deleting ? (
                         <>
                           <Loader2 size={19} className="animate-spin" />
-                          Kalıcı olarak siliniyor...
+                          {t.deleting}
                         </>
                       ) : (
                         <>
                           <Trash2 size={19} />
-                          Kalıcı Olarak Sil
+                          {t.permanentDelete}
                         </>
                       )}
                     </button>
@@ -272,21 +339,25 @@ export default function ResetSalesButton() {
 
                   {result ? (
                     <div className="mt-4 grid gap-2 text-sm font-semibold text-green-800 sm:grid-cols-2">
-                      <p>Silinen sipariş: {result.deletedOrders}</p>
                       <p>
-                        Silinen kasa hareketi: {result.deletedCashMovements}
+                        {t.resultOrders}: {result.deletedOrders}
                       </p>
-                      <p>Silinen Pfand kaydı: {result.deletedPfandReturns}</p>
                       <p>
-                        Silinen şoför satış hareketi:{" "}
+                        {t.resultCashMovements}: {result.deletedCashMovements}
+                      </p>
+                      <p>
+                        {t.resultPfandReturns}: {result.deletedPfandReturns}
+                      </p>
+                      <p>
+                        {t.resultDriverStockMovements}:{" "}
                         {result.deletedDriverStockMovements}
                       </p>
                       <p>
-                        Silinen ana stok hareketi:{" "}
+                        {t.resultStockMovements}:{" "}
                         {result.deletedStockMovements}
                       </p>
                       <p>
-                        Sıfırlanan araç stok satırı: {result.resetDriverStocks}
+                        {t.resultResetDriverStocks}: {result.resetDriverStocks}
                       </p>
                     </div>
                   ) : null}
@@ -298,7 +369,7 @@ export default function ResetSalesButton() {
                       rel="noopener noreferrer"
                       className="mt-4 inline-block font-bold text-green-800 underline"
                     >
-                      Dönem sonu raporunu indir (PDF)
+                      {t.downloadReport}
                     </a>
                   ) : null}
 
@@ -307,7 +378,7 @@ export default function ResetSalesButton() {
                     onClick={closeModal}
                     className="mt-5 w-full rounded-xl bg-green-700 px-5 py-3 font-black text-white transition hover:bg-green-600"
                   >
-                    Kapat
+                    {t.close}
                   </button>
                 </div>
               )}

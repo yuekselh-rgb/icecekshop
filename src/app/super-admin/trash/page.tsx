@@ -56,6 +56,76 @@ type Order = {
 export default function TrashPage() {
   const { language } = useLanguage();
 
+  const t =
+    language === "de"
+      ? {
+          backLink: "Alle Bestellungen",
+          pageTitle: "Papierkorb",
+          pageDesc:
+            "Stellen Sie gelöschte Bestellungen wieder her oder löschen Sie sie mit dem Super-Admin-Passwort endgültig.",
+          loading: "Wird geladen...",
+          empty: "Im Papierkorb befinden sich keine Bestellungen.",
+          driverLabel: "Lieferfahrer",
+          unassigned: "Nicht zugewiesen",
+          paymentLabel: "Zahlung",
+          paid: "Bezahlt",
+          open: "Offen",
+          totalLabel: "Gesamt",
+          deletedAtLabel: "Löschdatum",
+          restore: "Wiederherstellen",
+          permanentDelete: "Endgültig löschen",
+          deleting: "Wird gelöscht...",
+          passwordLabel: "Super-Admin-Passwort",
+          passwordPlaceholder: "Passwort eingeben",
+          loadError: "Papierkorb konnte nicht geladen werden.",
+          restoreError: "Bestellung konnte nicht wiederhergestellt werden.",
+          restoreSuccess: "Bestellung wurde wiederhergestellt.",
+          restoreCatchError:
+            "Beim Wiederherstellen der Bestellung ist ein Fehler aufgetreten.",
+          passwordRequired: "Bitte geben Sie das Super-Admin-Passwort ein.",
+          deleteError:
+            "Bestellung konnte nicht endgültig gelöscht werden.",
+          deleteSuccess: "Bestellung wurde endgültig gelöscht.",
+          deleteCatchError:
+            "Beim endgültigen Löschen der Bestellung ist ein Fehler aufgetreten.",
+          confirmRestore: (orderNumber: string) =>
+            `Soll die Bestellung ${orderNumber} wiederhergestellt werden?\n\nSie erscheint danach wieder im Admin- und im zugewiesenen Fahrerbereich.`,
+          modalWarning: (orderNumber: string) =>
+            `Die Bestellung ${orderNumber} wird endgültig aus der Datenbank gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.`,
+        }
+      : {
+          backLink: "Tüm Siparişler",
+          pageTitle: "Çöp Kutusu",
+          pageDesc:
+            "Silinen siparişleri geri getirin veya Super Admin şifresiyle kalıcı olarak silin.",
+          loading: "Yükleniyor...",
+          empty: "Çöp kutusunda sipariş bulunmuyor.",
+          driverLabel: "Şoför",
+          unassigned: "Atanmadı",
+          paymentLabel: "Ödeme",
+          paid: "Parası Ödendi",
+          open: "Ödeme Açık",
+          totalLabel: "Toplam",
+          deletedAtLabel: "Silinme Tarihi",
+          restore: "Geri Getir",
+          permanentDelete: "Kalıcı Olarak Sil",
+          deleting: "Siliniyor...",
+          passwordLabel: "Super Admin Şifresi",
+          passwordPlaceholder: "Şifrenizi girin",
+          loadError: "Çöp kutusu yüklenemedi.",
+          restoreError: "Sipariş geri getirilemedi.",
+          restoreSuccess: "Sipariş geri getirildi.",
+          restoreCatchError: "Sipariş geri getirilirken hata oluştu.",
+          passwordRequired: "Super Admin şifresini girin.",
+          deleteError: "Sipariş kalıcı olarak silinemedi.",
+          deleteSuccess: "Sipariş kalıcı olarak silindi.",
+          deleteCatchError: "Sipariş kalıcı olarak silinirken hata oluştu.",
+          confirmRestore: (orderNumber: string) =>
+            `${orderNumber} numaralı sipariş geri getirilsin mi?\n\nSipariş tekrar Admin ve atanmış şoför ekranında görünecektir.`,
+          modalWarning: (orderNumber: string) =>
+            `${orderNumber} veritabanından tamamen silinecek. Bu işlem geri alınamaz.`,
+        };
+
   const [
     orders,
     setOrders,
@@ -117,7 +187,7 @@ export default function TrashPage() {
       if (!response.ok) {
         setError(
           data.error ||
-            "Çöp kutusu yüklenemedi."
+            t.loadError
         );
 
         return;
@@ -128,7 +198,7 @@ export default function TrashPage() {
       );
     } catch {
       setError(
-        "Çöp kutusu yüklenemedi."
+        t.loadError
       );
     } finally {
       setLoading(false);
@@ -137,6 +207,7 @@ export default function TrashPage() {
 
   useEffect(() => {
     loadOrders();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function restoreOrder(
@@ -144,7 +215,7 @@ export default function TrashPage() {
   ) {
     const confirmed =
       window.confirm(
-        `${order.orderNumber} numaralı sipariş geri getirilsin mi?\n\nSipariş tekrar Admin ve atanmış şoför ekranında görünecektir.`
+        t.confirmRestore(order.orderNumber)
       );
 
     if (!confirmed) {
@@ -174,7 +245,7 @@ export default function TrashPage() {
       if (!response.ok) {
         setError(
           data.error ||
-            "Sipariş geri getirilemedi."
+            t.restoreError
         );
 
         return;
@@ -191,11 +262,11 @@ export default function TrashPage() {
 
       setSuccess(
         data.message ||
-          "Sipariş geri getirildi."
+          t.restoreSuccess
       );
     } catch {
       setError(
-        "Sipariş geri getirilirken hata oluştu."
+        t.restoreCatchError
       );
     } finally {
       setActionOrderId(
@@ -242,7 +313,7 @@ export default function TrashPage() {
 
     if (!password) {
       setError(
-        "Super Admin şifresini girin."
+        t.passwordRequired
       );
 
       return;
@@ -284,7 +355,7 @@ export default function TrashPage() {
       if (!response.ok) {
         setError(
           data.error ||
-            "Sipariş kalıcı olarak silinemedi."
+            t.deleteError
         );
 
         return;
@@ -307,11 +378,11 @@ export default function TrashPage() {
 
       setSuccess(
         data.message ||
-          "Sipariş kalıcı olarak silindi."
+          t.deleteSuccess
       );
     } catch {
       setError(
-        "Sipariş kalıcı olarak silinirken hata oluştu."
+        t.deleteCatchError
       );
     } finally {
       setActionOrderId(
@@ -331,7 +402,7 @@ export default function TrashPage() {
             size={18}
           />
 
-          Tüm Siparişler
+          {t.backLink}
         </Link>
 
         <section className="mt-6 rounded-[32px] bg-slate-950 p-7 text-white sm:p-10">
@@ -341,14 +412,11 @@ export default function TrashPage() {
           />
 
           <h1 className="mt-4 text-4xl font-black">
-            Çöp Kutusu
+            {t.pageTitle}
           </h1>
 
           <p className="mt-3 text-slate-400">
-            Silinen siparişleri geri
-            getirin veya Super Admin
-            şifresiyle kalıcı olarak
-            silin.
+            {t.pageDesc}
           </p>
         </section>
 
@@ -368,12 +436,12 @@ export default function TrashPage() {
           {loading ? (
             <div className="flex items-center gap-3 text-slate-500">
               <Loader2 className="animate-spin" />
-              Yükleniyor...
+              {t.loading}
             </div>
           ) : orders.length ===
             0 ? (
             <p className="text-slate-500">
-              Çöp kutusunda sipariş bulunmuyor.
+              {t.empty}
             </p>
           ) : (
             <div className="space-y-4">
@@ -389,7 +457,7 @@ export default function TrashPage() {
                       ? `${order.driver.firstName || ""} ${order.driver.lastName || ""}`.trim() ||
                         order.driver
                           .email
-                      : "Atanmadı";
+                      : t.unassigned;
 
                   const busy =
                     actionOrderId ===
@@ -419,7 +487,7 @@ export default function TrashPage() {
 
                         <div>
                           <p className="text-xs font-bold uppercase text-slate-400">
-                            Lieferfahrer
+                            {t.driverLabel}
                           </p>
 
                           <p className="mt-1 font-black text-slate-950">
@@ -431,7 +499,7 @@ export default function TrashPage() {
 
                         <div>
                           <p className="text-xs font-bold uppercase text-slate-400">
-                            Ödeme
+                            {t.paymentLabel}
                           </p>
 
                           <p
@@ -444,14 +512,14 @@ export default function TrashPage() {
                           >
                             {order.paymentStatus ===
                             "PAID"
-                              ? "Parası Ödendi"
-                              : "Ödeme Açık"}
+                              ? t.paid
+                              : t.open}
                           </p>
                         </div>
 
                         <div>
                           <p className="text-xs font-bold uppercase text-slate-400">
-                            Toplam
+                            {t.totalLabel}
                           </p>
 
                           <p className="mt-1 font-black text-slate-950">
@@ -464,7 +532,7 @@ export default function TrashPage() {
 
                         <div>
                           <p className="text-xs font-bold uppercase text-slate-400">
-                            Silinme Tarihi
+                            {t.deletedAtLabel}
                           </p>
 
                           <p className="mt-1 font-black text-slate-950">
@@ -503,7 +571,7 @@ export default function TrashPage() {
                             />
                           )}
 
-                          Geri Getir
+                          {t.restore}
                         </button>
 
                         <button
@@ -522,7 +590,7 @@ export default function TrashPage() {
                             size={18}
                           />
 
-                          Kalıcı Olarak Sil
+                          {t.permanentDelete}
                         </button>
                       </div>
                     </article>
@@ -546,7 +614,7 @@ export default function TrashPage() {
                 </div>
 
                 <h2 className="mt-4 text-2xl font-black text-slate-950">
-                  Kalıcı Olarak Sil
+                  {t.permanentDelete}
                 </h2>
               </div>
 
@@ -564,12 +632,9 @@ export default function TrashPage() {
             </div>
 
             <div className="mt-5 rounded-xl bg-red-50 p-4 text-sm font-bold text-red-700">
-              {
+              {t.modalWarning(
                 permanentDeleteOrder.orderNumber
-              }{" "}
-              veritabanından tamamen
-              silinecek. Bu işlem geri
-              alınamaz.
+              )}
             </div>
 
             <form
@@ -580,7 +645,7 @@ export default function TrashPage() {
             >
               <label className="block">
                 <span className="text-sm font-black text-slate-700">
-                  Super Admin Şifresi
+                  {t.passwordLabel}
                 </span>
 
                 <input
@@ -598,7 +663,7 @@ export default function TrashPage() {
                         .value
                     )
                   }
-                  placeholder={language==="de"?"Passwort eingeben":"Şifrenizi girin"}
+                  placeholder={t.passwordPlaceholder}
                   className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-red-500"
                 />
               </label>
@@ -618,14 +683,14 @@ export default function TrashPage() {
                       size={19}
                       className="animate-spin"
                     />
-                    Siliniyor...
+                    {t.deleting}
                   </>
                 ) : (
                   <>
                     <Trash2
                       size={19}
                     />
-                    Kalıcı Olarak Sil
+                    {t.permanentDelete}
                   </>
                 )}
               </button>

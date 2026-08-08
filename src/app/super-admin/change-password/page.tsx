@@ -2,14 +2,48 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function SuperAdminChangePasswordPage() {
+  const { language } = useLanguage();
+
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [repeatPassword, setRepeatPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
+
+  const t =
+    language === "de"
+      ? {
+          back: "Super Admin",
+          title: "Passwort ändern",
+          currentPassword: "Aktuelles Passwort",
+          newPassword: "Neues Passwort",
+          repeatPassword: "Neues Passwort wiederholen",
+          saving: "Wird gespeichert...",
+          submit: "Passwort ändern",
+          tooShort: "Das neue Passwort muss mindestens 8 Zeichen lang sein.",
+          mismatch: "Die neuen Passwörter stimmen nicht überein.",
+          changeFailed: "Passwort konnte nicht geändert werden.",
+          changeSuccess: "Passwort wurde erfolgreich geändert.",
+          unexpectedError: "Ein unerwarteter Fehler ist aufgetreten.",
+        }
+      : {
+          back: "Super Admin",
+          title: "Şifre Değiştir",
+          currentPassword: "Mevcut Şifre",
+          newPassword: "Yeni Şifre",
+          repeatPassword: "Yeni Şifre Tekrar",
+          saving: "Kaydediliyor...",
+          submit: "Şifreyi Değiştir",
+          tooShort: "Yeni şifre en az 8 karakter olmalıdır.",
+          mismatch: "Yeni şifreler aynı değil.",
+          changeFailed: "Şifre değiştirilemedi.",
+          changeSuccess: "Şifre başarıyla değiştirildi.",
+          unexpectedError: "Beklenmeyen bir hata oluştu.",
+        };
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -18,12 +52,12 @@ export default function SuperAdminChangePasswordPage() {
     setSuccess("");
 
     if (newPassword.length < 8) {
-      setError("Yeni şifre en az 8 karakter olmalıdır.");
+      setError(t.tooShort);
       return;
     }
 
     if (newPassword !== repeatPassword) {
-      setError("Yeni şifreler aynı değil.");
+      setError(t.mismatch);
       return;
     }
 
@@ -45,15 +79,15 @@ export default function SuperAdminChangePasswordPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || "Şifre değiştirilemedi.");
+        setError(data.error || t.changeFailed);
       } else {
-        setSuccess("Şifre başarıyla değiştirildi.");
+        setSuccess(t.changeSuccess);
         setCurrentPassword("");
         setNewPassword("");
         setRepeatPassword("");
       }
     } catch {
-      setError("Beklenmeyen bir hata oluştu.");
+      setError(t.unexpectedError);
     } finally {
       setLoading(false);
     }
@@ -66,12 +100,12 @@ export default function SuperAdminChangePasswordPage() {
           href="/super-admin"
           className="mb-6 inline-block font-bold text-sky-600"
         >
-          ← Super Admin
+          ← {t.back}
         </Link>
 
         <div className="rounded-3xl bg-white p-8 shadow">
           <h1 className="text-3xl font-black">
-            🔐 Şifre Değiştir
+            🔐 {t.title}
           </h1>
 
           <form
@@ -80,7 +114,7 @@ export default function SuperAdminChangePasswordPage() {
           >
             <input
               type="password"
-              placeholder="Mevcut Şifre"
+              placeholder={t.currentPassword}
               value={currentPassword}
               onChange={(e)=>setCurrentPassword(e.target.value)}
               className="w-full rounded-xl border p-3"
@@ -89,7 +123,7 @@ export default function SuperAdminChangePasswordPage() {
 
             <input
               type="password"
-              placeholder="Yeni Şifre"
+              placeholder={t.newPassword}
               value={newPassword}
               onChange={(e)=>setNewPassword(e.target.value)}
               className="w-full rounded-xl border p-3"
@@ -98,7 +132,7 @@ export default function SuperAdminChangePasswordPage() {
 
             <input
               type="password"
-              placeholder="Yeni Şifre Tekrar"
+              placeholder={t.repeatPassword}
               value={repeatPassword}
               onChange={(e)=>setRepeatPassword(e.target.value)}
               className="w-full rounded-xl border p-3"
@@ -122,7 +156,7 @@ export default function SuperAdminChangePasswordPage() {
               disabled={loading}
               className="w-full rounded-xl bg-slate-900 py-3 font-bold text-white"
             >
-              {loading ? "Kaydediliyor..." : "Şifreyi Değiştir"}
+              {loading ? t.saving : t.submit}
             </button>
           </form>
         </div>

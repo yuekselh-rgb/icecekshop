@@ -132,7 +132,12 @@ export default function CompanySettingsPage() {
         const data = await response.json();
 
         if (!response.ok) {
-          setError(data.error || "Firma ayarları yüklenemedi.");
+          setError(
+            data.error ||
+              (language === "de"
+                ? "Firmeneinstellungen konnten nicht geladen werden."
+                : "Firma ayarları yüklenemedi."),
+          );
           return;
         }
 
@@ -183,7 +188,11 @@ export default function CompanySettingsPage() {
           showOffers: data.settings.showOffers !== false,
         });
       } catch {
-        setError("Firma ayarları yüklenemedi.");
+        setError(
+          language === "de"
+            ? "Firmeneinstellungen konnten nicht geladen werden."
+            : "Firma ayarları yüklenemedi.",
+        );
       } finally {
         setLoading(false);
       }
@@ -218,7 +227,12 @@ export default function CompanySettingsPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Logo yüklenemedi.");
+        setError(
+          data.error ||
+            (language === "de"
+              ? "Logo konnte nicht hochgeladen werden."
+              : "Logo yüklenemedi."),
+        );
         return;
       }
 
@@ -228,10 +242,16 @@ export default function CompanySettingsPage() {
       }));
 
       setSuccess(
-        "Logo yüklendi. Değişikliği tamamlamak için ayarları kaydedin.",
+        language === "de"
+          ? "Logo hochgeladen. Speichern Sie die Einstellungen, um die Änderung abzuschließen."
+          : "Logo yüklendi. Değişikliği tamamlamak için ayarları kaydedin.",
       );
     } catch {
-      setError("Logo yüklenemedi.");
+      setError(
+        language === "de"
+          ? "Logo konnte nicht hochgeladen werden."
+          : "Logo yüklenemedi.",
+      );
     } finally {
       setUploading(false);
     }
@@ -239,7 +259,9 @@ export default function CompanySettingsPage() {
 
   async function handleRemoveLogo() {
     const confirmed = window.confirm(
-      "Firma logosu kalıcı olarak kaldırılsın mı?",
+      language === "de"
+        ? "Firmenlogo dauerhaft entfernen?"
+        : "Firma logosu kalıcı olarak kaldırılsın mı?",
     );
 
     if (!confirmed) {
@@ -266,7 +288,12 @@ export default function CompanySettingsPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Logo kaldırılamadı.");
+        setError(
+          data.error ||
+            (language === "de"
+              ? "Logo konnte nicht entfernt werden."
+              : "Logo kaldırılamadı."),
+        );
         return;
       }
 
@@ -317,9 +344,17 @@ export default function CompanySettingsPage() {
         showOffers: data.settings.showOffers !== false,
       });
 
-      setSuccess("Firma logosu kalıcı olarak kaldırıldı.");
+      setSuccess(
+        language === "de"
+          ? "Firmenlogo wurde dauerhaft entfernt."
+          : "Firma logosu kalıcı olarak kaldırıldı.",
+      );
     } catch {
-      setError("Logo kaldırılırken hata oluştu.");
+      setError(
+        language === "de"
+          ? "Beim Entfernen des Logos ist ein Fehler aufgetreten."
+          : "Logo kaldırılırken hata oluştu.",
+      );
     } finally {
       setSaving(false);
     }
@@ -344,7 +379,12 @@ export default function CompanySettingsPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Ayarlar kaydedilemedi.");
+        setError(
+          data.error ||
+            (language === "de"
+              ? "Einstellungen konnten nicht gespeichert werden."
+              : "Ayarlar kaydedilemedi."),
+        );
         return;
       }
 
@@ -395,9 +435,17 @@ export default function CompanySettingsPage() {
         showOffers: data.settings.showOffers !== false,
       });
 
-      setSuccess("Firma ayarları başarıyla kaydedildi.");
+      setSuccess(
+        language === "de"
+          ? "Firmeneinstellungen erfolgreich gespeichert."
+          : "Firma ayarları başarıyla kaydedildi.",
+      );
     } catch {
-      setError("Ayarlar kaydedilemedi.");
+      setError(
+        language === "de"
+          ? "Einstellungen konnten nicht gespeichert werden."
+          : "Ayarlar kaydedilemedi.",
+      );
     } finally {
       setSaving(false);
     }
@@ -408,7 +456,9 @@ export default function CompanySettingsPage() {
       <main className="flex min-h-screen items-center justify-center bg-slate-100">
         <div className="flex items-center gap-3 font-bold text-slate-600">
           <Loader2 className="animate-spin" />
-          Firma ayarları yükleniyor...
+          {language === "de"
+            ? "Firmeneinstellungen werden geladen..."
+            : "Firma ayarları yükleniyor..."}
         </div>
       </main>
     );
@@ -422,7 +472,7 @@ export default function CompanySettingsPage() {
           className="inline-flex items-center gap-2 font-bold text-slate-600 transition hover:text-orange-500"
         >
           <ArrowLeft size={18} />
-          Süper Admin
+          {language === "de" ? "Super-Admin" : "Süper Admin"}
         </Link>
 
         <section className="mt-6 rounded-[32px] bg-slate-950 p-7 text-white sm:p-10">
@@ -433,8 +483,9 @@ export default function CompanySettingsPage() {
           <h1 className="mt-2 text-4xl font-black">{language === "de" ? "Firmen- und Logoeinstellungen" : "Firma ve Logo Ayarları"}</h1>
 
           <p className="mt-3 max-w-2xl text-slate-400">
-            Firma adını ve logoyu buradan değiştirin. Kaydedilen logo ana
-            sayfada ve footer bölümünde otomatik görünür.
+            {language === "de"
+              ? "Ändern Sie hier den Firmennamen und das Logo. Das gespeicherte Logo erscheint automatisch auf der Startseite und im Footer."
+              : "Firma adını ve logoyu buradan değiştirin. Kaydedilen logo ana sayfada ve footer bölümünde otomatik görünür."}
           </p>
         </section>
 
@@ -457,7 +508,7 @@ export default function CompanySettingsPage() {
           <div className="grid gap-5 sm:grid-cols-2">
             <label className="block">
               <span className="text-sm font-bold text-slate-700">
-                Firma Adı *
+                {language === "de" ? "Firmenname *" : "Firma Adı *"}
               </span>
 
               <input
@@ -476,7 +527,7 @@ export default function CompanySettingsPage() {
 
             <label className="block">
               <span className="text-sm font-bold text-slate-700">
-                Firma Alt Başlığı
+                {language === "de" ? "Firmenuntertitel" : "Firma Alt Başlığı"}
               </span>
 
               <input
@@ -496,13 +547,13 @@ export default function CompanySettingsPage() {
 
           <section className="rounded-3xl border border-slate-200 p-5">
             <h2 className="text-xl font-black text-slate-950">
-              Firma Bilgileri
+              {language === "de" ? "Firmeninformationen" : "Firma Bilgileri"}
             </h2>
 
             <div className="mt-5 grid gap-5 sm:grid-cols-2">
               <label>
                 <span className="text-sm font-bold text-slate-700">
-                  Firma Türü
+                  {language === "de" ? "Rechtsform" : "Firma Türü"}
                 </span>
 
                 <input
@@ -542,23 +593,24 @@ export default function CompanySettingsPage() {
           <section className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
             <div>
               <h2 className="text-xl font-black text-slate-950">
-                Firma Logosu
+                {language === "de" ? "Firmenlogo" : "Firma Logosu"}
               </h2>
 
               <p className="mt-1 text-sm text-slate-500">
-                Şeffaf arka planlı, yatay PNG veya WEBP logo en iyi sonucu
-                verir.
+                {language === "de"
+                  ? "Ein horizontales PNG- oder WEBP-Logo mit transparentem Hintergrund liefert das beste Ergebnis."
+                  : "Şeffaf arka planlı, yatay PNG veya WEBP logo en iyi sonucu verir."}
               </p>
 
               <div className="mt-6">
                 <label className="block text-sm font-bold text-slate-700">
-                  Logo Genişliği
+                  {language === "de" ? "Logogröße" : "Logo Genişliği"}
                 </label>
 
                 <div className="mt-3 grid gap-4 sm:grid-cols-2">
                   <div>
                     <p className="mb-2 text-xs font-bold text-slate-500">
-                      Genişlik
+                      {language === "de" ? "Breite" : "Genişlik"}
                     </p>
 
                     <div className="flex items-center gap-3">
@@ -602,7 +654,7 @@ export default function CompanySettingsPage() {
 
                   <div>
                     <p className="mb-2 text-xs font-bold text-slate-500">
-                      Yükseklik
+                      {language === "de" ? "Höhe" : "Yükseklik"}
                     </p>
 
                     <div className="flex items-center gap-3">
@@ -656,7 +708,13 @@ export default function CompanySettingsPage() {
                     <Upload size={19} />
                   )}
 
-                  {uploading ? "Yükleniyor..." : "Bilgisayardan Logo Seç"}
+                  {uploading
+                    ? language === "de"
+                      ? "Wird hochgeladen..."
+                      : "Yükleniyor..."
+                    : language === "de"
+                      ? "Logo vom Computer auswählen"
+                      : "Bilgisayardan Logo Seç"}
 
                   <input
                     type="file"
@@ -675,12 +733,14 @@ export default function CompanySettingsPage() {
                     className="ml-3 inline-flex disabled:cursor-not-allowed disabled:opacity-50 items-center gap-2 rounded-xl bg-red-50 px-5 py-3 font-black text-red-600"
                   >
                     <Trash2 size={18} />
-                    Logoyu Kaldır
+                    {language === "de" ? "Logo entfernen" : "Logoyu Kaldır"}
                   </button>
                 ) : null}
 
                 <p className="mt-3 text-xs text-slate-500">
-                  JPG, PNG, WEBP veya GIF. En fazla 5 MB.
+                  {language === "de"
+                    ? "JPG, PNG, WEBP oder GIF. Maximal 5 MB."
+                    : "JPG, PNG, WEBP veya GIF. En fazla 5 MB."}
                 </p>
               </div>
 
@@ -688,7 +748,11 @@ export default function CompanySettingsPage() {
                 {settings.logoUrl ? (
                   <img
                     src={settings.logoUrl}
-                    alt="Firma logosu önizlemesi"
+                    alt={
+                      language === "de"
+                        ? "Firmenlogo-Vorschau"
+                        : "Firma logosu önizlemesi"
+                    }
                     style={{
                       width: `${settings.logoWidth}px`,
                       height: `${settings.logoHeight}px`,
@@ -709,7 +773,7 @@ export default function CompanySettingsPage() {
 
           <section className="rounded-3xl border border-slate-200 p-5">
             <h2 className="text-xl font-black text-slate-950">
-              Vergi Bilgileri
+              {language === "de" ? "Steuerliche Angaben" : "Vergi Bilgileri"}
             </h2>
 
             <div className="mt-5 grid gap-5 sm:grid-cols-2">
@@ -755,7 +819,7 @@ export default function CompanySettingsPage() {
 
           <section className="rounded-3xl border border-slate-200 p-5">
             <h2 className="text-xl font-black text-slate-950">
-              İletişim Bilgileri
+              {language === "de" ? "Kontaktinformationen" : "İletişim Bilgileri"}
             </h2>
 
             <div className="mt-5 grid gap-5 sm:grid-cols-2">
@@ -930,7 +994,7 @@ export default function CompanySettingsPage() {
 
           <section className="rounded-3xl border border-slate-200 p-5">
             <h2 className="text-xl font-black text-slate-950">
-              Banka Bilgileri
+              {language === "de" ? "Bankverbindung" : "Banka Bilgileri"}
             </h2>
 
             <div className="mt-5 grid gap-5 sm:grid-cols-2">
@@ -976,14 +1040,14 @@ export default function CompanySettingsPage() {
 
           <section className="rounded-3xl border border-slate-200 p-5">
             <h2 className="text-xl font-black text-slate-950">
-              Footer Ayarları
+              {language === "de" ? "Footer-Einstellungen" : "Footer Ayarları"}
             </h2>
 
             <div className="mt-5 space-y-5">
 
               <label className="block">
                 <span className="text-sm font-bold text-slate-700">
-                  Footer Açıklaması
+                  {language === "de" ? "Footer-Beschreibung" : "Footer Açıklaması"}
                 </span>
 
                 <textarea
@@ -1021,14 +1085,18 @@ export default function CompanySettingsPage() {
 
           <section className="rounded-3xl border border-slate-200 p-5">
             <p className="text-sm font-black text-slate-500">
-              Header Önizlemesi
+              {language === "de" ? "Header-Vorschau" : "Header Önizlemesi"}
             </p>
 
             <div className="mt-4 flex min-h-24 items-center rounded-2xl border border-slate-200 bg-white px-6">
               {settings.logoUrl ? (
                 <img
                   src={settings.logoUrl}
-                  alt="Header logo önizlemesi"
+                  alt={
+                    language === "de"
+                      ? "Header-Logo-Vorschau"
+                      : "Header logo önizlemesi"
+                  }
                   style={{
                     width: `${settings.logoWidth}px`,
                     height: `${settings.logoHeight}px`,
@@ -1038,7 +1106,7 @@ export default function CompanySettingsPage() {
                 />
               ) : (
                 <p className="text-sm font-bold text-slate-400">
-                  Logo seçilmedi
+                  {language === "de" ? "Kein Logo ausgewählt" : "Logo seçilmedi"}
                 </p>
               )}
             </div>
@@ -1048,12 +1116,15 @@ export default function CompanySettingsPage() {
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h2 className="text-xl font-black text-slate-950">
-                  Ana Sayfa Kampanyaları
+                  {language === "de"
+                    ? "Startseiten-Aktionen"
+                    : "Ana Sayfa Kampanyaları"}
                 </h2>
 
                 <p className="mt-1 text-sm text-slate-500">
-                  Kampanyalı ürünler bölümünün müşterilere gösterilip
-                  gösterilmeyeceğini belirleyin.
+                  {language === "de"
+                    ? "Legen Sie fest, ob der Bereich mit Aktionsprodukten den Kunden angezeigt wird."
+                    : "Kampanyalı ürünler bölümünün müşterilere gösterilip gösterilmeyeceğini belirleyin."}
                 </p>
               </div>
 
@@ -1083,8 +1154,12 @@ export default function CompanySettingsPage() {
               }`}
             >
               {settings.showOffers
-                ? "Kampanyalar ana sayfada gösteriliyor."
-                : "Kampanyalar ana sayfada gizleniyor."}
+                ? language === "de"
+                  ? "Aktionen werden auf der Startseite angezeigt."
+                  : "Kampanyalar ana sayfada gösteriliyor."
+                : language === "de"
+                  ? "Aktionen werden auf der Startseite ausgeblendet."
+                  : "Kampanyalar ana sayfada gizleniyor."}
             </p>
           </section>
 
@@ -1094,7 +1169,9 @@ export default function CompanySettingsPage() {
             className="flex w-full items-center justify-center gap-2 rounded-xl bg-orange-500 px-6 py-4 font-black text-white transition hover:bg-orange-600 disabled:bg-orange-300"
           >
             {saving ? <Loader2 className="animate-spin" /> : <Save size={20} />}
-            Firma Ayarlarını Kaydet
+            {language === "de"
+              ? "Firmeneinstellungen speichern"
+              : "Firma Ayarlarını Kaydet"}
           </button>
         </form>
       </div>

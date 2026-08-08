@@ -30,6 +30,73 @@ type Admin = {
 export default function AdminManagementPage() {
   const { language } = useLanguage();
 
+  const t =
+    language === "de"
+      ? {
+          back: "Super Admin",
+          title: "Admin-Verwaltung",
+          subtitle: "Admin-Konten erstellen und verwalten.",
+          newAdmin: "Neuer Admin",
+          firstName: "Vorname",
+          lastName: "Nachname",
+          email: "E-Mail",
+          password: "Temporäres Passwort",
+          creating: "Wird erstellt...",
+          createAccount: "Admin-Konto erstellen",
+          admins: "Admins",
+          loading: "Wird geladen...",
+          noAdmins: "Noch kein Admin-Konto vorhanden.",
+          managePermissions: "Berechtigungen verwalten",
+          deactivate: "Konto sperren",
+          activate: "Konto aktivieren",
+          deletePermanently: "Endgültig löschen",
+          active: "AKTIV",
+          disabled: "GESPERRT",
+          confirmReactivate: (name: string) =>
+            `Soll das Konto von ${name} wieder aktiviert werden?`,
+          confirmDeactivate: (name: string) =>
+            `Soll das Konto von ${name} gesperrt werden?\n\nDieser Admin kann sich dann nicht mehr anmelden.`,
+          confirmDelete: (name: string) =>
+            `Soll das Admin-Konto von ${name} endgültig gelöscht werden?\n\nDiese Aktion kann nicht rückgängig gemacht werden.`,
+          loadFailed: "Admins konnten nicht geladen werden.",
+          statusChangeFailed: "Admin-Kontostatus konnte nicht geändert werden.",
+          deleteFailed: "Admin-Konto konnte nicht gelöscht werden.",
+          createFailed: "Admin konnte nicht erstellt werden.",
+          createSuccess: "Admin-Konto wurde erfolgreich erstellt.",
+        }
+      : {
+          back: "Super Admin",
+          title: "Admin Yönetimi",
+          subtitle: "Admin hesaplarını oluşturun ve yönetin.",
+          newAdmin: "Yeni Admin",
+          firstName: "Ad",
+          lastName: "Soyad",
+          email: "E-posta",
+          password: "Geçici şifre",
+          creating: "Oluşturuluyor...",
+          createAccount: "Admin Hesabı Oluştur",
+          admins: "Adminler",
+          loading: "Yükleniyor...",
+          noAdmins: "Henüz admin hesabı bulunmuyor.",
+          managePermissions: "Yetkileri Yönet",
+          deactivate: "Hesabı Kapat",
+          activate: "Hesabı Aç",
+          deletePermanently: "Kalıcı Sil",
+          active: "AKTİF",
+          disabled: "HESAP KAPALI",
+          confirmReactivate: (name: string) =>
+            `${name} hesabı tekrar açılsın mı?`,
+          confirmDeactivate: (name: string) =>
+            `${name} hesabı kapatılsın mı?\n\nBu admin artık giriş yapamayacak.`,
+          confirmDelete: (name: string) =>
+            `${name} admin hesabı kalıcı olarak silinsin mi?\n\nBu işlem geri alınamaz.`,
+          loadFailed: "Adminler yüklenemedi.",
+          statusChangeFailed: "Admin hesap durumu değiştirilemedi.",
+          deleteFailed: "Admin hesabı silinemedi.",
+          createFailed: "Admin oluşturulamadı.",
+          createSuccess: "Admin hesabı başarıyla oluşturuldu.",
+        };
+
   const [admins, setAdmins] =
     useState<Admin[]>([]);
 
@@ -66,7 +133,7 @@ export default function AdminManagementPage() {
       if (!response.ok) {
         setError(
           data.error ||
-            "Adminler yüklenemedi."
+            t.loadFailed
         );
         return;
       }
@@ -74,7 +141,7 @@ export default function AdminManagementPage() {
       setAdmins(data.admins);
     } catch {
       setError(
-        "Adminler yüklenemedi."
+        t.loadFailed
       );
     } finally {
       setLoading(false);
@@ -91,11 +158,13 @@ export default function AdminManagementPage() {
     const nextStatus =
       !admin.isActive;
 
+    const fullName = `${admin.firstName} ${admin.lastName}`;
+
     const confirmed =
       window.confirm(
         nextStatus
-          ? `${admin.firstName} ${admin.lastName} hesabı tekrar açılsın mı?`
-          : `${admin.firstName} ${admin.lastName} hesabı kapatılsın mı?\n\nBu admin artık giriş yapamayacak.`
+          ? t.confirmReactivate(fullName)
+          : t.confirmDeactivate(fullName)
       );
 
     if (!confirmed) {
@@ -132,7 +201,7 @@ export default function AdminManagementPage() {
       if (!response.ok) {
         setError(
           data.error ||
-            "Admin hesap durumu değiştirilemedi."
+            t.statusChangeFailed
         );
         return;
       }
@@ -153,7 +222,7 @@ export default function AdminManagementPage() {
       );
     } catch {
       setError(
-        "Admin hesap durumu değiştirilemedi."
+        t.statusChangeFailed
       );
     } finally {
       setActionAdminId(
@@ -167,7 +236,7 @@ export default function AdminManagementPage() {
   ) {
     const confirmed =
       window.confirm(
-        `${admin.firstName} ${admin.lastName} admin hesabı kalıcı olarak silinsin mi?\n\nBu işlem geri alınamaz.`
+        t.confirmDelete(`${admin.firstName} ${admin.lastName}`)
       );
 
     if (!confirmed) {
@@ -195,7 +264,7 @@ export default function AdminManagementPage() {
       if (!response.ok) {
         setError(
           data.error ||
-            "Admin hesabı silinemedi."
+            t.deleteFailed
         );
         return;
       }
@@ -214,7 +283,7 @@ export default function AdminManagementPage() {
       );
     } catch {
       setError(
-        "Admin hesabı silinemedi."
+        t.deleteFailed
       );
     } finally {
       setActionAdminId(
@@ -275,13 +344,13 @@ export default function AdminManagementPage() {
       if (!response.ok) {
         setError(
           data.error ||
-            "Admin oluşturulamadı."
+            t.createFailed
         );
         return;
       }
 
       setSuccess(
-        "Admin hesabı başarıyla oluşturuldu."
+        t.createSuccess
       );
 
       form.reset();
@@ -289,7 +358,7 @@ export default function AdminManagementPage() {
       await loadAdmins();
     } catch {
       setError(
-        "Admin oluşturulamadı."
+        t.createFailed
       );
     } finally {
       setSaving(false);
@@ -304,7 +373,7 @@ export default function AdminManagementPage() {
           className="inline-flex items-center gap-2 font-bold text-slate-600 hover:text-orange-500"
         >
           <ArrowLeft size={18} />
-          Super Admin
+          {t.back}
         </Link>
 
         <div className="mt-6 rounded-[32px] bg-slate-950 p-7 text-white sm:p-10">
@@ -313,11 +382,11 @@ export default function AdminManagementPage() {
           </div>
 
           <h1 className="mt-5 text-4xl font-black">
-            Admin Yönetimi
+            {t.title}
           </h1>
 
           <p className="mt-3 text-slate-400">
-            Admin hesaplarını oluşturun ve yönetin.
+            {t.subtitle}
           </p>
         </div>
 
@@ -327,7 +396,7 @@ export default function AdminManagementPage() {
               <Plus className="text-orange-500" />
 
               <h2 className="text-2xl font-black text-slate-950">
-                Yeni Admin
+                {t.newAdmin}
               </h2>
             </div>
 
@@ -338,14 +407,14 @@ export default function AdminManagementPage() {
               <input
                 required
                 name="firstName"
-                placeholder={language === "de" ? "Vorname" : "Ad"}
+                placeholder={t.firstName}
                 className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-orange-500"
               />
 
               <input
                 required
                 name="lastName"
-                placeholder={language === "de" ? "Nachname" : "Soyad"}
+                placeholder={t.lastName}
                 className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-orange-500"
               />
 
@@ -353,7 +422,7 @@ export default function AdminManagementPage() {
                 required
                 name="email"
                 type="email"
-                placeholder={language === "de" ? "E-Mail" : "E-posta"}
+                placeholder={t.email}
                 className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-orange-500"
               />
 
@@ -362,7 +431,7 @@ export default function AdminManagementPage() {
                 name="password"
                 type="password"
                 minLength={8}
-                placeholder={language === "de" ? "Temporäres Passwort" : "Geçici şifre"}
+                placeholder={t.password}
                 className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-orange-500"
               />
 
@@ -389,12 +458,12 @@ export default function AdminManagementPage() {
                       size={19}
                       className="animate-spin"
                     />
-                    Oluşturuluyor...
+                    {t.creating}
                   </>
                 ) : (
                   <>
                     <Plus size={19} />
-                    Admin Hesabı Oluştur
+                    {t.createAccount}
                   </>
                 )}
               </button>
@@ -403,7 +472,7 @@ export default function AdminManagementPage() {
 
           <section className="rounded-[28px] bg-white p-6">
             <h2 className="text-2xl font-black text-slate-950">
-              Adminler
+              {t.admins}
             </h2>
 
             {loading ? (
@@ -412,11 +481,11 @@ export default function AdminManagementPage() {
                   className="animate-spin"
                   size={20}
                 />
-                Yükleniyor...
+                {t.loading}
               </div>
             ) : admins.length === 0 ? (
               <p className="mt-6 text-slate-500">
-                Henüz admin hesabı bulunmuyor.
+                {t.noAdmins}
               </p>
             ) : (
               <div className="mt-6 space-y-3">
@@ -462,8 +531,8 @@ export default function AdminManagementPage() {
                               }`}
                             >
                               {admin.isActive
-                                ? "AKTİF"
-                                : "HESAP KAPALI"}
+                                ? t.active
+                                : t.disabled}
                             </span>
                           </div>
 
@@ -477,7 +546,7 @@ export default function AdminManagementPage() {
                             href={`/super-admin/admins/${admin.id}/permissions`}
                             className="rounded-xl bg-slate-950 px-3 py-2 text-sm font-bold text-white transition hover:bg-orange-500"
                           >
-                            Yetkileri Yönet
+                            {t.managePermissions}
                           </Link>
 
                           <button
@@ -514,8 +583,8 @@ export default function AdminManagementPage() {
                             )}
 
                             {admin.isActive
-                              ? "Hesabı Kapat"
-                              : "Hesabı Aç"}
+                              ? t.deactivate
+                              : t.activate}
                           </button>
 
                           <button
@@ -534,7 +603,7 @@ export default function AdminManagementPage() {
                             <Trash2
                               size={16}
                             />
-                            Kalıcı Sil
+                            {t.deletePermanently}
                           </button>
                         </div>
                       </div>

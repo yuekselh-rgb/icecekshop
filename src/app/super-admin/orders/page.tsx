@@ -174,17 +174,32 @@ export default function SuperAdminOrdersPage() {
       const staffData = await staffResponse.json();
 
       if (!response.ok) {
-        setError(data.error || "Siparişler yüklenemedi.");
+        setError(
+          data.error ||
+            (language === "de"
+              ? "Bestellungen konnten nicht geladen werden."
+              : "Siparişler yüklenemedi."),
+        );
         return;
       }
 
       if (!driversResponse.ok) {
-        setError(driversData.error || "Lieferfahrer listesi yüklenemedi.");
+        setError(
+          driversData.error ||
+            (language === "de"
+              ? "Fahrerliste konnte nicht geladen werden."
+              : "Şoför listesi yüklenemedi."),
+        );
         return;
       }
 
       if (!staffResponse.ok) {
-        setError(staffData.error || "Personel listesi yüklenemedi.");
+        setError(
+          staffData.error ||
+            (language === "de"
+              ? "Personalliste konnte nicht geladen werden."
+              : "Personel listesi yüklenemedi."),
+        );
         return;
       }
 
@@ -196,7 +211,11 @@ export default function SuperAdminOrdersPage() {
 
       setStaff(staffData.staff || []);
     } catch {
-      setError("Siparişler yüklenirken hata oluştu.");
+      setError(
+        language === "de"
+          ? "Beim Laden der Bestellungen ist ein Fehler aufgetreten."
+          : "Siparişler yüklenirken hata oluştu.",
+      );
     } finally {
       if (!silent) {
         setLoading(false);
@@ -231,7 +250,12 @@ export default function SuperAdminOrdersPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Sipariş durumu değiştirilemedi.");
+        setError(
+          data.error ||
+            (language === "de"
+              ? "Bestellstatus konnte nicht geändert werden."
+              : "Sipariş durumu değiştirilemedi."),
+        );
         return;
       }
 
@@ -246,7 +270,11 @@ export default function SuperAdminOrdersPage() {
         ),
       );
     } catch {
-      setError("Sipariş durumu değiştirilemedi.");
+      setError(
+        language === "de"
+          ? "Bestellstatus konnte nicht geändert werden."
+          : "Sipariş durumu değiştirilemedi.",
+      );
     } finally {
       updatingRef.current = false;
 
@@ -281,7 +309,12 @@ export default function SuperAdminOrdersPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Lieferfahrer değiştirilemedi.");
+        setError(
+          data.error ||
+            (language === "de"
+              ? "Fahrer konnte nicht geändert werden."
+              : "Şoför değiştirilemedi."),
+        );
         return;
       }
 
@@ -296,7 +329,11 @@ export default function SuperAdminOrdersPage() {
         ),
       );
     } catch {
-      setError("Lieferfahrer değiştirilemedi.");
+      setError(
+        language === "de"
+          ? "Fahrer konnte nicht geändert werden."
+          : "Şoför değiştirilemedi.",
+      );
     } finally {
       updatingRef.current = false;
 
@@ -308,7 +345,11 @@ export default function SuperAdminOrdersPage() {
     const popup = window.open("", "_blank", "width=1000,height=900");
 
     if (!popup) {
-      setError("Yazdırma penceresi açılamadı.");
+      setError(
+        language === "de"
+          ? "Druckfenster konnte nicht geöffnet werden."
+          : "Yazdırma penceresi açılamadı.",
+      );
       return;
     }
 
@@ -465,7 +506,7 @@ export default function SuperAdminOrdersPage() {
           <section class="order-header">
             <div class="order-left">
               <div class="order-number">
-                Sipariş ${escapeHtml(order.orderNumber)}
+                ${language === "de" ? "Bestellung" : "Sipariş"} ${escapeHtml(order.orderNumber)}
               </div>
 
               <div class="customer-name">
@@ -484,7 +525,7 @@ export default function SuperAdminOrdersPage() {
             <div class="order-right">
               <div class="info-item">
                 <span class="info-label">
-                  Tarih
+                  ${language === "de" ? "Datum" : "Tarih"}
                 </span>
 
                 <span class="info-value">
@@ -494,7 +535,7 @@ export default function SuperAdminOrdersPage() {
 
               <div class="info-item">
                 <span class="info-label">
-                  Durum
+                  ${language === "de" ? "Status" : "Durum"}
                 </span>
 
                 <span class="info-value">
@@ -504,7 +545,7 @@ export default function SuperAdminOrdersPage() {
 
               <div class="info-item">
                 <span class="info-label">
-                  Personel
+                  ${language === "de" ? "Personal" : "Personel"}
                 </span>
 
                 <span class="info-value">
@@ -514,14 +555,16 @@ export default function SuperAdminOrdersPage() {
                           `${order.driver.firstName || ""} ${order.driver.lastName || ""}`.trim() ||
                             order.driver.email,
                         )
-                      : "Atanmadı"
+                      : language === "de"
+                        ? "Nicht zugewiesen"
+                        : "Atanmadı"
                   }
                 </span>
               </div>
 
               <div class="info-item">
                 <span class="info-label">
-                  Ödeme
+                  ${language === "de" ? "Zahlung" : "Ödeme"}
                 </span>
 
                 <span class="info-value ${
@@ -529,8 +572,12 @@ export default function SuperAdminOrdersPage() {
                 }">
                   ${
                     order.paymentStatus === "PAID"
-                      ? "Parası Ödendi"
-                      : "Ödeme Açık"
+                      ? language === "de"
+                        ? "Bezahlt"
+                        : "Parası Ödendi"
+                      : language === "de"
+                        ? "Zahlung offen"
+                        : "Ödeme Açık"
                   }
                 </span>
               </div>
@@ -677,7 +724,9 @@ export default function SuperAdminOrdersPage() {
 
   async function deleteOrder(order: Order) {
     const confirmed = window.confirm(
-      `${order.orderNumber} numaralı sipariş çöp kutusuna taşınsın mı?`,
+      language === "de"
+        ? `Soll die Bestellung ${order.orderNumber} in den Papierkorb verschoben werden?`
+        : `${order.orderNumber} numaralı sipariş çöp kutusuna taşınsın mı?`,
     );
 
     if (!confirmed) {
@@ -694,7 +743,12 @@ export default function SuperAdminOrdersPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Sipariş silinemedi.");
+        setError(
+          data.error ||
+            (language === "de"
+              ? "Bestellung konnte nicht gelöscht werden."
+              : "Sipariş silinemedi."),
+        );
         return;
       }
 
@@ -702,7 +756,11 @@ export default function SuperAdminOrdersPage() {
         current.filter((currentOrder) => currentOrder.id !== order.id),
       );
     } catch {
-      setError("Sipariş silinirken hata oluştu.");
+      setError(
+        language === "de"
+          ? "Beim Löschen der Bestellung ist ein Fehler aufgetreten."
+          : "Sipariş silinirken hata oluştu.",
+      );
     }
   }
 
@@ -836,7 +894,8 @@ export default function SuperAdminOrdersPage() {
 
   function getBarSellerName(order: Order) {
     return (
-      getCustomerNoteValue(order, "Satışı yapan:") || "Bilinmeyen Personel"
+      getCustomerNoteValue(order, "Satışı yapan:") ||
+      (language === "de" ? "Unbekannter Mitarbeiter" : "Bilinmeyen Personel")
     );
   }
 
@@ -852,7 +911,7 @@ export default function SuperAdminOrdersPage() {
       );
     }
 
-    return "Atanmamış";
+    return language === "de" ? "Nicht zugewiesen" : "Atanmamış";
   }
 
   function matchesSelectedReportPerson(order: Order) {
@@ -995,7 +1054,7 @@ export default function SuperAdminOrdersPage() {
 
       people.set(`driver:${driver.id}`, {
         id: `driver:${driver.id}`,
-        name: `${name} · Lieferfahrer`,
+        name: `${name} · ${language === "de" ? "Fahrer" : "Şoför"}`,
       });
     }
 
@@ -1034,7 +1093,7 @@ export default function SuperAdminOrdersPage() {
       if (!people.has(key)) {
         people.set(key, {
           id: key,
-          name: `${seller} · Bar Satışı`,
+          name: `${seller} · ${language === "de" ? "Barverkauf" : "Bar Satışı"}`,
         });
       }
     }
@@ -1284,7 +1343,7 @@ export default function SuperAdminOrdersPage() {
       <main className="flex min-h-screen items-center justify-center bg-slate-100">
         <div className="flex items-center gap-3 font-bold text-slate-600">
           <Loader2 className="animate-spin" />
-          Siparişler yükleniyor...
+          {language === "de" ? "Bestellungen werden geladen..." : "Siparişler yükleniyor..."}
         </div>
       </main>
     );
@@ -1307,8 +1366,9 @@ export default function SuperAdminOrdersPage() {
           <h1 className="mt-4 text-4xl font-black">{language === "de" ? "Alle Bestellungen" : "Tüm Siparişler"}</h1>
 
           <p className="mt-3 text-slate-400">
-            Tüm siparişleri, Lieferfahrer bilgilerini ve ödeme durumlarını
-            görüntüleyin.
+            {language === "de"
+              ? "Alle Bestellungen, Fahrerinformationen und Zahlungsstatus einsehen."
+              : "Tüm siparişleri, şoför bilgilerini ve ödeme durumlarını görüntüleyin."}
           </p>
         </section>
 
@@ -1321,7 +1381,7 @@ export default function SuperAdminOrdersPage() {
         <section className="mt-6 grid grid-cols-2 items-start gap-2 lg:grid-cols-5">
           <div className="self-start rounded-xl bg-slate-950 px-4 py-3 text-white shadow-sm">
             <p className="text-[10px] font-black uppercase tracking-wide text-slate-400">
-              Günlük Toplam Kasa
+              {language === "de" ? "Tageskasse Gesamt" : "Günlük Toplam Kasa"}
             </p>
 
             <p className="mt-1 text-xl font-black leading-none">
@@ -1329,13 +1389,13 @@ export default function SuperAdminOrdersPage() {
             </p>
 
             <p className="mt-2 text-[10px] font-bold text-slate-400">
-              Ödenmiş + açık
+              {language === "de" ? "Bezahlt + offen" : "Ödenmiş + açık"}
             </p>
           </div>
 
           <div className="self-start rounded-xl bg-green-50 px-4 py-3 shadow-sm">
             <p className="text-[10px] font-black uppercase tracking-wide text-green-700">
-              Günlük Tahsil Edilen
+              {language === "de" ? "Täglich Eingenommen" : "Günlük Tahsil Edilen"}
             </p>
 
             <p className="mt-1 text-xl font-black leading-none text-green-900">
@@ -1345,7 +1405,7 @@ export default function SuperAdminOrdersPage() {
 
           <div className="self-start rounded-xl bg-red-50 px-4 py-3 shadow-sm">
             <p className="text-[10px] font-black uppercase tracking-wide text-red-700">
-              Günlük Açık Tutar
+              {language === "de" ? "Täglicher Offener Betrag" : "Günlük Açık Tutar"}
             </p>
 
             <p className="mt-1 text-xl font-black leading-none text-red-900">
@@ -1355,7 +1415,7 @@ export default function SuperAdminOrdersPage() {
 
           <div className="self-start rounded-xl bg-blue-50 px-4 py-3 shadow-sm">
             <p className="text-[10px] font-black uppercase tracking-wide text-blue-700">
-              Aylık Kasa
+              {language === "de" ? "Monatskasse" : "Aylık Kasa"}
             </p>
 
             <p className="mt-1 text-xl font-black leading-none text-blue-950">
@@ -1363,13 +1423,13 @@ export default function SuperAdminOrdersPage() {
             </p>
 
             <p className="mt-2 text-[10px] font-bold text-blue-700">
-              Ödenmiş + açık
+              {language === "de" ? "Bezahlt + offen" : "Ödenmiş + açık"}
             </p>
           </div>
 
           <div className="self-start rounded-xl bg-orange-50 px-4 py-3 shadow-sm">
             <p className="text-[10px] font-black uppercase tracking-wide text-orange-700">
-              Aylık Açık Tutar
+              {language === "de" ? "Monatlicher Offener Betrag" : "Aylık Açık Tutar"}
             </p>
 
             <p className="mt-1 text-xl font-black leading-none text-orange-900">
@@ -1381,17 +1441,21 @@ export default function SuperAdminOrdersPage() {
         <section className="mt-6 rounded-[28px] bg-white p-5 shadow-sm">
           <div>
             <h2 className="text-xl font-black text-slate-950">
-              Personel Sipariş ve Tahsilat Raporu
+              {language === "de"
+                ? "Personal-Bestell- und Inkassobericht"
+                : "Personel Sipariş ve Tahsilat Raporu"}
             </h2>
 
             <p className="mt-1 text-sm text-slate-500">
-              Tek gün, tarih aralığı veya tüm zamanlar için rapor görüntüleyin.
+              {language === "de"
+                ? "Bericht für einen einzelnen Tag, einen Zeitraum oder alle Zeiten anzeigen."
+                : "Tek gün, tarih aralığı veya tüm zamanlar için rapor görüntüleyin."}
             </p>
           </div>
 
           <div className="mt-5 rounded-2xl bg-slate-50 p-4">
             <p className="text-xs font-black uppercase text-slate-500">
-              Rapor Türü
+              {language === "de" ? "Berichtstyp" : "Rapor Türü"}
             </p>
 
             <div className="mt-2 flex flex-wrap gap-2">
@@ -1408,7 +1472,7 @@ export default function SuperAdminOrdersPage() {
                     : "bg-white text-slate-700 hover:bg-orange-50"
                 }`}
               >
-                Tek Gün
+                {language === "de" ? "Ein Tag" : "Tek Gün"}
               </button>
 
               <button
@@ -1424,7 +1488,7 @@ export default function SuperAdminOrdersPage() {
                     : "bg-white text-slate-700 hover:bg-slate-100"
                 }`}
               >
-                Tarih Aralığı
+                {language === "de" ? "Zeitraum" : "Tarih Aralığı"}
               </button>
 
               <button
@@ -1440,7 +1504,7 @@ export default function SuperAdminOrdersPage() {
                     : "bg-white text-slate-700 hover:bg-green-50"
                 }`}
               >
-                Tüm Zamanlar
+                {language === "de" ? "Alle Zeiten" : "Tüm Zamanlar"}
               </button>
             </div>
 
@@ -1448,7 +1512,7 @@ export default function SuperAdminOrdersPage() {
               {reportMode === "DAY" ? (
                 <label>
                   <span className="text-xs font-black uppercase text-slate-500">
-                    Tarih
+                    {language === "de" ? "Datum" : "Tarih"}
                   </span>
 
                   <input
@@ -1468,7 +1532,7 @@ export default function SuperAdminOrdersPage() {
                 <>
                   <label>
                     <span className="text-xs font-black uppercase text-slate-500">
-                      Başlangıç Tarihi
+                      {language === "de" ? "Startdatum" : "Başlangıç Tarihi"}
                     </span>
 
                     <input
@@ -1485,7 +1549,7 @@ export default function SuperAdminOrdersPage() {
 
                   <label>
                     <span className="text-xs font-black uppercase text-slate-500">
-                      Bitiş Tarihi
+                      {language === "de" ? "Enddatum" : "Bitiş Tarihi"}
                     </span>
 
                     <input
@@ -1504,7 +1568,7 @@ export default function SuperAdminOrdersPage() {
 
               <label>
                 <span className="text-xs font-black uppercase text-slate-500">
-                  Lieferfahrer
+                  {language === "de" ? "Fahrer" : "Şoför"}
                 </span>
 
                 <select
@@ -1532,7 +1596,7 @@ export default function SuperAdminOrdersPage() {
           >
             <div className="rounded-2xl bg-slate-950 px-5 py-5 text-white">
               <p className="text-xs font-black uppercase leading-none text-slate-400">
-                Toplam Sipariş
+                {language === "de" ? "Bestellungen Gesamt" : "Toplam Sipariş"}
               </p>
 
               <p className="mt-0.5 text-2xl font-black leading-none">
@@ -1542,7 +1606,7 @@ export default function SuperAdminOrdersPage() {
 
             <div className="rounded-2xl bg-slate-100 px-5 py-5">
               <p className="text-xs font-black uppercase leading-none text-slate-500">
-                Müşteriye Gitti
+                {language === "de" ? "Zum Kunden gefahren" : "Müşteriye Gitti"}
               </p>
 
               <p className="mt-0.5 text-2xl font-black leading-none text-slate-950">
@@ -1552,7 +1616,7 @@ export default function SuperAdminOrdersPage() {
 
             <div className="rounded-2xl bg-blue-50 px-5 py-5">
               <p className="text-xs font-black uppercase leading-none text-blue-700">
-                Teslim Etti
+                {language === "de" ? "Geliefert" : "Teslim Etti"}
               </p>
 
               <p className="mt-0.5 text-2xl font-black leading-none text-blue-900">
@@ -1562,7 +1626,7 @@ export default function SuperAdminOrdersPage() {
 
             <div className="rounded-2xl bg-green-50 px-5 py-5">
               <p className="text-xs font-black uppercase leading-none text-green-700">
-                Parası Alındı
+                {language === "de" ? "Bezahlt Erhalten" : "Parası Alındı"}
               </p>
 
               <p className="mt-0.5 text-2xl font-black leading-none text-green-900">
@@ -1572,7 +1636,7 @@ export default function SuperAdminOrdersPage() {
 
             <div className="rounded-2xl bg-red-50 px-5 py-5">
               <p className="text-xs font-black uppercase leading-none text-red-700">
-                Ödeme Açık
+                {language === "de" ? "Zahlung Offen" : "Ödeme Açık"}
               </p>
 
               <p className="mt-0.5 text-2xl font-black leading-none text-red-900">
@@ -1582,7 +1646,7 @@ export default function SuperAdminOrdersPage() {
 
             <div className="rounded-2xl bg-green-50 px-5 py-5">
               <p className="text-xs font-black uppercase leading-none text-green-700">
-                Tahsil Edilen
+                {language === "de" ? "Eingenommen" : "Tahsil Edilen"}
               </p>
 
               <p className="mt-0.5 text-2xl font-black leading-none text-green-900">
@@ -1592,7 +1656,7 @@ export default function SuperAdminOrdersPage() {
 
             <div className="rounded-2xl bg-red-50 px-5 py-5">
               <p className="text-xs font-black uppercase leading-none text-red-700">
-                Açık Tutar
+                {language === "de" ? "Offener Betrag" : "Açık Tutar"}
               </p>
 
               <p className="mt-0.5 text-2xl font-black leading-none text-red-900">
@@ -1608,7 +1672,9 @@ export default function SuperAdminOrdersPage() {
 
             {reportDailyRows.length === 0 ? (
               <p className="p-4 text-sm text-slate-500">
-                Seçilen rapor için sipariş bulunmuyor.
+                {language === "de"
+                  ? "Für den ausgewählten Bericht gibt es keine Bestellungen."
+                  : "Seçilen rapor için sipariş bulunmuyor."}
               </p>
             ) : (
               <div className="overflow-x-auto">
@@ -1688,11 +1754,17 @@ export default function SuperAdminOrdersPage() {
               >
                 <div>
                   <h3 className="font-black text-green-900">
-                    Parası Alınanlar
+                    {language === "de" ? "Bezahlt Erhalten" : "Parası Alınanlar"}
                   </h3>
 
                   <p className="mt-0.5 text-xs font-bold text-green-700">
-                    {showPaidReport ? "Listeyi kapat" : "Listeyi aç"}
+                    {showPaidReport
+                      ? language === "de"
+                        ? "Liste schließen"
+                        : "Listeyi kapat"
+                      : language === "de"
+                        ? "Liste öffnen"
+                        : "Listeyi aç"}
                   </p>
                 </div>
 
@@ -1713,7 +1785,9 @@ export default function SuperAdminOrdersPage() {
               {showPaidReport ? (
                 paidReportOrders.length === 0 ? (
                   <p className="p-4 text-sm text-slate-500">
-                    Tahsil edilmiş sipariş bulunmuyor.
+                    {language === "de"
+                      ? "Keine eingenommenen Bestellungen vorhanden."
+                      : "Tahsil edilmiş sipariş bulunmuyor."}
                   </p>
                 ) : (
                   <div className="divide-y divide-green-100">
@@ -1738,10 +1812,12 @@ export default function SuperAdminOrdersPage() {
                             </p>
 
                             <p className="mt-1 text-xs text-slate-500">
-                              Ödeme:{" "}
+                              {language === "de" ? "Zahlung:" : "Ödeme:"}{" "}
                               {order.paidAt
                                 ? new Date(order.paidAt).toLocaleString("de-DE")
-                                : "Zaman kaydı yok"}
+                                : language === "de"
+                                  ? "Kein Zeitstempel"
+                                  : "Zaman kaydı yok"}
                             </p>
                           </div>
 
@@ -1765,11 +1841,17 @@ export default function SuperAdminOrdersPage() {
               >
                 <div>
                   <h3 className="font-black text-red-900">
-                    Ödemesi Açık Kalanlar
+                    {language === "de" ? "Offene Zahlungen" : "Ödemesi Açık Kalanlar"}
                   </h3>
 
                   <p className="mt-0.5 text-xs font-bold text-red-700">
-                    {showOpenReport ? "Listeyi kapat" : "Listeyi aç"}
+                    {showOpenReport
+                      ? language === "de"
+                        ? "Liste schließen"
+                        : "Listeyi kapat"
+                      : language === "de"
+                        ? "Liste öffnen"
+                        : "Listeyi aç"}
                   </p>
                 </div>
 
@@ -1790,7 +1872,9 @@ export default function SuperAdminOrdersPage() {
               {showOpenReport ? (
                 openReportOrders.length === 0 ? (
                   <p className="p-4 text-sm text-slate-500">
-                    Açık ödeme bulunmuyor.
+                    {language === "de"
+                      ? "Keine offenen Zahlungen vorhanden."
+                      : "Açık ödeme bulunmuyor."}
                   </p>
                 ) : (
                   <div className="divide-y divide-red-100">
@@ -1815,11 +1899,13 @@ export default function SuperAdminOrdersPage() {
                             </p>
 
                             <p className="mt-1 text-xs font-bold text-red-600">
-                              Ödeme hâlâ açık
+                              {language === "de"
+                                ? "Zahlung noch offen"
+                                : "Ödeme hâlâ açık"}
                             </p>
 
                             <p className="mt-0.5 text-xs text-slate-500">
-                              Tarih:{" "}
+                              {language === "de" ? "Datum:" : "Tarih:"}{" "}
                               {new Date(
                                 order.assignedAt || order.createdAt,
                               ).toLocaleString("de-DE")}
@@ -1854,7 +1940,7 @@ export default function SuperAdminOrdersPage() {
                   : "bg-orange-50 text-orange-700 hover:bg-orange-100"
               }`}
             >
-              Tüm Siparişler
+              {language === "de" ? "Alle Bestellungen" : "Tüm Siparişler"}
             </button>
 
             <button
@@ -1870,7 +1956,7 @@ export default function SuperAdminOrdersPage() {
                   : "bg-slate-100 text-slate-700 hover:bg-slate-200"
               }`}
             >
-              Aktif Siparişler
+              {language === "de" ? "Aktive Bestellungen" : "Aktif Siparişler"}
             </button>
 
             <button
@@ -1886,7 +1972,7 @@ export default function SuperAdminOrdersPage() {
                   : "bg-green-50 text-green-700 hover:bg-green-100"
               }`}
             >
-              Teslim Edilenler
+              {language === "de" ? "Gelieferte" : "Teslim Edilenler"}
             </button>
 
             <div className="mx-1 hidden h-8 w-px bg-slate-200 lg:block" />
@@ -1904,7 +1990,7 @@ export default function SuperAdminOrdersPage() {
                   : "bg-red-50 text-red-700 hover:bg-red-100"
               }`}
             >
-              Ödeme Açık
+              {language === "de" ? "Zahlung Offen" : "Ödeme Açık"}
             </button>
 
             <button
@@ -1920,7 +2006,7 @@ export default function SuperAdminOrdersPage() {
                   : "bg-green-50 text-green-700 hover:bg-green-100"
               }`}
             >
-              Parası Ödendi
+              {language === "de" ? "Bezahlt" : "Parası Ödendi"}
             </button>
 
             <Link
@@ -1928,13 +2014,15 @@ export default function SuperAdminOrdersPage() {
               className="ml-0 inline-flex items-center gap-2 rounded-xl bg-red-50 px-4 py-2 text-2xl font-black text-red-700 transition hover:bg-red-100 xl:ml-auto"
             >
               <Trash2 size={16} />
-              Çöp Kutusu
+              {language === "de" ? "Papierkorb" : "Çöp Kutusu"}
             </Link>
           </div>
 
           {filteredOrders.length === 0 ? (
             <p className="mt-8 text-slate-500">
-              Bu filtreye uygun sipariş bulunmuyor.
+              {language === "de"
+                ? "Für diesen Filter gibt es keine Bestellungen."
+                : "Bu filtreye uygun sipariş bulunmuyor."}
             </p>
           ) : (
             <div className="mt-6 space-y-4">
@@ -1946,7 +2034,9 @@ export default function SuperAdminOrdersPage() {
                 const driver = order.driver
                   ? `${order.driver.firstName || ""} ${order.driver.lastName || ""}`.trim() ||
                     order.driver.email
-                  : "Atanmadı";
+                  : language === "de"
+                    ? "Nicht zugewiesen"
+                    : "Atanmadı";
 
                 return (
                   <article
@@ -1970,7 +2060,7 @@ export default function SuperAdminOrdersPage() {
 
                       <div>
                         <p className="text-[10px] font-bold uppercase text-slate-400">
-                          Durum
+                          {language === "de" ? "Status" : "Durum"}
                         </p>
 
                         <select
@@ -1997,7 +2087,7 @@ export default function SuperAdminOrdersPage() {
                       <div>
                         <p className="flex items-center gap-1 text-[10px] font-bold uppercase text-slate-400">
                           <Truck size={14} />
-                          Lieferfahrer
+                          {language === "de" ? "Fahrer" : "Şoför"}
                         </p>
 
                         <select
@@ -2022,7 +2112,7 @@ export default function SuperAdminOrdersPage() {
                       <div>
                         <p className="flex items-center gap-1 text-[10px] font-bold uppercase text-slate-400">
                           <WalletCards size={14} />
-                          Ödeme
+                          {language === "de" ? "Zahlung" : "Ödeme"}
                         </p>
 
                         <p
@@ -2033,14 +2123,18 @@ export default function SuperAdminOrdersPage() {
                           }`}
                         >
                           {order.paymentStatus === "PAID"
-                            ? "Parası Ödendi"
-                            : "Ödeme Açık"}
+                            ? language === "de"
+                              ? "Bezahlt"
+                              : "Parası Ödendi"
+                            : language === "de"
+                              ? "Zahlung offen"
+                              : "Ödeme Açık"}
                         </p>
                       </div>
 
                       <div>
                         <p className="text-[10px] font-bold uppercase text-slate-400">
-                          Toplam
+                          {language === "de" ? "Gesamt" : "Toplam"}
                         </p>
 
                         <p className="mt-0.5 text-sm font-black leading-none text-slate-950">
@@ -2054,7 +2148,7 @@ export default function SuperAdminOrdersPage() {
                             className="inline-flex items-center gap-1.5 rounded-lg bg-slate-950 px-2.5 py-1.5 text-sm font-black text-white transition hover:bg-orange-500"
                           >
                             <Printer size={16} />
-                            Yazdır
+                            {language === "de" ? "Drucken" : "Yazdır"}
                           </button>
 
                           <button
@@ -2066,7 +2160,7 @@ export default function SuperAdminOrdersPage() {
                             }
                             className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-2.5 py-1.5 text-sm font-black text-slate-700"
                           >
-                            Detay
+                            {language === "de" ? "Detail" : "Detay"}
                             <ChevronDown size={16} />
                           </button>
 
@@ -2076,7 +2170,7 @@ export default function SuperAdminOrdersPage() {
                             className="inline-flex items-center gap-1.5 rounded-lg bg-red-50 px-2.5 py-1.5 text-sm font-black text-red-600 transition hover:bg-red-100"
                           >
                             <Trash2 size={16} />
-                            Çöpe At
+                            {language === "de" ? "In den Papierkorb" : "Çöpe At"}
                           </button>
                         </div>
                       </div>
