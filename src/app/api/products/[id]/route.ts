@@ -98,7 +98,8 @@ export const GET = withTenant(async (
             : undefined,
 
         stock: item.stock,
-        inStock: item.stock > 0,
+        soldOut: item.soldOut,
+        inStock: item.stock > 0 && !item.soldOut,
       };
     }
 

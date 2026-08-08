@@ -68,7 +68,8 @@ export async function getPublicProducts() {
           }
         : undefined,
 
-    inStock: product.stock > 0,
+    inStock: product.stock > 0 && !product.soldOut,
+    soldOut: product.soldOut,
     stock: product.stock,
     createdAt: product.createdAt.toISOString(),
   }));

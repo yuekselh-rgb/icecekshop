@@ -188,7 +188,8 @@ export const PATCH = withTenant(async (
         Number(body.imagePositionY) !== existing.imagePositionY) ||
       (hasOwn("categoryId") &&
         stringValue(body.categoryId) !== existing.categoryId) ||
-      (hasOwn("active") && Boolean(body.active) !== existing.active);
+      (hasOwn("active") && Boolean(body.active) !== existing.active) ||
+      (hasOwn("soldOut") && Boolean(body.soldOut) !== existing.soldOut);
 
     if (detailsChanged) {
       const permission = await requireAdminPermission("updateProduct");
@@ -456,6 +457,12 @@ export const PATCH = withTenant(async (
         ...(hasOwn("active")
           ? {
               active: Boolean(body.active),
+            }
+          : {}),
+
+        ...(hasOwn("soldOut")
+          ? {
+              soldOut: Boolean(body.soldOut),
             }
           : {}),
       },

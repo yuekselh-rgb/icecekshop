@@ -329,6 +329,7 @@ model Product {
   imagePositionX  Int          @default(0)
   imagePositionY  Int          @default(0)
   active          Boolean      @default(true)
+  soldOut         Boolean      @default(false)
   sortOrder       Int          @default(0)
   categoryId      String
   createdAt       DateTime     @default(now())

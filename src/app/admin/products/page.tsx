@@ -60,6 +60,7 @@ type Product = {
   imagePositionX: number;
   imagePositionY: number;
   active: boolean;
+  soldOut: boolean;
   categoryId: string;
   category: Category;
 };
@@ -109,6 +110,7 @@ const emptyProductForm = {
   imagePositionX: "0",
   imagePositionY: "0",
   categoryId: "",
+  soldOut: false,
 };
 
 const emptyCategoryForm = {
@@ -412,6 +414,7 @@ export default function AdminProductsPage() {
       imagePositionX: String(product.imagePositionX ?? 0),
       imagePositionY: String(product.imagePositionY ?? 0),
       categoryId: product.categoryId,
+      soldOut: product.soldOut,
     });
 
     setShowCategoryForm(false);
@@ -1516,6 +1519,32 @@ export default function AdminProductsPage() {
                 onChange={(value) => updateProductForm("minStock", value)}
               />
 
+              <label className="flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-3 sm:col-span-2">
+                <input
+                  type="checkbox"
+                  checked={form.soldOut}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      soldOut: event.target.checked,
+                    }))
+                  }
+                  className="h-5 w-5 rounded border-slate-300"
+                />
+
+                <span>
+                  <span className="block text-sm font-bold text-slate-900">
+                    {language === "de" ? "Als ausverkauft markieren" : "Ürünü tükendi olarak işaretle"}
+                  </span>
+
+                  <span className="block text-xs text-slate-500">
+                    {language === "de"
+                      ? "Unabhängig vom Lagerbestand: Produkt bleibt im Shop sichtbar, kann aber nicht bestellt werden."
+                      : "Stok miktarından bağımsız: Ürün mağazada görünür kalır ama sipariş edilemez."}
+                  </span>
+                </span>
+              </label>
+
               <div className="sm:col-span-2">
                 <span className="text-sm font-bold text-slate-700">
                   {language === "de" ? "Produktbild" : "Ürün Görseli"}
@@ -1853,11 +1882,19 @@ export default function AdminProductsPage() {
                               : "Ambalaj bilgisi yok")}
                         </p>
 
-                        {product.isOffer ? (
-                          <span className="mt-3 inline-flex rounded-full bg-green-100 px-3 py-1 text-xs font-black text-green-700">
-                            {language === "de" ? "Angebot aktiv" : "Kampanya aktif"}
-                          </span>
-                        ) : null}
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {product.isOffer ? (
+                            <span className="inline-flex rounded-full bg-green-100 px-3 py-1 text-xs font-black text-green-700">
+                              {language === "de" ? "Angebot aktiv" : "Kampanya aktif"}
+                            </span>
+                          ) : null}
+
+                          {product.soldOut ? (
+                            <span className="inline-flex rounded-full bg-red-100 px-3 py-1 text-xs font-black text-red-700">
+                              {language === "de" ? "Ausverkauft" : "Tükendi"}
+                            </span>
+                          ) : null}
+                        </div>
                       </div>
 
                       <div>

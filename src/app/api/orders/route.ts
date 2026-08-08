@@ -304,6 +304,7 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
           in: productIds,
         },
         active: true,
+        soldOut: false,
       },
 
       select: {

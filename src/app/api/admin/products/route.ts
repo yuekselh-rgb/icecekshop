@@ -259,6 +259,7 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
         categoryId: category.id,
 
         active: true,
+        soldOut: body.soldOut === true,
       },
 
       include: {
