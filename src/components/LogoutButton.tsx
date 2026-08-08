@@ -13,9 +13,11 @@ const variantClasses = {
 export default function LogoutButton({
   label,
   variant = "light",
+  redirectTo = "/giris",
 }: {
   label: string;
   variant?: "light" | "dark";
+  redirectTo?: string;
 }) {
   const router = useRouter();
 
@@ -29,7 +31,7 @@ export default function LogoutButton({
         method: "POST",
       });
     } finally {
-      router.push("/giris");
+      router.push(redirectTo);
       router.refresh();
     }
   }

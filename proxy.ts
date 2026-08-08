@@ -190,10 +190,6 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/",
-    "/giris",
-    "/api/debug-edge-host",
-
     "/admin/:path*",
     "/super-admin/:path*",
     "/sofor/:path*",

@@ -8,6 +8,7 @@ import {
   Power,
 } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
+import LogoutButton from "@/components/LogoutButton";
 
 type Tenant = {
   id: string;
@@ -124,8 +125,16 @@ export default function PlatformDashboardPage() {
     <main className="min-h-screen bg-slate-100 p-4 sm:p-6 lg:p-10">
       <div className="mx-auto max-w-7xl">
         <div className="rounded-[32px] bg-slate-950 p-7 text-white sm:p-10">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-500">
-            <Building2 size={28} />
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-500">
+              <Building2 size={28} />
+            </div>
+
+            <LogoutButton
+              label="Abmelden"
+              variant="dark"
+              redirectTo="/platform/giris"
+            />
           </div>
 
           <h1 className="mt-5 text-4xl font-black">Platform-Verwaltung</h1>
