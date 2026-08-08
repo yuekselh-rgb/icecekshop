@@ -7,11 +7,17 @@ import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
 import { prisma } from "@/lib/prisma";
 import { getPublicProducts } from "@/lib/public-products";
-import { getCurrentTenant } from "@/lib/tenant";
+import { getCurrentTenant, isPlatformHost } from "@/lib/tenant";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
+  if (isPlatformHost((await headers()).get("host"))) {
+    redirect("/platform");
+  }
+
   const tenant = await getCurrentTenant();
 
   const [companySetting, categories, products] = await Promise.all([

@@ -40,23 +40,6 @@ function getHomePath(role: AuthRole) {
 export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
-  /*
-   * Temporärer Diagnose-Zweig, um einen PLATFORM_HOST-Mismatch speziell in
-   * der Edge-Middleware selbst zu prüfen (getrennt von normalen Serverless-
-   * Functions, die eine eigene Env-Sicht haben können). Wieder entfernen,
-   * sobald die Ursache gefunden ist.
-   */
-  if (pathname === "/api/debug-edge-host") {
-    const rawHost = request.headers.get("host");
-    const platformHost = process.env.PLATFORM_HOST ?? null;
-
-    return NextResponse.json({
-      rawHost,
-      platformHostEnv: platformHost,
-      matches: rawHost?.split(":")[0] === platformHost,
-    });
-  }
-
   const token = request.cookies.get("paketmarket_session")?.value;
 
   const session = token ? await verifySessionToken(token) : null;
@@ -71,32 +54,11 @@ export async function proxy(request: NextRequest) {
    * Die Platform-Host-Domain ist ausschließlich für den Platform-Owner-
    * Bereich da. Auf Tenant-Domains ist /platform nicht erreichbar, und
    * umgekehrt lässt der Platform-Host sonst nichts anderes durch.
-   *
-   * Auf dem Platform-Host selbst werden "/" und "/giris" transparent auf
-   * "/platform" bzw. "/platform/giris" umgeschrieben (rewrite, keine
-   * sichtbare Weiterleitung), damit man ohne "/platform"-Präfix auskommt —
-   * der Host dient ja ohnehin ausschließlich diesem Bereich.
    */
 
   if (isPlatform) {
-    if (pathname === "/giris") {
-      return NextResponse.rewrite(new URL("/platform/giris", request.url));
-    }
-
-    if (pathname === "/") {
-      if (!session) {
-        return NextResponse.rewrite(new URL("/platform/giris", request.url));
-      }
-
-      if (session.role !== "PLATFORM_OWNER") {
-        return redirectTo(request, getHomePath(session.role));
-      }
-
-      return NextResponse.rewrite(new URL("/platform", request.url));
-    }
-
     if (!isPlatformPage && !isPlatformApi) {
-      return redirectTo(request, "/");
+      return redirectTo(request, "/platform");
     }
   } else if (isPlatformPage || isPlatformApi) {
     return NextResponse.redirect(new URL("/", `https://${host}`));
