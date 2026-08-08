@@ -66,7 +66,7 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     if (!user) {
       if (isFormSubmission) {
         return NextResponse.redirect(
-          new URL("/giris?error=invalid", request.url),
+          new URL("/login?error=invalid", request.url),
           303,
         );
       }
@@ -91,7 +91,7 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     if (user.lockedUntil && user.lockedUntil > new Date()) {
       if (isFormSubmission) {
         return NextResponse.redirect(
-          new URL("/giris?error=locked", request.url),
+          new URL("/login?error=locked", request.url),
           303,
         );
       }
@@ -133,7 +133,7 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
 
       if (isFormSubmission) {
         return NextResponse.redirect(
-          new URL("/giris?error=invalid", request.url),
+          new URL("/login?error=invalid", request.url),
           303,
         );
       }
@@ -154,7 +154,7 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     if (!user.emailVerified) {
       if (isFormSubmission) {
         return NextResponse.redirect(
-          new URL("/giris?error=verify-email", request.url),
+          new URL("/login?error=verify-email", request.url),
           303,
         );
       }
@@ -176,7 +176,7 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     if (!user.isActive) {
       if (isFormSubmission) {
         return NextResponse.redirect(
-          new URL("/giris?error=inactive", request.url),
+          new URL("/login?error=inactive", request.url),
           303,
         );
       }

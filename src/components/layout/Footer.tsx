@@ -173,28 +173,28 @@ fetch("/api/company-settings",{cache:"no-store"})
 
           <div className="mt-4 space-y-3 text-sm text-slate-400">
             <Link
-              href="/urunler?category=icecekler"
+              href="/products?category=icecekler"
               className="block hover:text-white"
             >
               {t.drinks}
             </Link>
 
             <Link
-              href="/urunler?category=ambalaj"
+              href="/products?category=ambalaj"
               className="block hover:text-white"
             >
               {t.packaging}
             </Link>
 
             <Link
-              href="/urunler?category=take-away"
+              href="/products?category=take-away"
               className="block hover:text-white"
             >
               {t.takeaway}
             </Link>
 
             <Link
-              href="/urunler?category=temizlik"
+              href="/products?category=temizlik"
               className="block hover:text-white"
             >
               {t.cleaning}
@@ -324,9 +324,9 @@ fetch("/api/company-settings",{cache:"no-store"})
         <div className="flex gap-5">
           <Link href="/impressum">{t.imprint}</Link>
 
-          <Link href="/gizlilik">{t.privacy}</Link>
+          <Link href="/privacy">{t.privacy}</Link>
 
-          <Link href="/kullanim-sartlari">{t.terms}</Link>
+          <Link href="/terms">{t.terms}</Link>
         </div>
       </div>
     </footer>

@@ -77,7 +77,7 @@ export default function HeroSection() {
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link
-              href="/urunler"
+              href="/products"
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-sky-500 px-6 py-3.5 font-bold text-white transition hover:bg-sky-600"
             >
               {t.shop}
@@ -85,7 +85,7 @@ export default function HeroSection() {
             </Link>
 
             <Link
-              href="/giris"
+              href="/login"
               className="inline-flex items-center justify-center rounded-xl border border-slate-700 px-6 py-3.5 font-bold text-white transition hover:border-white"
             >
               {t.login}

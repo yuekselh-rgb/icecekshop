@@ -46,8 +46,8 @@ export default function Header() {
 
     router.push(
       trimmed
-        ? `/urunler?search=${encodeURIComponent(trimmed)}`
-        : "/urunler",
+        ? `/products?search=${encodeURIComponent(trimmed)}`
+        : "/products",
     );
 
     setSearchOpen(false);
@@ -139,7 +139,7 @@ export default function Header() {
       });
     } finally {
       clearCart();
-      router.push("/giris");
+      router.push("/login");
       router.refresh();
     }
   }
@@ -245,7 +245,7 @@ export default function Header() {
     {isDriver && (
       <>
         <Link
-          href="/sofor"
+          href="/driver"
           className="flex items-center gap-3 rounded-xl px-4 py-3 font-semibold transition hover:bg-sky-50 hover:text-sky-600"
         >
           <Truck size={20} />
@@ -253,7 +253,7 @@ export default function Header() {
         </Link>
 
         <Link
-          href="/sofor?tab=orders"
+          href="/driver?tab=orders"
           className="flex items-center gap-3 rounded-xl px-4 py-3 font-semibold transition hover:bg-sky-50 hover:text-sky-600"
         >
           <Package size={20} />
@@ -261,7 +261,7 @@ export default function Header() {
         </Link>
 
         <Link
-          href="/sofor?tab=stock"
+          href="/driver?tab=stock"
           className="flex items-center gap-3 rounded-xl px-4 py-3 font-semibold transition hover:bg-sky-50 hover:text-sky-600"
         >
           <Package size={20} />
@@ -293,28 +293,28 @@ export default function Header() {
             </Link>
 
             {permissions.viewOrders && (
-              <Link href="/admin/siparisler" className="flex items-center gap-3 rounded-xl px-4 py-3 font-semibold transition hover:bg-sky-50 hover:text-sky-600">
+              <Link href="/admin/orders" className="flex items-center gap-3 rounded-xl px-4 py-3 font-semibold transition hover:bg-sky-50 hover:text-sky-600">
                 <Package size={20}/>
                 <span>{t.orders}</span>
               </Link>
             )}
 
             {permissions.viewProducts && (
-              <Link href="/admin/urunler" className="flex items-center gap-3 rounded-xl px-4 py-3 font-semibold transition hover:bg-sky-50 hover:text-sky-600">
+              <Link href="/admin/products" className="flex items-center gap-3 rounded-xl px-4 py-3 font-semibold transition hover:bg-sky-50 hover:text-sky-600">
                 <Package size={20}/>
                 <span>{t.products}</span>
               </Link>
             )}
 
             {permissions.viewDriverStock && (
-              <Link href="/admin/sofor-stok" className="flex items-center gap-3 rounded-xl px-4 py-3 font-semibold transition hover:bg-sky-50 hover:text-sky-600">
+              <Link href="/admin/driver-stock" className="flex items-center gap-3 rounded-xl px-4 py-3 font-semibold transition hover:bg-sky-50 hover:text-sky-600">
                 <Truck size={20}/>
                 <span>{t.driverStocks}</span>
               </Link>
             )}
 
             {permissions.viewDealers && (
-              <Link href="/admin/bayiler" className="flex items-center gap-3 rounded-xl px-4 py-3 font-semibold transition hover:bg-sky-50 hover:text-sky-600">
+              <Link href="/admin/dealers" className="flex items-center gap-3 rounded-xl px-4 py-3 font-semibold transition hover:bg-sky-50 hover:text-sky-600">
                 <UserRound size={20}/>
                 <span>{t.dealers}</span>
               </Link>
@@ -327,7 +327,7 @@ export default function Header() {
       <span>{t.home}</span>
     </Link>
 
-    <Link href="/urunler" className="flex items-center gap-3 rounded-xl px-4 py-3 font-semibold transition hover:bg-sky-50 hover:text-sky-600">
+    <Link href="/products" className="flex items-center gap-3 rounded-xl px-4 py-3 font-semibold transition hover:bg-sky-50 hover:text-sky-600">
       <Package size={20}/>
       <span>{t.products}</span>
     </Link>
@@ -337,12 +337,12 @@ export default function Header() {
       <span>{t.pfand}</span>
     </Link>
 
-    <Link href={currentUser ? "/siparislerim" : "/giris"} className="flex items-center gap-3 rounded-xl px-4 py-3 font-semibold transition hover:bg-sky-50 hover:text-sky-600">
+    <Link href={currentUser ? "/orders" : "/login"} className="flex items-center gap-3 rounded-xl px-4 py-3 font-semibold transition hover:bg-sky-50 hover:text-sky-600">
       <UserRound size={20}/>
       <span>{t.account}</span>
     </Link>
 
-    <Link href="/sepet" className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3 font-semibold transition hover:bg-sky-50">
+    <Link href="/cart" className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3 font-semibold transition hover:bg-sky-50">
       <div className="flex items-center gap-3">
         <ShoppingCart size={20}/>
         <span>{t.cartText}</span>
@@ -442,7 +442,7 @@ export default function Header() {
             </button>
 
             <Link
-              href={currentUser ? "/siparislerim" : "/giris"}
+              href={currentUser ? "/orders" : "/login"}
               aria-label={t.account}
               className="rounded-full border border-slate-200 p-2.5 transition hover:border-sky-500 hover:text-sky-500"
             >
@@ -461,7 +461,7 @@ export default function Header() {
             ) : null}
 
             <Link
-              href="/sepet"
+              href="/cart"
               aria-label={t.cart}
               className="relative rounded-full bg-slate-950 p-2.5 text-white transition hover:bg-sky-500"
             >

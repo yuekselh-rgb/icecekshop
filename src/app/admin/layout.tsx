@@ -11,7 +11,7 @@ export default async function AdminLayout({
   const admin = await getAdminWithPermissions();
 
   if (!admin) {
-    redirect("/giris");
+    redirect("/login");
   }
 
   return children;

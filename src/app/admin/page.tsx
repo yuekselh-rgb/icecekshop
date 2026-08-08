@@ -20,7 +20,7 @@ export default async function AdminPage() {
   const admin = await getAdminWithPermissions();
 
   if (!admin) {
-    redirect("/giris");
+    redirect("/login");
   }
 
   const fullName = [admin.user.firstName, admin.user.lastName]
@@ -42,7 +42,7 @@ export default async function AdminPage() {
     {
       title: lang === "de" ? "Barverkauf" : "Bar Satışı",
       description: lang === "de" ? "Direkten Verkauf im Geschäft durchführen." : "Mağazada doğrudan ürün satışı oluşturun.",
-      href: "/admin/bar-satis",
+      href: "/admin/bar-sales",
       icon: ShoppingBasket,
       permission: admin.permissions.makeBarSale,
       featured: true,
@@ -51,7 +51,7 @@ export default async function AdminPage() {
       title: lang === "de" ? "Barverkaufsbericht" : "Bar Satış Raporu",
       description:
         lang === "de" ? "Barverkäufe nach Personal, Produkt und Zahlungsart anzeigen." : "Personel, ürün ve ödeme bazında bar satışlarını görüntüleyin.",
-      href: "/admin/bar-satis-raporu",
+      href: "/admin/bar-sales-report",
       icon: ReceiptText,
       permission: admin.permissions.viewBarSalesReport,
       featured: false,
@@ -60,7 +60,7 @@ export default async function AdminPage() {
       title: lang === "de" ? "Kasse" : "Gerçek Kasa",
       description:
         lang === "de" ? "Kassenbewegungen und aktuellen Bestand verwalten." : "Fiziksel kasanın giriş, çıkış ve güncel bakiyesini yönetin.",
-      href: "/admin/bar-kasa",
+      href: "/admin/bar-cash",
       icon: WalletCards,
       permission: admin.permissions.viewBarCash,
       featured: false,
@@ -69,7 +69,7 @@ export default async function AdminPage() {
       title: lang === "de" ? "Fahrerlager" : "Şoför Stokları",
       description:
         lang === "de" ? "Fahrerbestand und Bewegungen verwalten." : "Şoförlere mal yükleyin, araç stoklarını ve satış hareketlerini yönetin.",
-      href: "/admin/sofor-stok",
+      href: "/admin/driver-stock",
       icon: Truck,
       permission: admin.permissions.viewDriverStock,
       featured: false,
@@ -77,7 +77,7 @@ export default async function AdminPage() {
     {
       title: lang === "de" ? "Bestellungen" : "Siparişler",
       description: lang === "de" ? "Neue und vergangene Bestellungen verwalten." : "Yeni ve geçmiş siparişleri yönetin.",
-      href: "/admin/siparisler",
+      href: "/admin/orders",
       icon: ClipboardList,
       permission: admin.permissions.viewOrders,
       featured: false,
@@ -85,7 +85,7 @@ export default async function AdminPage() {
     {
       title: lang === "de" ? "Produkte" : "Ürünler",
       description: lang === "de" ? "Produkte und Preise verwalten." : "Ürünleri ve fiyat bilgilerini yönetin.",
-      href: "/admin/urunler",
+      href: "/admin/products",
       icon: PackageSearch,
       permission: admin.permissions.viewProducts,
       featured: false,
@@ -93,7 +93,7 @@ export default async function AdminPage() {
     {
       title: lang === "de" ? "Lagerverwaltung" : "Stok Yönetimi",
       description: lang === "de" ? "Produktbestände verwalten." : "Ürün stoklarını görüntüleyin ve düzenleyin.",
-      href: "/admin/stok",
+      href: "/admin/stock",
       icon: Boxes,
       permission: admin.permissions.viewStock,
       featured: false,
@@ -101,7 +101,7 @@ export default async function AdminPage() {
     {
       title: lang === "de" ? "Kunden" : "Müşteriler",
       description: lang === "de" ? "Registrierte Kunden anzeigen." : "Kayıtlı müşteri hesaplarını görüntüleyin.",
-      href: "/admin/musteriler",
+      href: "/admin/customers",
       icon: Users,
       permission: admin.permissions.viewCustomers,
       featured: false,

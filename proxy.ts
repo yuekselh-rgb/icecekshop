@@ -19,7 +19,7 @@ function apiError(message: string, status: 401 | 403) {
 
 function getHomePath(role: AuthRole) {
   if (role === "DRIVER") {
-    return "/sofor";
+    return "/driver";
   }
 
   if (role === "ADMIN") {
@@ -69,7 +69,7 @@ export async function proxy(request: NextRequest) {
   const isSuperAdminPage =
     pathname === "/super-admin" || pathname.startsWith("/super-admin/");
 
-  const isDriverPage = pathname === "/sofor" || pathname.startsWith("/sofor/");
+  const isDriverPage = pathname === "/driver" || pathname.startsWith("/driver/");
 
   const isAdminApi =
     pathname === "/api/admin" || pathname.startsWith("/api/admin/");
@@ -78,7 +78,7 @@ export async function proxy(request: NextRequest) {
     pathname === "/api/super-admin" || pathname.startsWith("/api/super-admin/");
 
   const isDriverApi =
-    pathname === "/api/sofor" || pathname.startsWith("/api/sofor/");
+    pathname === "/api/driver" || pathname.startsWith("/api/driver/");
 
   /*
    * API isteklerinde yönlendirme yapılmaz.
@@ -139,7 +139,7 @@ export async function proxy(request: NextRequest) {
 
   if (isAdminPage) {
     if (!session) {
-      return redirectTo(request, "/giris");
+      return redirectTo(request, "/login");
     }
 
     if (session.role !== "ADMIN" && session.role !== "SUPER_ADMIN") {
@@ -151,7 +151,7 @@ export async function proxy(request: NextRequest) {
 
   if (isSuperAdminPage) {
     if (!session) {
-      return redirectTo(request, "/giris");
+      return redirectTo(request, "/login");
     }
 
     if (session.role !== "SUPER_ADMIN") {
@@ -163,7 +163,7 @@ export async function proxy(request: NextRequest) {
 
   if (isDriverPage) {
     if (!session) {
-      return redirectTo(request, "/giris");
+      return redirectTo(request, "/login");
     }
 
     if (session.role !== "DRIVER") {
@@ -173,9 +173,9 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  if (isPlatformPage && pathname !== "/platform/giris") {
+  if (isPlatformPage && pathname !== "/platform/login") {
     if (!session) {
-      return redirectTo(request, "/giris");
+      return redirectTo(request, "/login");
     }
 
     if (session.role !== "PLATFORM_OWNER") {
@@ -192,12 +192,12 @@ export const config = {
   matcher: [
     "/admin/:path*",
     "/super-admin/:path*",
-    "/sofor/:path*",
+    "/driver/:path*",
     "/platform/:path*",
 
     "/api/admin/:path*",
     "/api/super-admin/:path*",
-    "/api/sofor/:path*",
+    "/api/driver/:path*",
     "/api/platform/:path*",
   ],
 };

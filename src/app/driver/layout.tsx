@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
-export default async function SuperAdminLayout({
+export default async function DriverLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -14,7 +14,7 @@ export default async function SuperAdminLayout({
     redirect("/login");
   }
 
-  if (session.role !== "SUPER_ADMIN") {
+  if (session.role !== "DRIVER") {
     redirect("/");
   }
 

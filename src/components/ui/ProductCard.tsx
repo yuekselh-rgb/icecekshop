@@ -134,7 +134,7 @@ export default function ProductCard({
     <article
       className="group flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white transition duration-300 hover:-translate-y-0.5 hover:shadow-lg">
       <Link
-        href={`/urunler/${id}`}
+        href={`/products/${id}`}
         className="relative flex h-44 items-center justify-center overflow-hidden bg-slate-100"
       >
         {localizedBadge ? (
@@ -175,7 +175,7 @@ export default function ProductCard({
           </span>
         </div>
 
-        <Link href={`/urunler/${id}`}>
+        <Link href={`/products/${id}`}>
           <h3 className="mt-0.5 line-clamp-2 min-h-9 text-sm font-black leading-4 text-slate-950 transition hover:text-orange-500">
             {localizedName}
           </h3>

@@ -133,7 +133,7 @@ export default function PlatformDashboard() {
             <LogoutButton
               label="Abmelden"
               variant="dark"
-              redirectTo="/platform/giris"
+              redirectTo="/platform/login"
             />
           </div>
 

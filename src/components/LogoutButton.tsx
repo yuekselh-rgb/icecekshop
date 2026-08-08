@@ -13,7 +13,7 @@ const variantClasses = {
 export default function LogoutButton({
   label,
   variant = "light",
-  redirectTo = "/giris",
+  redirectTo = "/login",
 }: {
   label: string;
   variant?: "light" | "dark";

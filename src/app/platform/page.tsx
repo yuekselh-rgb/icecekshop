@@ -14,7 +14,7 @@ export default async function PlatformDashboardPage() {
   const session = await getSession();
 
   if (!session) {
-    redirect("/platform/giris");
+    redirect("/platform/login");
   }
 
   if (session.role !== "PLATFORM_OWNER") {

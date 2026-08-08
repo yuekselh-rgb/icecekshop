@@ -51,49 +51,49 @@ export default function SuperAdminPage() {
           </Link>
 
           <Link
-            href="/super-admin/adminler"
+            href="/super-admin/admins"
             className="rounded-3xl bg-white p-7 font-black text-slate-950 shadow-sm"
           >
             Admin Yönetimi
           </Link>
 
           <Link
-            href="/super-admin/stok"
+            href="/super-admin/stock"
             className="rounded-3xl bg-white p-7 font-black text-slate-950 shadow-sm"
           >
             Stok Yönetimi
           </Link>
 
           <Link
-            href="/super-admin/musteriler"
+            href="/super-admin/customers"
             className="rounded-3xl bg-white p-7 font-black text-slate-950 shadow-sm"
           >
             Müşteri Yönetimi
           </Link>
 
           <Link
-            href="/super-admin/soforler"
+            href="/super-admin/drivers"
             className="rounded-3xl bg-white p-7 font-black text-slate-950 shadow-sm"
           >
             Şoför Yönetimi
           </Link>
 
           <Link
-            href="/admin/bayiler"
+            href="/admin/dealers"
             className="rounded-3xl bg-white p-7 font-black text-slate-950 shadow-sm"
           >
             Bayi Yönetimi
           </Link>
 
           <Link
-            href="/super-admin/siparisler"
+            href="/super-admin/orders"
             className="rounded-3xl bg-white p-7 font-black text-slate-950 shadow-sm"
           >
             Tüm Siparişler
           </Link>
 
           <Link
-            href="/super-admin/ayarlar"
+            href="/super-admin/settings"
             className="rounded-3xl bg-white p-7 font-black text-slate-950 shadow-sm"
           >
             Firma ve Sistem Ayarları
@@ -101,7 +101,7 @@ export default function SuperAdminPage() {
 
 
           <Link
-            href="/super-admin/sifre-degistir"
+            href="/super-admin/change-password"
             className="flex items-center gap-2 rounded-3xl bg-white p-7 font-black text-slate-950 shadow-sm"
           >
             <Lock size={20} className="text-orange-500" />
