@@ -906,10 +906,10 @@ export default function SuperAdminOrdersPage() {
   }
 
   async function getDeliveryQrCode(order: Order) {
-    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(getMapsQuery(order))}`;
+    const redirectUrl = `${window.location.origin}/api/maps-redirect?address=${encodeURIComponent(getMapsQuery(order))}`;
 
     try {
-      return await QRCode.toDataURL(mapsUrl, {
+      return await QRCode.toDataURL(redirectUrl, {
         width: 160,
         margin: 1,
       });
