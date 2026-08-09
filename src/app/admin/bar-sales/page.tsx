@@ -145,6 +145,13 @@ export default function BarSalesPage() {
           subtotal: "Zwischensumme",
           newPfand: "Neues Pfand",
           returnedPfand: "Zurückgegebenes Pfand",
+          noProductsInCategory: "In dieser Kategorie wurden keine Produkte gefunden",
+          noProductsHint: "Wählen Sie eine andere Kategorie oder leeren Sie das Suchfeld.",
+          showAllProducts: "Alle Produkte anzeigen",
+          items: "Artikel",
+          noItemsSelected: "Noch keine Produkte ausgewählt.",
+          saving: "Wird gespeichert...",
+          saleSaved: (orderNumber: string) => `Verkauf gespeichert. Bestellung: ${orderNumber}`,
         }
       : {
           all: "Alle",
@@ -181,6 +188,13 @@ export default function BarSalesPage() {
           subtotal: "Ara Toplam",
           newPfand: "Yeni Pfand",
           returnedPfand: "Zurückgegebenes Pfand",
+          noProductsInCategory: "Bu kategoride ürün bulunamadı",
+          noProductsHint: "Başka bir kategori seçin veya arama alanını temizleyin.",
+          showAllProducts: "Tüm ürünleri göster",
+          items: "ürün",
+          noItemsSelected: "Henüz ürün seçilmedi.",
+          saving: "Kaydediliyor...",
+          saleSaved: (orderNumber: string) => `Satış kaydedildi. Sipariş: ${orderNumber}`,
         };
 
 
@@ -786,7 +800,7 @@ const adminName =
         return;
       }
 
-      setSuccess(`Satış kaydedildi. Sipariş: ${data.order.orderNumber}`);
+      setSuccess(t.saleSaved(data.order.orderNumber));
 
       saleIdempotencyKeyRef.current = null;
 
@@ -1035,11 +1049,11 @@ const adminName =
             ) : (
               <div className="mt-5 rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-6 py-14 text-center">
                 <p className="text-lg font-black text-slate-950">
-                  Bu kategoride ürün bulunamadı
+                  {t.noProductsInCategory}
                 </p>
 
                 <p className="mt-2 text-sm text-slate-500">
-                  Başka bir kategori seçin veya arama alanını temizleyin.
+                  {t.noProductsHint}
                 </p>
 
                 <button
@@ -1050,7 +1064,7 @@ const adminName =
                   }}
                   className="mt-5 rounded-xl bg-slate-950 px-5 py-3 text-sm font-black text-white transition hover:bg-orange-500"
                 >
-                  Tüm ürünleri göster
+                  {t.showAllProducts}
                 </button>
               </div>
             )}
@@ -1066,14 +1080,14 @@ const adminName =
               <div>
                 <h2 className="font-black text-slate-950">{t.salesCart}</h2>
 
-                <p className="text-sm text-slate-500">{cart.length} ürün</p>
+                <p className="text-sm text-slate-500">{cart.length} {t.items}</p>
               </div>
             </div>
 
             <div className="mt-5 space-y-3">
               {cart.length === 0 ? (
                 <div className="rounded-2xl bg-slate-50 p-6 text-center text-sm text-slate-500">
-                  Henüz ürün seçilmedi.
+                  {t.noItemsSelected}
                 </div>
               ) : (
                 cart.map((item) => (
@@ -1430,7 +1444,7 @@ const adminName =
                       {creatingCustomer ? (
                         <>
                           <Loader2 size={17} className="animate-spin" />
-                          Kaydediliyor...
+                          {t.saving}
                         </>
                       ) : (
                         t.saveAndSelectCustomer

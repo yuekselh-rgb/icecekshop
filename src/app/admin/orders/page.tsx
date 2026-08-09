@@ -1202,16 +1202,14 @@ export default function AdminOrdersPage() {
 
   function getBarSellerName(order: Order) {
     return (
-      getCustomerNoteValue(
-        order,
-        language === "de" ? "Verkäufer:" : "Satışı yapan:",
-      ) || (language === "de" ? "Unbekanntes Personal" : "Bilinmeyen Personel")
+      getCustomerNoteValue(order, "Satışı yapan:") ||
+      (language === "de" ? "Unbekanntes Personal" : "Bilinmeyen Personel")
     );
   }
 
   function getBarPaymentMethod(order: Order) {
     return (
-      getCustomerNoteValue(order, language === "de" ? "Zahlung:" : "Ödeme:") ||
+      getCustomerNoteValue(order, "Ödeme:") ||
       (order.paymentStatus === "PAID"
         ? language === "de"
           ? "Bezahlt"
@@ -1937,7 +1935,7 @@ export default function AdminOrdersPage() {
 
               <div className="min-h-[86px] rounded-xl bg-green-50 px-4 py-3">
                 <p className="text-[10px] font-black uppercase leading-tight text-green-700">
-                  {language === "de" ? "Ödendi" : "Parası Alındı"}
+                  {language === "de" ? "Bezahlt" : "Parası Alındı"}
                 </p>
 
                 <p className="mt-1 text-lg font-black leading-none text-green-900">
@@ -1986,7 +1984,7 @@ export default function AdminOrdersPage() {
 
                         <th className="px-4 py-2">{language === "de" ? "Fahrer / Verkäufer" : "Şoför / Satışı Yapan"}</th>
                         <th className="px-4 py-2 text-center">{language === "de" ? "Bestellung" : "Sipariş"}</th>
-                        <th className="px-4 py-2 text-center">{language === "de" ? "Ödendi" : "Ödendi"}</th>
+                        <th className="px-4 py-2 text-center">{language === "de" ? "Bezahlt" : "Ödendi"}</th>
                         <th className="px-4 py-2 text-center">{language === "de" ? "Offen" : "Açık"}</th>
                         <th className="px-4 py-2 text-right">{language === "de" ? "Eingenommen" : "Tahsil Edilen"}</th>
                         <th className="px-4 py-2 text-right">{language === "de" ? "Offener Betrag" : "Açık Tutar"}</th>
@@ -2041,7 +2039,7 @@ export default function AdminOrdersPage() {
                 >
                   <div>
                     <h3 className="font-black text-green-900">
-                      {language === "de" ? "Ödendie Bestellungen" : "Parası Alınanlar"}
+                      {language === "de" ? "Bezahlte Bestellungen" : "Parası Alınanlar"}
                     </h3>
 
                     <p className="mt-0.5 text-xs font-bold text-green-700">
