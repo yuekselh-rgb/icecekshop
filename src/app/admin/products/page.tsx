@@ -5,7 +5,9 @@ import {
   FolderPlus,
   ImageIcon,
   Loader2,
+  PackageCheck,
   PackagePlus,
+  PackageX,
   Pencil,
   Plus,
   Save,
@@ -1519,22 +1521,40 @@ export default function AdminProductsPage() {
                 onChange={(value) => updateProductForm("minStock", value)}
               />
 
-              <label className="flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-3 sm:col-span-2">
-                <input
-                  type="checkbox"
-                  checked={form.soldOut}
-                  onChange={(event) =>
-                    setForm((current) => ({
-                      ...current,
-                      soldOut: event.target.checked,
-                    }))
-                  }
-                  className="h-5 w-5 rounded border-slate-300"
-                />
+              <button
+                type="button"
+                onClick={() =>
+                  setForm((current) => ({
+                    ...current,
+                    soldOut: !current.soldOut,
+                  }))
+                }
+                aria-pressed={form.soldOut}
+                className={`flex items-center gap-3 rounded-xl border px-4 py-3 text-left transition sm:col-span-2 ${
+                  form.soldOut
+                    ? "border-red-200 bg-red-50 hover:bg-red-100"
+                    : "border-slate-200 bg-white hover:bg-slate-50"
+                }`}
+              >
+                {form.soldOut ? (
+                  <PackageX size={22} className="shrink-0 text-red-600" />
+                ) : (
+                  <PackageCheck size={22} className="shrink-0 text-slate-400" />
+                )}
 
                 <span>
-                  <span className="block text-sm font-bold text-slate-900">
-                    {language === "de" ? "Als ausverkauft markieren" : "Ürünü tükendi olarak işaretle"}
+                  <span
+                    className={`block text-sm font-bold ${
+                      form.soldOut ? "text-red-700" : "text-slate-900"
+                    }`}
+                  >
+                    {form.soldOut
+                      ? language === "de"
+                        ? "Als ausverkauft markiert"
+                        : "Tükendi olarak işaretlendi"
+                      : language === "de"
+                        ? "Als ausverkauft markieren"
+                        : "Ürünü tükendi olarak işaretle"}
                   </span>
 
                   <span className="block text-xs text-slate-500">
@@ -1543,7 +1563,7 @@ export default function AdminProductsPage() {
                       : "Stok miktarından bağımsız: Ürün mağazada görünür kalır ama sipariş edilemez."}
                   </span>
                 </span>
-              </label>
+              </button>
 
               <div className="sm:col-span-2">
                 <span className="text-sm font-bold text-slate-700">

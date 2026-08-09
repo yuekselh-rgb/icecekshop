@@ -14,6 +14,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import { escapeHtml } from "@/lib/html-escape";
+import QRCode from "qrcode";
 
 type OrderStatus =
   | "NEW"
@@ -341,7 +342,7 @@ export default function SuperAdminOrdersPage() {
     }
   }
 
-  function printOrder(order: Order) {
+  async function printOrder(order: Order) {
     const popup = window.open("", "_blank", "width=1000,height=900");
 
     if (!popup) {
@@ -352,6 +353,10 @@ export default function SuperAdminOrdersPage() {
       );
       return;
     }
+
+    const deliveryQrCode = hasNavigableDeliveryAddress(order)
+      ? await getDeliveryQrCode(order)
+      : null;
 
     const pfandReturn = order.pfandReturns?.[0];
 
@@ -520,6 +525,19 @@ export default function SuperAdminOrdersPage() {
               <div class="address">
                 ${escapeHtml(order.deliveryAddress || "-")}
               </div>
+
+              ${
+                deliveryQrCode
+                  ? `
+                    <div style="margin-top:12px; text-align:center; width:120px;">
+                      <img src="${deliveryQrCode}" width="110" height="110" alt="${language === "de" ? "QR-Code für Google Maps" : "Google Maps için QR kodu"}" />
+                      <p style="margin:4px 0 0; font-size:10px; color:#64748b;">
+                        ${language === "de" ? "In Google Maps öffnen" : "Google Maps'te aç"}
+                      </p>
+                    </div>
+                  `
+                  : ""
+              }
             </div>
 
             <div class="order-right">
@@ -868,6 +886,36 @@ export default function SuperAdminOrdersPage() {
 
   function isBarSale(order: Order) {
     return order.orderNumber.startsWith("BAR-");
+  }
+
+  function hasNavigableDeliveryAddress(order: Order) {
+    return (
+      !isBarSale(order) &&
+      Boolean(order.deliveryAddress) &&
+      !order.deliveryAddress.startsWith("DEPODAN TESLİM")
+    );
+  }
+
+  function getMapsQuery(order: Order) {
+    return order.deliveryAddress
+      .split("\n")
+      .filter(
+        (line) => !line.startsWith("Telefon:") && !line.startsWith("Kat:") && !line.startsWith("Zil:"),
+      )
+      .join(", ");
+  }
+
+  async function getDeliveryQrCode(order: Order) {
+    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(getMapsQuery(order))}`;
+
+    try {
+      return await QRCode.toDataURL(mapsUrl, {
+        width: 160,
+        margin: 1,
+      });
+    } catch {
+      return null;
+    }
   }
 
   function getCustomerNoteValue(order: Order, label: string) {
