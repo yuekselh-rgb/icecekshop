@@ -298,7 +298,11 @@ export default function AdminOrdersPage() {
 
       setPermissions(meData.permissions);
     } catch {
-      setError("Siparişler yüklenirken hata oluştu.");
+      setError(
+        language === "de"
+          ? "Fehler beim Laden der Bestellungen."
+          : "Siparişler yüklenirken hata oluştu.",
+      );
     } finally {
       if (!silent) {
         setLoading(false);
@@ -325,7 +329,9 @@ export default function AdminOrdersPage() {
 
     if (status === "CANCELLED") {
       const confirmed = window.confirm(
-        `${order.orderNumber} numaralı sipariş iptal edilsin mi?\n\nSipariş ürünleri stoğa geri eklenecektir.`,
+        language === "de"
+          ? `Soll die Bestellung ${order.orderNumber} storniert werden?\n\nDie Bestellartikel werden wieder dem Lagerbestand hinzugefügt.`
+          : `${order.orderNumber} numaralı sipariş iptal edilsin mi?\n\nSipariş ürünleri stoğa geri eklenecektir.`,
       );
 
       if (!confirmed) {
@@ -335,7 +341,9 @@ export default function AdminOrdersPage() {
 
     if (order.status === "CANCELLED" && status !== "CANCELLED") {
       const confirmed = window.confirm(
-        "İptal edilmiş sipariş yeniden açılsın mı?\n\nÜrün stokları tekrar düşülecektir.",
+        language === "de"
+          ? "Soll die stornierte Bestellung wieder geöffnet werden?\n\nDer Lagerbestand wird erneut abgebucht."
+          : "İptal edilmiş sipariş yeniden açılsın mı?\n\nÜrün stokları tekrar düşülecektir.",
       );
 
       if (!confirmed) {
@@ -362,7 +370,12 @@ export default function AdminOrdersPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Sipariş güncellenemedi.");
+        setError(
+          data.error ||
+            (language === "de"
+              ? "Bestellung konnte nicht aktualisiert werden."
+              : "Sipariş güncellenemedi."),
+        );
         return;
       }
 
@@ -372,9 +385,18 @@ export default function AdminOrdersPage() {
         ),
       );
 
-      setSuccess(data.message || "Sipariş güncellendi.");
+      setSuccess(
+        data.message ||
+          (language === "de"
+            ? "Bestellung aktualisiert."
+            : "Sipariş güncellendi."),
+      );
     } catch {
-      setError("Sipariş güncellenirken hata oluştu.");
+      setError(
+        language === "de"
+          ? "Fehler beim Aktualisieren der Bestellung."
+          : "Sipariş güncellenirken hata oluştu.",
+      );
     } finally {
       setUpdatingOrderId(null);
     }
@@ -465,7 +487,11 @@ export default function AdminOrdersPage() {
 
   async function approveDriverPfand(order: Order) {
     if (!order.pfandReturnId) {
-      setError("Doğrulanacak Pfand kaydı bulunamadı.");
+      setError(
+        language === "de"
+          ? "Kein zu prüfender Pfandeintrag gefunden."
+          : "Doğrulanacak Pfand kaydı bulunamadı.",
+      );
       return;
     }
 
@@ -483,12 +509,20 @@ export default function AdminOrdersPage() {
     );
 
     if (invalidItem) {
-      setError("Admin tarafından sayılan Pfand adetlerinden biri geçersiz.");
+      setError(
+        language === "de"
+          ? "Eine der vom Admin gezählten Pfandmengen ist ungültig."
+          : "Admin tarafından sayılan Pfand adetlerinden biri geçersiz.",
+      );
       return;
     }
 
     if (approvedItems.every((item) => item.approvedQuantity === 0)) {
-      setError("Depoya alınacak en az bir Pfand adedi girin.");
+      setError(
+        language === "de"
+          ? "Geben Sie mindestens eine ins Lager zu übernehmende Pfandmenge ein."
+          : "Depoya alınacak en az bir Pfand adedi girin.",
+      );
       return;
     }
 
@@ -516,12 +550,20 @@ export default function AdminOrdersPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Şoförün Pfand teslimi doğrulanamadı.");
+        setError(
+          data.error ||
+            (language === "de"
+              ? "Die Pfandlieferung des Fahrers konnte nicht bestätigt werden."
+              : "Şoförün Pfand teslimi doğrulanamadı."),
+        );
         return;
       }
 
       setSuccess(
-        data.message || "Şoförün getirdiği Pfand doğrulandı ve depoya alındı.",
+        data.message ||
+          (language === "de"
+            ? "Die vom Fahrer gebrachte Pfand wurde bestätigt und ins Lager übernommen."
+            : "Şoförün getirdiği Pfand doğrulandı ve depoya alındı."),
       );
 
       setAdminPfandOrderId(null);
@@ -529,7 +571,11 @@ export default function AdminOrdersPage() {
 
       await loadData(true);
     } catch {
-      setError("Şoförün Pfand teslimi doğrulanırken hata oluştu.");
+      setError(
+        language === "de"
+          ? "Fehler beim Bestätigen der Pfandlieferung des Fahrers."
+          : "Şoförün Pfand teslimi doğrulanırken hata oluştu.",
+      );
     } finally {
       setAdminPfandSaving(false);
     }
@@ -568,12 +614,20 @@ export default function AdminOrdersPage() {
       );
 
       if (invalidItem) {
-        setError("Pfand adetleri sıfır veya pozitif tam sayı olmalıdır.");
+        setError(
+          language === "de"
+            ? "Pfandmengen müssen null oder eine positive ganze Zahl sein."
+            : "Pfand adetleri sıfır veya pozitif tam sayı olmalıdır.",
+        );
         return;
       }
 
       if (items.every((item) => item.quantity === 0)) {
-        setError("En az bir Pfand adedi girin.");
+        setError(
+          language === "de"
+            ? "Geben Sie mindestens eine Pfandmenge ein."
+            : "En az bir Pfand adedi girin.",
+        );
         return;
       }
 
@@ -595,18 +649,32 @@ export default function AdminOrdersPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Bayi Pfand girişi kaydedilemedi.");
+        setError(
+          data.error ||
+            (language === "de"
+              ? "Die Pfanderfassung des Händlers konnte nicht gespeichert werden."
+              : "Bayi Pfand girişi kaydedilemedi."),
+        );
         return;
       }
 
-      setSuccess(data.message || "Bayi Pfand girişi kaydedildi.");
+      setSuccess(
+        data.message ||
+          (language === "de"
+            ? "Die Pfanderfassung des Händlers wurde gespeichert."
+            : "Bayi Pfand girişi kaydedildi."),
+      );
 
       setDealerPfandOrderId(null);
       resetDealerPfandForm();
 
       await loadData(true);
     } catch {
-      setError("Bayi Pfand girişi kaydedilirken hata oluştu.");
+      setError(
+        language === "de"
+          ? "Fehler beim Speichern der Pfanderfassung des Händlers."
+          : "Bayi Pfand girişi kaydedilirken hata oluştu.",
+      );
     } finally {
       setDealerPfandSaving(false);
     }
@@ -637,7 +705,12 @@ export default function AdminOrdersPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Ödeme durumu güncellenemedi.");
+        setError(
+          data.error ||
+            (language === "de"
+              ? "Zahlungsstatus konnte nicht aktualisiert werden."
+              : "Ödeme durumu güncellenemedi."),
+        );
         return;
       }
 
@@ -653,11 +726,19 @@ export default function AdminOrdersPage() {
 
       setSuccess(
         paymentStatus === "PAID"
-          ? "Şoförün getirdiği para onaylandı ve Gerçek Kasa'ya alındı."
-          : "Ödeme tekrar açıldı ve ilgili kasa hareketi kaldırıldı.",
+          ? language === "de"
+            ? "Das vom Fahrer erhaltene Geld wurde bestätigt und in die Kasse übernommen."
+            : "Şoförün getirdiği para onaylandı ve Gerçek Kasa'ya alındı."
+          : language === "de"
+            ? "Die Zahlung wurde wieder geöffnet und die zugehörige Kassenbuchung entfernt."
+            : "Ödeme tekrar açıldı ve ilgili kasa hareketi kaldırıldı.",
       );
     } catch {
-      setError("Ödeme durumu güncellenirken hata oluştu.");
+      setError(
+        language === "de"
+          ? "Fehler beim Aktualisieren des Zahlungsstatus."
+          : "Ödeme durumu güncellenirken hata oluştu.",
+      );
     } finally {
       setUpdatingOrderId(null);
     }
@@ -685,7 +766,12 @@ export default function AdminOrdersPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Şoför atanamadı.");
+        setError(
+          data.error ||
+            (language === "de"
+              ? "Fahrer konnte nicht zugewiesen werden."
+              : "Şoför atanamadı."),
+        );
         return;
       }
 
@@ -695,9 +781,16 @@ export default function AdminOrdersPage() {
         ),
       );
 
-      setSuccess(data.message || "Şoför atandı.");
+      setSuccess(
+        data.message ||
+          (language === "de" ? "Fahrer zugewiesen." : "Şoför atandı."),
+      );
     } catch {
-      setError("Şoför atanırken hata oluştu.");
+      setError(
+        language === "de"
+          ? "Fehler beim Zuweisen des Fahrers."
+          : "Şoför atanırken hata oluştu.",
+      );
     } finally {
       setUpdatingOrderId(null);
     }
@@ -705,7 +798,9 @@ export default function AdminOrdersPage() {
 
   async function deleteOrder(order: Order) {
     const confirmed = window.confirm(
-      `${order.orderNumber} numaralı sipariş listeden kaldırılsın mı?\n\nBu işlem siparişi veritabanından kalıcı olarak silmez.`,
+      language === "de"
+        ? `Soll die Bestellung ${order.orderNumber} aus der Liste entfernt werden?\n\nDies löscht die Bestellung nicht dauerhaft aus der Datenbank.`
+        : `${order.orderNumber} numaralı sipariş listeden kaldırılsın mı?\n\nBu işlem siparişi veritabanından kalıcı olarak silmez.`,
     );
 
     if (!confirmed) {
@@ -725,7 +820,12 @@ export default function AdminOrdersPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Sipariş silinemedi.");
+        setError(
+          data.error ||
+            (language === "de"
+              ? "Bestellung konnte nicht gelöscht werden."
+              : "Sipariş silinemedi."),
+        );
         return;
       }
 
@@ -733,9 +833,18 @@ export default function AdminOrdersPage() {
         current.filter((currentOrder) => currentOrder.id !== order.id),
       );
 
-      setSuccess(data.message || "Sipariş listeden kaldırıldı.");
+      setSuccess(
+        data.message ||
+          (language === "de"
+            ? "Bestellung aus der Liste entfernt."
+            : "Sipariş listeden kaldırıldı."),
+      );
     } catch {
-      setError("Sipariş silinirken hata oluştu.");
+      setError(
+        language === "de"
+          ? "Fehler beim Löschen der Bestellung."
+          : "Sipariş silinirken hata oluştu.",
+      );
     } finally {
       setUpdatingOrderId(null);
     }
@@ -746,14 +855,16 @@ export default function AdminOrdersPage() {
 
     if (!popup) {
       setError(
-        "Yazdırma penceresi açılamadı. Tarayıcı popup engelini kontrol edin.",
+        language === "de"
+          ? "Druckfenster konnte nicht geöffnet werden. Bitte Popup-Blocker des Browsers prüfen."
+          : "Yazdırma penceresi açılamadı. Tarayıcı popup engelini kontrol edin.",
       );
       return;
     }
 
     popup.document.write(`
       <!doctype html>
-      <html lang="tr">
+      <html lang="${language === "de" ? "de" : "tr"}">
         <head>
           <meta charset="utf-8" />
           <title>${escapeHtml(order.orderNumber)}</title>
@@ -810,12 +921,12 @@ export default function AdminOrdersPage() {
 
         <body>
           <h1>
-            Sipariş
+            ${language === "de" ? "Bestellung" : "Sipariş"}
             ${escapeHtml(order.orderNumber)}
           </h1>
 
           <p>
-            Tarih:
+            ${language === "de" ? "Datum" : "Tarih"}:
             ${new Date(order.createdAt).toLocaleString("de-DE")}
           </p>
 
@@ -912,7 +1023,7 @@ export default function AdminOrdersPage() {
           <div class="totals">
             <div class="row">
               <span>
-                Ara Toplam
+                ${language === "de" ? "Zwischensumme" : "Ara Toplam"}
               </span>
 
               <strong>
@@ -938,7 +1049,7 @@ export default function AdminOrdersPage() {
               order.pfandReturnAmount > 0
                 ? `
                   <div class="row">
-                    <span>Pfandrückgabe</span>
+                    <span>${language === "de" ? "Pfandrückgabe" : "Pfand İadesi"}</span>
 
                     <strong style="color:#15803d;">
                       -${order.pfandReturnAmount.toFixed(2)} €
@@ -960,7 +1071,7 @@ export default function AdminOrdersPage() {
                             margin-bottom:6px;
                             color:#166534;
                           ">
-                            İade edilen Pfand
+                            ${language === "de" ? "Zurückgegebenes Pfand" : "İade edilen Pfand"}
                           </strong>
 
                           ${order.pfandReturnItems
@@ -980,14 +1091,14 @@ export default function AdminOrdersPage() {
                                       font-size:11px;
                                       color:#64748b;
                                     ">
-                                      Müşteri:
+                                      ${language === "de" ? "Kunde" : "Müşteri"}:
                                       ${item.originalQuantity}
-                                      → Şoför:
+                                      → ${language === "de" ? "Fahrer" : "Şoför"}:
                                       ${item.quantity}
 
                                       ${
                                         item.quantityDifference !== 0
-                                          ? ` · Fark: ${item.quantityDifference > 0 ? "+" : ""}${item.quantityDifference}`
+                                          ? ` · ${language === "de" ? "Differenz" : "Fark"}: ${item.quantityDifference > 0 ? "+" : ""}${item.quantityDifference}`
                                           : ""
                                       }
                                     </span>
@@ -1011,7 +1122,7 @@ export default function AdminOrdersPage() {
                                                 : "#15803d"
                                             };
                                           ">
-                                            Fark:
+                                            ${language === "de" ? "Differenz" : "Fark"}:
                                             ${item.amountDifference > 0 ? "+" : ""}
                                             ${item.amountDifference.toFixed(2)} €
                                           </span>
@@ -1101,7 +1212,13 @@ export default function AdminOrdersPage() {
   function getBarPaymentMethod(order: Order) {
     return (
       getCustomerNoteValue(order, language === "de" ? "Zahlung:" : "Ödeme:") ||
-      (order.paymentStatus === "PAID" ? "Ödendi" : "Açık Hesap")
+      (order.paymentStatus === "PAID"
+        ? language === "de"
+          ? "Bezahlt"
+          : "Ödendi"
+        : language === "de"
+          ? "Offene Rechnung"
+          : "Açık Hesap")
     );
   }
 
@@ -1199,7 +1316,7 @@ export default function AdminOrdersPage() {
 
       people.set(`driver:${driver.id}`, {
         id: `driver:${driver.id}`,
-        name: `${name} · Şoför`,
+        name: `${name} · ${language === "de" ? "Fahrer" : "Şoför"}`,
       });
     }
 
@@ -1232,7 +1349,7 @@ export default function AdminOrdersPage() {
       if (!people.has(key)) {
         people.set(key, {
           id: key,
-          name: `${seller} · Bar Satışı`,
+          name: `${seller} · ${language === "de" ? "Barverkauf" : "Bar Satışı"}`,
         });
       }
     }
@@ -1475,7 +1592,8 @@ export default function AdminOrdersPage() {
 
       const actorName = isBarSale(order)
         ? `Bar: ${rawActorName || (language === "de" ? "Unbekanntes Personal" : "Bilinmeyen Personel")}`
-        : rawActorName || "Atanmamış";
+        : rawActorName ||
+          (language === "de" ? "Nicht zugewiesen" : "Atanmamış");
 
       /*
        * Aynı tarih ve aynı personelin işlemleri bir satırda toplanır.
@@ -1544,7 +1662,9 @@ export default function AdminOrdersPage() {
       <main className="flex min-h-screen items-center justify-center bg-slate-100">
         <div className="flex items-center gap-3 font-bold text-slate-600">
           <Loader2 className="animate-spin" />
-          Siparişler yükleniyor...
+          {language === "de"
+            ? "Bestellungen werden geladen..."
+            : "Siparişler yükleniyor..."}
         </div>
       </main>
     );
@@ -1558,7 +1678,7 @@ export default function AdminOrdersPage() {
           className="inline-flex items-center gap-2 font-bold text-slate-600 transition hover:text-orange-500"
         >
           <ArrowLeft size={18} />
-          Admin Paneli
+          {language === "de" ? "Adminbereich" : "Admin Paneli"}
         </Link>
 
         <section className="mt-6 rounded-[32px] bg-slate-950 p-7 text-white sm:p-10">
@@ -1567,8 +1687,9 @@ export default function AdminOrdersPage() {
           <h1 className="mt-4 text-4xl font-black">{t.title}</h1>
 
           <p className="mt-3 text-slate-400">
-            Yeni ve geçmiş siparişleri görüntüleyin, durumlarını değiştirin ve
-            yazdırın.
+            {language === "de"
+              ? "Neue und vergangene Bestellungen anzeigen, Status ändern und drucken."
+              : "Yeni ve geçmiş siparişleri görüntüleyin, durumlarını değiştirin ve yazdırın."}
           </p>
         </section>
 
@@ -1852,7 +1973,9 @@ export default function AdminOrdersPage() {
 
               {reportDailyRows.length === 0 ? (
                 <p className="p-4 text-sm text-slate-500">
-                  Seçilen rapor için sipariş bulunmuyor.
+                  {language === "de"
+                    ? "Für den ausgewählten Bericht wurden keine Bestellungen gefunden."
+                    : "Seçilen rapor için sipariş bulunmuyor."}
                 </p>
               ) : (
                 <div className="overflow-x-auto">
@@ -1967,7 +2090,7 @@ export default function AdminOrdersPage() {
 
                             {isBarSale(order) ? (
                               <p className="mt-1 text-xs font-bold text-slate-500">
-                                Ödeme: {getBarPaymentMethod(order)} ·{" "}
+                                {language === "de" ? "Zahlung" : "Ödeme"}: {getBarPaymentMethod(order)} ·{" "}
                                 {order.items
                                   .map(
                                     (item) => `${item.name} × ${item.quantity}`,
@@ -2045,7 +2168,7 @@ export default function AdminOrdersPage() {
 
                             {isBarSale(order) ? (
                               <p className="mt-1 text-xs font-bold text-slate-500">
-                                Ödeme: {getBarPaymentMethod(order)} ·{" "}
+                                {language === "de" ? "Zahlung" : "Ödeme"}: {getBarPaymentMethod(order)} ·{" "}
                                 {order.items
                                   .map(
                                     (item) => `${item.name} × ${item.quantity}`,
@@ -2084,7 +2207,9 @@ export default function AdminOrdersPage() {
               </h2>
 
               <p className="mt-1 text-sm text-slate-500">
-                Siparişleri durum veya ödeme durumuna göre filtreleyin.
+                {language === "de"
+                  ? "Bestellungen nach Status oder Zahlungsstatus filtern."
+                  : "Siparişleri durum veya ödeme durumuna göre filtreleyin."}
               </p>
             </div>
 
@@ -2176,11 +2301,17 @@ export default function AdminOrdersPage() {
                   ? "Keine aktiven Bestellungen."
                   : "Aktif sipariş bulunmuyor."
                 : orderView === "DELIVERED"
-                  ? "Teslim edilmiş sipariş bulunmuyor."
+                  ? language === "de"
+                    ? "Keine gelieferten Bestellungen."
+                    : "Teslim edilmiş sipariş bulunmuyor."
                   : orderView === "OPEN"
-                    ? "Ödemesi açık sipariş bulunmuyor."
+                    ? language === "de"
+                      ? "Keine Bestellungen mit offener Zahlung."
+                      : "Ödemesi açık sipariş bulunmuyor."
                     : orderView === "PAID"
-                      ? "Parası ödenmiş sipariş bulunmuyor."
+                      ? language === "de"
+                        ? "Keine bezahlten Bestellungen."
+                        : "Parası ödenmiş sipariş bulunmuyor."
                       : language === "de" ? "Keine Bestellungen gefunden." : "Sipariş bulunmuyor."}
             </p>
           ) : (
@@ -2278,7 +2409,7 @@ export default function AdminOrdersPage() {
 
                         <div className="min-w-52">
                           <p className="mb-1 text-sm font-bold text-slate-500">
-                            Şoför
+                            {language === "de" ? "Fahrer" : "Şoför"}
                           </p>
 
                           {permissions?.updateOrder &&
@@ -2311,7 +2442,7 @@ export default function AdminOrdersPage() {
 
                         <div className="min-w-52">
                           <p className="mb-1 text-sm font-bold text-slate-500">
-                            Ödeme
+                            {language === "de" ? "Zahlung" : "Ödeme"}
                           </p>
 
                           {order.openPaymentAmount <= 0.009 ? (
@@ -2404,7 +2535,9 @@ export default function AdminOrdersPage() {
 
                               {order.approvedPaymentAmount > 0 ? (
                                 <p className="mt-2 text-xs font-bold text-green-700">
-                                  Daha önce onaylanan:{" "}
+                                  {language === "de"
+                                    ? "Bereits bestätigt:"
+                                    : "Daha önce onaylanan:"}{" "}
                                   {order.approvedPaymentAmount.toLocaleString(
                                     "de-DE",
                                     {
@@ -2425,12 +2558,18 @@ export default function AdminOrdersPage() {
                                   className="mt-2 w-full rounded-xl bg-green-600 px-3 py-2 text-sm font-black text-white transition hover:bg-green-700 disabled:opacity-50"
                                 >
                                   {updating
-                                    ? "Onaylanıyor..."
-                                    : language === "de" ? language === "de" ? "Zahlung bestätigen und in die Kasse übernehmen" : "Parayı Onayla ve Kasaya Al" : "Parayı Onayla ve Kasaya Al"}
+                                    ? language === "de"
+                                      ? "Wird bestätigt..."
+                                      : "Onaylanıyor..."
+                                    : language === "de"
+                                      ? "Zahlung bestätigen und in die Kasse übernehmen"
+                                      : "Parayı Onayla ve Kasaya Al"}
                                 </button>
                               ) : (
                                 <p className="mt-2 rounded-lg bg-slate-100 px-3 py-2 text-xs font-bold text-slate-500">
-                                  Tahsilat onay yetkiniz bulunmuyor
+                                  {language === "de"
+                                    ? "Sie haben keine Berechtigung, Zahlungen zu bestätigen"
+                                    : "Tahsilat onay yetkiniz bulunmuyor"}
                                 </p>
                               )}
                             </>
@@ -2442,7 +2581,9 @@ export default function AdminOrdersPage() {
 
                               <div className="mt-2 rounded-xl bg-red-50 px-3 py-2">
                                 <p className="text-xs font-bold text-red-700">
-                                  Kalan açık tutar
+                                  {language === "de"
+                                    ? "Offener Restbetrag"
+                                    : "Kalan açık tutar"}
                                 </p>
 
                                 <p className="text-lg font-black text-red-700">
@@ -2464,7 +2605,9 @@ export default function AdminOrdersPage() {
 
                               {order.approvedPaymentAmount > 0 ? (
                                 <p className="mt-2 text-xs font-bold text-green-700">
-                                  Şimdiye kadar ödenen:{" "}
+                                  {language === "de"
+                                    ? "Bisher bezahlt:"
+                                    : "Şimdiye kadar ödenen:"}{" "}
                                   {order.approvedPaymentAmount.toLocaleString(
                                     "de-DE",
                                     {
@@ -2475,7 +2618,9 @@ export default function AdminOrdersPage() {
                                 </p>
                               ) : (
                                 <p className="mt-1 text-xs font-bold text-slate-500">
-                                  Henüz onaylanmış ödeme bulunmuyor
+                                  {language === "de"
+                                    ? "Noch keine bestätigte Zahlung vorhanden"
+                                    : "Henüz onaylanmış ödeme bulunmuyor"}
                                 </p>
                               )}
                             </>
@@ -2484,7 +2629,7 @@ export default function AdminOrdersPage() {
 
                         <div>
                           <p className="text-sm font-bold text-slate-500">
-                            Toplam
+                            {language === "de" ? "Gesamt" : "Toplam"}
                           </p>
 
                           <p className="font-black text-slate-950">
@@ -2542,7 +2687,7 @@ export default function AdminOrdersPage() {
                           <div className="grid gap-6 lg:grid-cols-2">
                             <div>
                               <h3 className="font-black text-slate-950">
-                                Ürünler
+                                {language === "de" ? "Produkte" : "Ürünler"}
                               </h3>
 
                               <div className="mt-3 space-y-3">
@@ -2633,19 +2778,24 @@ export default function AdminOrdersPage() {
                                   <div className="flex flex-wrap items-center justify-between gap-3">
                                     <div>
                                       <h3 className="font-black text-slate-950">
-                                        Bayi Pfand Teslimi
+                                        {language === "de"
+                                          ? "Pfandlieferung des Händlers"
+                                          : "Bayi Pfand Teslimi"}
                                       </h3>
 
                                       <p className="mt-1 text-xs text-slate-600">
-                                        Bayinin getirdiği Pfandları sayın. Tutar
-                                        sipariş hesabından otomatik düşecektir.
+                                        {language === "de"
+                                          ? "Zählen Sie das vom Händler gebrachte Pfand. Der Betrag wird automatisch von der Bestellsumme abgezogen."
+                                          : "Bayinin getirdiği Pfandları sayın. Tutar sipariş hesabından otomatik düşecektir."}
                                       </p>
                                     </div>
 
                                     {order.pfandReturnAmount > 0 ? (
                                       <span className="rounded-full bg-green-600 px-3 py-1.5 text-xs font-black text-white">
-                                        {order.pfandReturnAmount.toFixed(2)} €
-                                        düşüldü
+                                        {order.pfandReturnAmount.toFixed(2)} €{" "}
+                                        {language === "de"
+                                          ? "abgezogen"
+                                          : "düşüldü"}
                                       </span>
                                     ) : (
                                       <button
@@ -2672,7 +2822,9 @@ export default function AdminOrdersPage() {
                                     <div className="mt-3 rounded-lg bg-white p-3 text-sm">
                                       <div className="flex justify-between">
                                         <span className="text-slate-600">
-                                          Siparişten düşülen Pfand
+                                          {language === "de"
+                                            ? "Von der Bestellung abgezogenes Pfand"
+                                            : "Siparişten düşülen Pfand"}
                                         </span>
 
                                         <strong className="text-green-700">
@@ -2689,7 +2841,9 @@ export default function AdminOrdersPage() {
 
                                       <div className="mt-2 flex justify-between border-t border-slate-100 pt-2">
                                         <span className="font-bold text-slate-700">
-                                          Kalan ödeme
+                                          {language === "de"
+                                            ? "Restzahlung"
+                                            : "Kalan ödeme"}
                                         </span>
 
                                         <strong className="text-slate-950">
@@ -2724,7 +2878,10 @@ export default function AdminOrdersPage() {
                                           },
                                           {
                                             key: "3.30",
-                                            label: "3,30 € Kasa",
+                                            label:
+                                              language === "de"
+                                                ? "3,30 € Kasse"
+                                                : "3,30 € Kasa",
                                           },
                                         ].map((pfandType) => (
                                           <label
@@ -2769,7 +2926,9 @@ export default function AdminOrdersPage() {
                                       <div className="mt-4 rounded-xl bg-white p-4">
                                         <div className="flex justify-between">
                                           <span className="font-bold text-slate-600">
-                                            Getirilen Pfand
+                                            {language === "de"
+                                              ? "Gebrachtes Pfand"
+                                              : "Getirilen Pfand"}
                                           </span>
 
                                           <strong className="text-green-700">
@@ -2785,7 +2944,9 @@ export default function AdminOrdersPage() {
 
                                         <div className="mt-2 flex justify-between border-t border-slate-100 pt-2">
                                           <span className="font-black text-slate-950">
-                                            Kalan ödeme
+                                            {language === "de"
+                                              ? "Restzahlung"
+                                              : "Kalan ödeme"}
                                           </span>
 
                                           <strong className="text-slate-950">
@@ -2816,7 +2977,9 @@ export default function AdminOrdersPage() {
                                               size={18}
                                               className="animate-spin"
                                             />
-                                            Pfand kaydediliyor...
+                                            {language === "de"
+                                              ? "Pfand wird gespeichert..."
+                                              : "Pfand kaydediliyor..."}
                                           </>
                                         ) : (
                                           language === "de" ? "Pfand ins Lager übernehmen und verrechnen" : "Pfandı Depoya Al ve Hesaptan Düş"
@@ -2840,12 +3003,15 @@ export default function AdminOrdersPage() {
                                   <div className="flex flex-wrap items-start justify-between gap-3">
                                     <div>
                                       <h3 className="font-black text-slate-950">
-                                        Şoför Pfand Son Kontrolü
+                                        {language === "de"
+                                          ? "Endkontrolle des Fahrer-Pfands"
+                                          : "Şoför Pfand Son Kontrolü"}
                                       </h3>
 
                                       <p className="mt-1 text-xs text-slate-600">
-                                        Şoförün bildirdiği adetleri depoya gelen
-                                        gerçek Pfand ile karşılaştırın.
+                                        {language === "de"
+                                          ? "Vergleichen Sie die vom Fahrer gemeldeten Mengen mit dem tatsächlich im Lager eingegangenen Pfand."
+                                          : "Şoförün bildirdiği adetleri depoya gelen gerçek Pfand ile karşılaştırın."}
                                       </p>
                                     </div>
 
@@ -2864,7 +3030,9 @@ export default function AdminOrdersPage() {
                                       </button>
                                     ) : (
                                       <span className="rounded-full bg-green-600 px-3 py-1.5 text-xs font-black text-white">
-                                        Admin Doğruladı
+                                        {language === "de"
+                                          ? "Von Admin bestätigt"
+                                          : "Admin Doğruladı"}
                                       </span>
                                     )}
                                   </div>
@@ -2903,7 +3071,9 @@ export default function AdminOrdersPage() {
                                             </p>
 
                                             <p className="text-[10px] text-slate-500">
-                                              Birim:{" "}
+                                              {language === "de"
+                                                ? "Einheit:"
+                                                : "Birim:"}{" "}
                                               {item.unitAmount.toFixed(2)} €
                                             </p>
                                           </div>
@@ -2957,7 +3127,9 @@ export default function AdminOrdersPage() {
                                                     : "text-green-700"
                                                 }`}
                                               >
-                                                Fark:{" "}
+                                                {language === "de"
+                                                  ? "Differenz:"
+                                                  : "Fark:"}{" "}
                                                 {quantityDifference > 0
                                                   ? "+"
                                                   : ""}
@@ -2985,7 +3157,9 @@ export default function AdminOrdersPage() {
                                       <div className="rounded-xl bg-white p-4">
                                         <div className="flex justify-between gap-4">
                                           <span className="text-sm font-bold text-slate-600">
-                                            Şoförün bildirdiği
+                                            {language === "de"
+                                              ? "Vom Fahrer gemeldet"
+                                              : "Şoförün bildirdiği"}
                                           </span>
 
                                           <strong className="text-slate-950">
@@ -3006,7 +3180,9 @@ export default function AdminOrdersPage() {
 
                                         <div className="mt-2 flex justify-between gap-4">
                                           <span className="text-sm font-bold text-slate-600">
-                                            Adminin saydığı
+                                            {language === "de"
+                                              ? "Vom Admin gezählt"
+                                              : "Adminin saydığı"}
                                           </span>
 
                                           <strong className="text-green-700">
@@ -3021,7 +3197,7 @@ export default function AdminOrdersPage() {
 
                                         <div className="mt-2 flex justify-between gap-4 border-t border-slate-100 pt-2">
                                           <span className="font-black text-slate-950">
-                                            Fark
+                                            {language === "de" ? "Differenz" : "Fark"}
                                           </span>
 
                                           <strong
@@ -3074,7 +3250,9 @@ export default function AdminOrdersPage() {
                                               size={18}
                                               className="animate-spin"
                                             />
-                                            Pfand doğrulanıyor...
+                                            {language === "de"
+                                              ? "Pfand wird bestätigt..."
+                                              : "Pfand doğrulanıyor..."}
                                           </>
                                         ) : (
                                           language === "de" ? "Pfand bestätigen und ins Lager übernehmen" : "Pfandı Doğrula ve Depoya Al"
@@ -3088,7 +3266,7 @@ export default function AdminOrdersPage() {
 
                             <div>
                               <h3 className="font-black text-slate-950">
-                                Müşteri
+                                {language === "de" ? "Kunde" : "Müşteri"}
                               </h3>
 
                               <div className="mt-3 rounded-xl bg-white p-4 leading-7 text-slate-600">
@@ -3103,7 +3281,9 @@ export default function AdminOrdersPage() {
                               </div>
 
                               <h3 className="mt-5 font-black text-slate-950">
-                                Teslimat Bilgileri
+                                {language === "de"
+                                  ? "Lieferinformationen"
+                                  : "Teslimat Bilgileri"}
                               </h3>
 
                               <p className="mt-3 whitespace-pre-line rounded-xl bg-white p-4 leading-7 text-slate-600">
@@ -3113,7 +3293,9 @@ export default function AdminOrdersPage() {
                               {order.customerNote ? (
                                 <>
                                   <h3 className="mt-5 font-black text-slate-950">
-                                    Müşteri Notu
+                                    {language === "de"
+                                      ? "Kundennotiz"
+                                      : "Müşteri Notu"}
                                   </h3>
 
                                   <p className="mt-2 rounded-xl bg-white p-4 text-slate-600">
