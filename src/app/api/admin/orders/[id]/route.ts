@@ -2,6 +2,10 @@ import {
   getAdminWithPermissions,
   requireAdminPermission,
 } from "@/lib/admin-auth";
+import {
+  adminOrderInclude,
+  serializeAdminOrder,
+} from "@/lib/admin-order-serializer";
 import { prisma } from "@/lib/prisma";
 import { withTenant } from "@/lib/tenant";
 import { NextRequest, NextResponse } from "next/server";
@@ -17,6 +21,67 @@ const allowedStatuses = [
 ] as const;
 
 type OrderStatusValue = (typeof allowedStatuses)[number];
+
+export const GET = withTenant(async (
+  _request: NextRequest,
+  context: {
+    params: Promise<{
+      id: string;
+    }>;
+  },
+) => {
+  const admin = await requireAdminPermission("viewOrders");
+
+  if (!admin) {
+    return NextResponse.json(
+      {
+        error: "Siparişleri görüntüleme yetkiniz yok.",
+      },
+      {
+        status: 403,
+      },
+    );
+  }
+
+  const { id } = await context.params;
+
+  try {
+    const order = await prisma.order.findFirst({
+      where: {
+        id,
+        deletedAt: null,
+      },
+
+      include: adminOrderInclude,
+    });
+
+    if (!order) {
+      return NextResponse.json(
+        {
+          error: "Sipariş bulunamadı.",
+        },
+        {
+          status: 404,
+        },
+      );
+    }
+
+    return NextResponse.json({
+      order: serializeAdminOrder(order),
+    });
+  } catch (error) {
+    console.error("ADMIN_ORDER_DETAIL_ERROR", error);
+
+    return NextResponse.json(
+      {
+        error: "Sipariş yüklenirken hata oluştu.",
+      },
+      {
+        status: 500,
+      },
+    );
+  }
+});
 
 export const PATCH = withTenant(async (
   request: NextRequest,

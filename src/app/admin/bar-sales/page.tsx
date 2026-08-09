@@ -1,6 +1,7 @@
 "use client";
 
 import { useLanguage } from "@/context/LanguageContext";
+import { escapeHtml } from "@/lib/html-escape";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -8,6 +9,7 @@ import {
   Loader2,
   Minus,
   Plus,
+  Printer,
   Search,
   ShoppingBasket,
   Trash2,
@@ -152,6 +154,22 @@ export default function BarSalesPage() {
           noItemsSelected: "Noch keine Produkte ausgewählt.",
           saving: "Wird gespeichert...",
           saleSaved: (orderNumber: string) => `Verkauf gespeichert. Bestellung: ${orderNumber}`,
+          printLastSale: "Letzten Verkauf drucken",
+          printing: "Wird gedruckt...",
+          printLastSaleFailed: "Beleg konnte nicht geladen werden.",
+          popupBlocked: "Druckfenster konnte nicht geöffnet werden. Bitte Popup-Blocker des Browsers prüfen.",
+          receiptTitle: "Bestellung",
+          receiptDate: "Datum",
+          receiptStatus: "Status",
+          receiptCustomer: "Kunde",
+          receiptDeliveryAddress: "Lieferadresse",
+          receiptNote: "Kundennotiz",
+          receiptProduct: "Produkt",
+          receiptQuantity: "Menge",
+          receiptUnitPrice: "Stückpreis",
+          receiptPfand: "Pfand",
+          receiptTotal: "Gesamt",
+          receiptSubtotal: "Zwischensumme",
         }
       : {
           all: "Alle",
@@ -195,6 +213,22 @@ export default function BarSalesPage() {
           noItemsSelected: "Henüz ürün seçilmedi.",
           saving: "Kaydediliyor...",
           saleSaved: (orderNumber: string) => `Satış kaydedildi. Sipariş: ${orderNumber}`,
+          printLastSale: "Son satışı yazdır",
+          printing: "Yazdırılıyor...",
+          printLastSaleFailed: "Fiş yüklenemedi.",
+          popupBlocked: "Yazdırma penceresi açılamadı. Tarayıcı popup engelini kontrol edin.",
+          receiptTitle: "Sipariş",
+          receiptDate: "Tarih",
+          receiptStatus: "Durum",
+          receiptCustomer: "Müşteri",
+          receiptDeliveryAddress: "Teslimat Adresi",
+          receiptNote: "Müşteri Notu",
+          receiptProduct: "Ürün",
+          receiptQuantity: "Adet",
+          receiptUnitPrice: "Birim fiyat",
+          receiptPfand: "Pfand",
+          receiptTotal: "Toplam",
+          receiptSubtotal: "Ara Toplam",
         };
 
 
@@ -246,6 +280,10 @@ const [pressedProductId, setPressedProductId] = useState<string | null>(null);
   const [error, setError] = useState("");
 
   const [success, setSuccess] = useState("");
+
+  const [lastSaleOrderId, setLastSaleOrderId] = useState<string | null>(null);
+
+  const [printingLastSale, setPrintingLastSale] = useState(false);
 
   const [showNewCustomerForm, setShowNewCustomerForm] = useState(false);
 
@@ -801,6 +839,7 @@ const adminName =
       }
 
       setSuccess(t.saleSaved(data.order.orderNumber));
+      setLastSaleOrderId(data.order.id);
 
       saleIdempotencyKeyRef.current = null;
 
@@ -815,6 +854,182 @@ const adminName =
       setError("Satış kaydedilemedi.");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function printLastSale() {
+    if (!lastSaleOrderId) {
+      return;
+    }
+
+    setError("");
+    setPrintingLastSale(true);
+
+    try {
+      const response = await fetch(`/api/admin/orders/${lastSaleOrderId}`);
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || t.printLastSaleFailed);
+        return;
+      }
+
+      const order = data.order;
+
+      const popup = window.open("", "_blank", "width=900,height=700");
+
+      if (!popup) {
+        setError(t.popupBlocked);
+        return;
+      }
+
+      popup.document.write(`
+        <!doctype html>
+        <html lang="${language === "de" ? "de" : "tr"}">
+          <head>
+            <meta charset="utf-8" />
+            <title>${escapeHtml(order.orderNumber)}</title>
+
+            <style>
+              body {
+                font-family: Arial, sans-serif;
+                padding: 32px;
+                color: #0f172a;
+              }
+
+              h1 {
+                margin-bottom: 4px;
+              }
+
+              table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 24px;
+              }
+
+              th,
+              td {
+                border-bottom: 1px solid #ddd;
+                padding: 10px;
+                text-align: left;
+              }
+
+              .totals {
+                margin-top: 24px;
+                max-width: 360px;
+                margin-left: auto;
+              }
+
+              .row {
+                display: flex;
+                justify-content: space-between;
+                padding: 6px 0;
+              }
+
+              .address {
+                white-space: pre-line;
+                line-height: 1.6;
+              }
+
+              .total {
+                border-top: 2px solid #0f172a;
+                margin-top: 8px;
+                padding-top: 12px;
+                font-size: 18px;
+              }
+            </style>
+          </head>
+
+          <body>
+            <h1>
+              ${t.receiptTitle}
+              ${escapeHtml(order.orderNumber)}
+            </h1>
+
+            <p>
+              ${t.receiptDate}:
+              ${new Date(order.createdAt).toLocaleString("de-DE")}
+            </p>
+
+            <h2>${t.receiptCustomer}</h2>
+
+            <p>
+              ${order.user?.companyName ? `${escapeHtml(order.user.companyName)}<br />` : ""}
+
+              ${escapeHtml(order.user?.firstName || "")}
+              ${escapeHtml(order.user?.lastName || "")}<br />
+
+              ${escapeHtml(order.user?.email || "")}
+            </p>
+
+            <h2>${t.receiptDeliveryAddress}</h2>
+
+            <p class="address">
+              ${escapeHtml(order.deliveryAddress || "")}
+            </p>
+
+            ${
+              order.customerNote
+                ? `
+                  <h2>${t.receiptNote}</h2>
+                  <p>${escapeHtml(order.customerNote)}</p>
+                `
+                : ""
+            }
+
+            <table>
+              <thead>
+                <tr>
+                  <th>${t.receiptProduct}</th>
+                  <th>${t.receiptQuantity}</th>
+                  <th>${t.receiptUnitPrice}</th>
+                  <th>${t.receiptPfand}</th>
+                  <th>${t.receiptTotal}</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                ${order.items
+                  .map(
+                    (item: { name: string; quantity: number; price: number; pfand: number }) => `
+                      <tr>
+                        <td>${escapeHtml(item.name)}</td>
+                        <td>${item.quantity}</td>
+                        <td>${item.price.toFixed(2)} €</td>
+                        <td>${(item.pfand * item.quantity).toFixed(2)} €</td>
+                        <td>${((Number(item.price) + Number(item.pfand || 0)) * item.quantity).toFixed(2)} €</td>
+                      </tr>
+                    `,
+                  )
+                  .join("")}
+              </tbody>
+            </table>
+
+            <div class="totals">
+              <div class="row">
+                <span>${t.receiptSubtotal}</span>
+                <strong>${Number(order.subtotal).toFixed(2)} €</strong>
+              </div>
+
+              <div class="row total">
+                <span>${t.receiptTotal}</span>
+                <strong>${Number(order.totalAmount).toFixed(2)} €</strong>
+              </div>
+            </div>
+          </body>
+        </html>
+      `);
+
+      popup.document.close();
+      popup.focus();
+
+      setTimeout(() => {
+        popup.print();
+      }, 250);
+    } catch {
+      setError(t.printLastSaleFailed);
+    } finally {
+      setPrintingLastSale(false);
     }
   }
 
@@ -1072,16 +1287,34 @@ const adminName =
           </section>
 
           <aside className="h-fit rounded-[28px] bg-white p-5 shadow-sm lg:sticky lg:top-6">
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-50 text-orange-500">
-                <ShoppingBasket size={22} />
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-50 text-orange-500">
+                  <ShoppingBasket size={22} />
+                </div>
+
+                <div>
+                  <h2 className="font-black text-slate-950">{t.salesCart}</h2>
+
+                  <p className="text-sm text-slate-500">{cart.length} {t.items}</p>
+                </div>
               </div>
 
-              <div>
-                <h2 className="font-black text-slate-950">{t.salesCart}</h2>
-
-                <p className="text-sm text-slate-500">{cart.length} {t.items}</p>
-              </div>
+              {lastSaleOrderId ? (
+                <button
+                  type="button"
+                  onClick={printLastSale}
+                  disabled={printingLastSale}
+                  className="flex items-center gap-2 rounded-xl bg-slate-950 px-3 py-2 text-xs font-bold text-white transition hover:bg-slate-800 disabled:opacity-50"
+                >
+                  {printingLastSale ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : (
+                    <Printer size={14} />
+                  )}
+                  {printingLastSale ? t.printing : t.printLastSale}
+                </button>
+              ) : null}
             </div>
 
             <div className="mt-5 space-y-3">
