@@ -360,10 +360,6 @@ export default function Header() {
 
   <div className="mt-auto border-t pt-5">
 
-    <div className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400">
-      Dil / Sprache
-    </div>
-
     <div className="grid grid-cols-2 gap-2">
 
       <button
