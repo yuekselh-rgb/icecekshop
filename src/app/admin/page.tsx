@@ -3,6 +3,7 @@ import {
   House,
   Boxes,
   ClipboardList,
+  FileBarChart,
   PackageSearch,
   RotateCcw,
   ShoppingBasket,
@@ -62,6 +63,15 @@ export default async function AdminPage() {
         lang === "de" ? "Kassenbewegungen und aktuellen Bestand verwalten." : "Fiziksel kasanın giriş, çıkış ve güncel bakiyesini yönetin.",
       href: "/admin/bar-cash",
       icon: WalletCards,
+      permission: admin.permissions.viewBarCash,
+      featured: false,
+    },
+    {
+      title: lang === "de" ? "Kassenbericht" : "Kasa Raporu",
+      description:
+        lang === "de" ? "Z-Bericht: Einnahmen, Ausgaben und offene Rechnungen." : "Z Raporu: Gelir, gider ve veresiye özeti.",
+      href: "/admin/cash-report",
+      icon: FileBarChart,
       permission: admin.permissions.viewBarCash,
       featured: false,
     },

@@ -1,0 +1,598 @@
+"use client";
+
+import { useLanguage } from "@/context/LanguageContext";
+import {
+  ArrowLeft,
+  Loader2,
+  Printer,
+  TrendingDown,
+  TrendingUp,
+  Wallet,
+} from "lucide-react";
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+
+type ReportMode = "day" | "month" | "range";
+
+type CashMovementRow = {
+  id: string;
+  accountType: "BAR" | "GENERAL" | "PFAND";
+  direction: "IN" | "OUT";
+  category: string;
+  amount: number;
+  companyName: string | null;
+  description: string | null;
+  supplierName: string | null;
+  createdAt: string;
+  createdBy: {
+    name: string | null;
+  };
+};
+
+type OpenOrderRow = {
+  id: string;
+  orderNumber: string;
+  createdAt: string;
+  customerName: string;
+  openPaymentAmount: number;
+};
+
+type ReportData = {
+  period: {
+    mode: ReportMode;
+    startDate: string;
+    endDate: string;
+  };
+  income: {
+    total: number;
+    byCategory: Record<string, number>;
+  };
+  expense: {
+    total: number;
+    byCategory: Record<string, number>;
+  };
+  net: number;
+  openAccount: {
+    total: number;
+    orderCount: number;
+    orders: OpenOrderRow[];
+  };
+  movements: CashMovementRow[];
+};
+
+function formatEuro(value: number) {
+  return value.toLocaleString("de-DE", {
+    style: "currency",
+    currency: "EUR",
+  });
+}
+
+function toDateInputValue(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+export default function CashReportPage() {
+  const { language } = useLanguage();
+
+  const t =
+    language === "de"
+      ? {
+          back: "Adminbereich",
+          title: "Kassenbericht",
+          subtitle: "Z-Bericht: Einnahmen, Ausgaben und offene Rechnungen für Tag, Monat oder Zeitraum.",
+          day: "Tag",
+          month: "Monat",
+          range: "Zeitraum",
+          date: "Datum",
+          from: "Von",
+          to: "Bis",
+          print: "Drucken",
+          loading: "Wird geladen...",
+          loadError: "Kassenbericht konnte nicht geladen werden.",
+          totalIncome: "Gesamteinnahmen",
+          totalExpense: "Gesamtausgaben",
+          net: "Nettokasse",
+          openAccount: "Offene Rechnung",
+          orderCount: (count: number) => `${count} Bestellung(en)`,
+          incomeByCategory: "Einnahmen nach Kategorie",
+          expenseByCategory: "Ausgaben nach Kategorie",
+          noIncome: "Keine Einnahmen in diesem Zeitraum.",
+          noExpense: "Keine Ausgaben in diesem Zeitraum.",
+          openAccountOrders: "Offene Bestellungen",
+          noOpenAccountOrders: "Keine offenen Bestellungen in diesem Zeitraum.",
+          orderNumber: "Bestellnr.",
+          customer: "Kunde",
+          amount: "Betrag",
+          movements: "Kassenbewegungen",
+          noMovements: "Keine Kassenbewegungen in diesem Zeitraum.",
+          dateTime: "Datum",
+          account: "Konto",
+          category: "Kategorie",
+          description: "Beschreibung",
+          staff: "Personal",
+          accountLabels: {
+            BAR: "Bar",
+            GENERAL: "Allgemein",
+            PFAND: "Pfand",
+          } as Record<string, string>,
+          categoryLabels: {
+            BAR_SALE: "Barverkauf",
+            PFAND_COLLECTION: "Pfandrücknahme",
+            SUPPLIER_PAYMENT: "Lieferantenzahlung",
+            GOODS_PURCHASE: "Wareneinkauf",
+            FUEL: "Kraftstoff",
+            PERSONNEL: "Personal",
+            RENT: "Miete",
+            MANUAL_INCOME: "Manuelle Einnahme",
+            OTHER_EXPENSE: "Sonstige Ausgaben",
+          } as Record<string, string>,
+          months: [
+            "Januar", "Februar", "März", "April", "Mai", "Juni",
+            "Juli", "August", "September", "Oktober", "November", "Dezember",
+          ],
+        }
+      : {
+          back: "Admin Paneli",
+          title: "Kasa Raporu",
+          subtitle: "Z Raporu: Günlük, aylık veya tarih aralıklı gelir, gider ve veresiye özeti.",
+          day: "Gün",
+          month: "Ay",
+          range: "Tarih Aralığı",
+          date: "Tarih",
+          from: "Başlangıç",
+          to: "Bitiş",
+          print: "Yazdır",
+          loading: "Yükleniyor...",
+          loadError: "Kasa raporu yüklenemedi.",
+          totalIncome: "Toplam Gelir",
+          totalExpense: "Toplam Gider",
+          net: "Net Kasa",
+          openAccount: "Veresiye",
+          orderCount: (count: number) => `${count} sipariş`,
+          incomeByCategory: "Kategoriye Göre Gelir",
+          expenseByCategory: "Kategoriye Göre Gider",
+          noIncome: "Bu dönemde gelir bulunmuyor.",
+          noExpense: "Bu dönemde gider bulunmuyor.",
+          openAccountOrders: "Açık Hesap Siparişleri",
+          noOpenAccountOrders: "Bu dönemde açık hesap siparişi bulunmuyor.",
+          orderNumber: "Sipariş No",
+          customer: "Müşteri",
+          amount: "Tutar",
+          movements: "Kasa Hareketleri",
+          noMovements: "Bu dönemde kasa hareketi bulunmuyor.",
+          dateTime: "Tarih",
+          account: "Hesap",
+          category: "Kategori",
+          description: "Açıklama",
+          staff: "Personel",
+          accountLabels: {
+            BAR: "Bar",
+            GENERAL: "Genel",
+            PFAND: "Pfand",
+          } as Record<string, string>,
+          categoryLabels: {
+            BAR_SALE: "Bar Satışı",
+            PFAND_COLLECTION: "Pfand Tahsilatı",
+            SUPPLIER_PAYMENT: "Tedarikçi Ödemesi",
+            GOODS_PURCHASE: "Mal Alımı",
+            FUEL: "Yakıt",
+            PERSONNEL: "Personel",
+            RENT: "Kira",
+            MANUAL_INCOME: "Manuel Gelir",
+            OTHER_EXPENSE: "Diğer Gider",
+          } as Record<string, string>,
+          months: [
+            "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
+            "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık",
+          ],
+        };
+
+  const today = useMemo(() => new Date(), []);
+
+  const [mode, setMode] = useState<ReportMode>("day");
+  const [selectedDate, setSelectedDate] = useState(toDateInputValue(today));
+  const [selectedYear, setSelectedYear] = useState(today.getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState(today.getMonth() + 1);
+  const [startDate, setStartDate] = useState(toDateInputValue(today));
+  const [endDate, setEndDate] = useState(toDateInputValue(today));
+
+  const [report, setReport] = useState<ReportData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    async function loadReport() {
+      setLoading(true);
+      setError("");
+
+      try {
+        const params = new URLSearchParams({ mode });
+
+        if (mode === "day") {
+          params.set("date", selectedDate);
+        } else if (mode === "month") {
+          params.set("year", String(selectedYear));
+          params.set("month", String(selectedMonth));
+        } else {
+          params.set("startDate", startDate);
+          params.set("endDate", endDate);
+        }
+
+        const response = await fetch(`/api/admin/cash-report?${params.toString()}`);
+        const data = await response.json();
+
+        if (!response.ok) {
+          setError(data.error || t.loadError);
+          return;
+        }
+
+        setReport(data);
+      } catch {
+        setError(t.loadError);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadReport();
+  }, [mode, selectedDate, selectedYear, selectedMonth, startDate, endDate]);
+
+  const incomeCategories = report
+    ? Object.entries(report.income.byCategory).sort((a, b) => b[1] - a[1])
+    : [];
+
+  const expenseCategories = report
+    ? Object.entries(report.expense.byCategory).sort((a, b) => b[1] - a[1])
+    : [];
+
+  return (
+    <main className="min-h-screen bg-slate-100 p-5 lg:p-8 print:bg-white print:p-0">
+      <div className="mx-auto max-w-5xl">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-4 print:hidden">
+          <div>
+            <Link
+              href="/admin"
+              className="inline-flex items-center gap-2 text-sm font-bold text-slate-500 transition hover:text-orange-500"
+            >
+              <ArrowLeft size={17} />
+              {t.back}
+            </Link>
+
+            <h1 className="mt-3 text-4xl font-black text-slate-950">
+              {t.title}
+            </h1>
+
+            <p className="mt-2 text-slate-500">{t.subtitle}</p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className="inline-flex items-center gap-2 rounded-2xl bg-slate-950 px-5 py-3 font-black text-white transition hover:bg-slate-800"
+          >
+            <Printer size={18} />
+            {t.print}
+          </button>
+        </div>
+
+        <div className="hidden print:mb-6 print:block">
+          <h1 className="text-2xl font-black text-slate-950">{t.title}</h1>
+          {report ? (
+            <p className="mt-1 text-sm text-slate-600">
+              {new Date(report.period.startDate).toLocaleDateString("de-DE")}
+              {" – "}
+              {new Date(report.period.endDate).toLocaleDateString("de-DE")}
+            </p>
+          ) : null}
+        </div>
+
+        <div className="mb-6 rounded-[28px] bg-white p-5 shadow-sm print:hidden">
+          <div className="flex flex-wrap gap-2">
+            {(["day", "month", "range"] as ReportMode[]).map((option) => (
+              <button
+                key={option}
+                type="button"
+                onClick={() => setMode(option)}
+                className={`rounded-xl border px-4 py-2 text-sm font-black transition ${
+                  mode === option
+                    ? "border-orange-500 bg-orange-50 text-orange-600"
+                    : "border-slate-200 text-slate-600"
+                }`}
+              >
+                {option === "day" ? t.day : option === "month" ? t.month : t.range}
+              </button>
+            ))}
+          </div>
+
+          <div className="mt-4 flex flex-wrap items-end gap-4">
+            {mode === "day" ? (
+              <label className="flex flex-col gap-1">
+                <span className="text-xs font-black uppercase text-slate-500">
+                  {t.date}
+                </span>
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(event) => setSelectedDate(event.target.value)}
+                  className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-orange-500"
+                />
+              </label>
+            ) : null}
+
+            {mode === "month" ? (
+              <>
+                <label className="flex flex-col gap-1">
+                  <span className="text-xs font-black uppercase text-slate-500">
+                    {t.month}
+                  </span>
+                  <select
+                    value={selectedMonth}
+                    onChange={(event) => setSelectedMonth(Number(event.target.value))}
+                    className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-orange-500"
+                  >
+                    {t.months.map((label, index) => (
+                      <option key={label} value={index + 1}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className="flex flex-col gap-1">
+                  <span className="text-xs font-black uppercase text-slate-500">
+                    {language === "de" ? "Jahr" : "Yıl"}
+                  </span>
+                  <input
+                    type="number"
+                    value={selectedYear}
+                    onChange={(event) => setSelectedYear(Number(event.target.value))}
+                    className="w-28 rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-orange-500"
+                  />
+                </label>
+              </>
+            ) : null}
+
+            {mode === "range" ? (
+              <>
+                <label className="flex flex-col gap-1">
+                  <span className="text-xs font-black uppercase text-slate-500">
+                    {t.from}
+                  </span>
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(event) => setStartDate(event.target.value)}
+                    className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-orange-500"
+                  />
+                </label>
+
+                <label className="flex flex-col gap-1">
+                  <span className="text-xs font-black uppercase text-slate-500">
+                    {t.to}
+                  </span>
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={(event) => setEndDate(event.target.value)}
+                    className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-orange-500"
+                  />
+                </label>
+              </>
+            ) : null}
+          </div>
+        </div>
+
+        {error ? (
+          <div className="mb-6 rounded-2xl bg-red-50 p-4 font-bold text-red-600 print:hidden">
+            {error}
+          </div>
+        ) : null}
+
+        {loading ? (
+          <div className="flex items-center gap-3 rounded-[28px] bg-white p-7 font-bold text-slate-500 print:hidden">
+            <Loader2 className="animate-spin" />
+            {t.loading}
+          </div>
+        ) : report ? (
+          <>
+            <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 print:grid-cols-4 print:gap-2">
+              <div className="rounded-2xl border border-green-200 bg-green-50 p-5 print:border print:border-slate-300 print:bg-white">
+                <div className="flex items-center gap-2 text-xs font-black uppercase text-green-700 print:text-slate-600">
+                  <TrendingUp size={16} />
+                  {t.totalIncome}
+                </div>
+                <p className="mt-2 text-2xl font-black text-green-800 print:text-slate-950">
+                  {formatEuro(report.income.total)}
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-red-200 bg-red-50 p-5 print:border print:border-slate-300 print:bg-white">
+                <div className="flex items-center gap-2 text-xs font-black uppercase text-red-700 print:text-slate-600">
+                  <TrendingDown size={16} />
+                  {t.totalExpense}
+                </div>
+                <p className="mt-2 text-2xl font-black text-red-800 print:text-slate-950">
+                  {formatEuro(report.expense.total)}
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-slate-200 bg-white p-5">
+                <div className="flex items-center gap-2 text-xs font-black uppercase text-slate-600">
+                  <Wallet size={16} />
+                  {t.net}
+                </div>
+                <p className="mt-2 text-2xl font-black text-slate-950">
+                  {formatEuro(report.net)}
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 print:border print:border-slate-300 print:bg-white">
+                <div className="text-xs font-black uppercase text-amber-700 print:text-slate-600">
+                  {t.openAccount}
+                </div>
+                <p className="mt-2 text-2xl font-black text-amber-800 print:text-slate-950">
+                  {formatEuro(report.openAccount.total)}
+                </p>
+                <p className="mt-1 text-xs font-bold text-amber-700 print:text-slate-500">
+                  {t.orderCount(report.openAccount.orderCount)}
+                </p>
+              </div>
+            </div>
+
+            <div className="mb-6 grid gap-4 lg:grid-cols-2">
+              <div className="rounded-[28px] bg-white p-5 shadow-sm print:border print:border-slate-300 print:shadow-none">
+                <h2 className="mb-3 text-lg font-black text-slate-950">
+                  {t.incomeByCategory}
+                </h2>
+
+                {incomeCategories.length === 0 ? (
+                  <p className="text-sm text-slate-500">{t.noIncome}</p>
+                ) : (
+                  <table className="w-full text-left text-sm">
+                    <tbody>
+                      {incomeCategories.map(([category, amount]) => (
+                        <tr key={category} className="border-t border-slate-100">
+                          <td className="py-2 text-slate-600">
+                            {t.categoryLabels[category] || category}
+                          </td>
+                          <td className="py-2 text-right font-black text-slate-950">
+                            {formatEuro(amount)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+
+              <div className="rounded-[28px] bg-white p-5 shadow-sm print:border print:border-slate-300 print:shadow-none">
+                <h2 className="mb-3 text-lg font-black text-slate-950">
+                  {t.expenseByCategory}
+                </h2>
+
+                {expenseCategories.length === 0 ? (
+                  <p className="text-sm text-slate-500">{t.noExpense}</p>
+                ) : (
+                  <table className="w-full text-left text-sm">
+                    <tbody>
+                      {expenseCategories.map(([category, amount]) => (
+                        <tr key={category} className="border-t border-slate-100">
+                          <td className="py-2 text-slate-600">
+                            {t.categoryLabels[category] || category}
+                          </td>
+                          <td className="py-2 text-right font-black text-slate-950">
+                            {formatEuro(amount)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            </div>
+
+            <div className="mb-6 rounded-[28px] bg-white p-5 shadow-sm print:border print:border-slate-300 print:shadow-none">
+              <h2 className="mb-3 text-lg font-black text-slate-950">
+                {t.openAccountOrders}
+              </h2>
+
+              {report.openAccount.orders.length === 0 ? (
+                <p className="text-sm text-slate-500">{t.noOpenAccountOrders}</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm">
+                    <thead>
+                      <tr className="border-b border-slate-200 text-xs font-black uppercase text-slate-400">
+                        <th className="py-2 pr-4">{t.orderNumber}</th>
+                        <th className="py-2 pr-4">{t.dateTime}</th>
+                        <th className="py-2 pr-4">{t.customer}</th>
+                        <th className="py-2 text-right">{t.amount}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {report.openAccount.orders.map((order) => (
+                        <tr key={order.id} className="border-b border-slate-100 last:border-b-0">
+                          <td className="py-2 pr-4 font-bold text-slate-900">
+                            {order.orderNumber}
+                          </td>
+                          <td className="py-2 pr-4 text-slate-600">
+                            {new Date(order.createdAt).toLocaleString("de-DE")}
+                          </td>
+                          <td className="py-2 pr-4 text-slate-600">
+                            {order.customerName}
+                          </td>
+                          <td className="py-2 text-right font-black text-slate-950">
+                            {formatEuro(order.openPaymentAmount)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            <div className="rounded-[28px] bg-white p-5 shadow-sm print:border print:border-slate-300 print:shadow-none">
+              <h2 className="mb-3 text-lg font-black text-slate-950">
+                {t.movements}
+              </h2>
+
+              {report.movements.length === 0 ? (
+                <p className="text-sm text-slate-500">{t.noMovements}</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm">
+                    <thead>
+                      <tr className="border-b border-slate-200 text-xs font-black uppercase text-slate-400">
+                        <th className="py-2 pr-4">{t.dateTime}</th>
+                        <th className="py-2 pr-4">{t.account}</th>
+                        <th className="py-2 pr-4">{t.category}</th>
+                        <th className="py-2 pr-4">{t.description}</th>
+                        <th className="py-2 pr-4">{t.staff}</th>
+                        <th className="py-2 text-right">{t.amount}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {report.movements.map((movement) => (
+                        <tr key={movement.id} className="border-b border-slate-100 last:border-b-0">
+                          <td className="py-2 pr-4 text-slate-600">
+                            {new Date(movement.createdAt).toLocaleString("de-DE")}
+                          </td>
+                          <td className="py-2 pr-4 text-slate-600">
+                            {t.accountLabels[movement.accountType] || movement.accountType}
+                          </td>
+                          <td className="py-2 pr-4 text-slate-600">
+                            {t.categoryLabels[movement.category] || movement.category}
+                          </td>
+                          <td className="py-2 pr-4 text-slate-500">
+                            {movement.description || movement.companyName || movement.supplierName || "—"}
+                          </td>
+                          <td className="py-2 pr-4 text-slate-500">
+                            {movement.createdBy.name || "—"}
+                          </td>
+                          <td
+                            className={`py-2 text-right font-black ${
+                              movement.direction === "IN"
+                                ? "text-green-700"
+                                : "text-red-700"
+                            }`}
+                          >
+                            {movement.direction === "IN" ? "+" : "-"}
+                            {formatEuro(movement.amount)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </>
+        ) : null}
+      </div>
+    </main>
+  );
+}
