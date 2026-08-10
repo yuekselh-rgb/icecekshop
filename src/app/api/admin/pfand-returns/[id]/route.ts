@@ -1,5 +1,6 @@
 import { requireAdminPermission } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
+import { getRequestLanguage } from "@/lib/request-language";
 import { withTenant } from "@/lib/tenant";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -115,12 +116,17 @@ export const PATCH = withTenant(async (
   },
   tenant,
 ) => {
+  const language = await getRequestLanguage();
+
   const admin = await requireAdminPermission("managePfand");
 
   if (!admin) {
     return NextResponse.json(
       {
-        error: "Pfand iadesini güncelleme yetkiniz yok.",
+        error:
+          language === "de"
+            ? "Sie sind nicht berechtigt, Pfand-Rückgaben zu bearbeiten."
+            : "Pfand iadesini güncelleme yetkiniz yok.",
       },
       {
         status: 403,
@@ -138,7 +144,10 @@ export const PATCH = withTenant(async (
     if (!allowedStatuses.includes(status)) {
       return NextResponse.json(
         {
-          error: "Geçersiz Pfand durumu.",
+          error:
+            language === "de"
+              ? "Ungültiger Pfand-Status."
+              : "Geçersiz Pfand durumu.",
         },
         {
           status: 400,
@@ -182,7 +191,10 @@ export const PATCH = withTenant(async (
     if (!existing) {
       return NextResponse.json(
         {
-          error: "Pfand iade talebi bulunamadı.",
+          error:
+            language === "de"
+              ? "Pfand-Rückgabeanfrage nicht gefunden."
+              : "Pfand iade talebi bulunamadı.",
         },
         {
           status: 404,
@@ -194,7 +206,9 @@ export const PATCH = withTenant(async (
       return NextResponse.json(
         {
           error:
-            "Bu Pfand depoya giriş yaptığı için durumu artık değiştirilemez.",
+            language === "de"
+              ? "Dieser Pfand wurde bereits im Lager erfasst und kann daher nicht mehr geändert werden."
+              : "Bu Pfand depoya giriş yaptığı için durumu artık değiştirilemez.",
         },
         {
           status: 409,
@@ -212,7 +226,10 @@ export const PATCH = withTenant(async (
       });
 
       return NextResponse.json({
-        message: "Bu Pfand daha önce depoya alınmış.",
+        message:
+          language === "de"
+            ? "Dieser Pfand wurde bereits ins Lager übernommen."
+            : "Bu Pfand daha önce depoya alınmış.",
 
         pfandReturn: current ? serializePfandReturn(current) : null,
       });
@@ -238,7 +255,10 @@ export const PATCH = withTenant(async (
         ) {
           return NextResponse.json(
             {
-              error: "Onaylanan Pfand miktarlarından biri geçersiz.",
+              error:
+                language === "de"
+                  ? "Eine der bestätigten Pfand-Mengen ist ungültig."
+                  : "Onaylanan Pfand miktarlarından biri geçersiz.",
             },
             {
               status: 400,
@@ -255,7 +275,10 @@ export const PATCH = withTenant(async (
         if (!existingItemIds.has(itemId)) {
           return NextResponse.json(
             {
-              error: "Geçersiz Pfand kalemi gönderildi.",
+              error:
+                language === "de"
+                  ? "Es wurde eine ungültige Pfand-Position übermittelt."
+                  : "Geçersiz Pfand kalemi gönderildi.",
             },
             {
               status: 400,
@@ -305,7 +328,10 @@ export const PATCH = withTenant(async (
       if (approvedItems.length === 0) {
         return NextResponse.json(
           {
-            error: "Depoya alınabilecek Pfand miktarı bulunmuyor.",
+            error:
+              language === "de"
+                ? "Es ist keine Pfand-Menge zur Einlagerung vorhanden."
+                : "Depoya alınabilecek Pfand miktarı bulunmuyor.",
           },
           {
             status: 400,
@@ -496,19 +522,31 @@ export const PATCH = withTenant(async (
       });
 
       const differenceMessage =
-        adjustmentAmount > 0
-          ? ` Şoförün kasaya vereceği tutar ${adjustmentAmount.toFixed(
-              2,
-            )} € yükseltildi.`
-          : adjustmentAmount < 0
-            ? ` Şoförün kasaya vereceği tutar ${Math.abs(
-                adjustmentAmount,
-              ).toFixed(2)} € düşürüldü.`
-            : " Şoförün bildirdiği miktarla teslim ettiği miktar eşit.";
+        language === "de"
+          ? adjustmentAmount > 0
+            ? ` Der vom Fahrer abzurechnende Betrag wurde um ${adjustmentAmount.toFixed(
+                2,
+              )} € erhöht.`
+            : adjustmentAmount < 0
+              ? ` Der vom Fahrer abzurechnende Betrag wurde um ${Math.abs(
+                  adjustmentAmount,
+                ).toFixed(2)} € reduziert.`
+              : " Die vom Fahrer gemeldete Menge stimmt mit der abgegebenen Menge überein."
+          : adjustmentAmount > 0
+            ? ` Şoförün kasaya vereceği tutar ${adjustmentAmount.toFixed(
+                2,
+              )} € yükseltildi.`
+            : adjustmentAmount < 0
+              ? ` Şoförün kasaya vereceği tutar ${Math.abs(
+                  adjustmentAmount,
+                ).toFixed(2)} € düşürüldü.`
+              : " Şoförün bildirdiği miktarla teslim ettiği miktar eşit.";
 
       return NextResponse.json({
         message:
-          "Pfand fiziksel olarak doğrulandı ve depoya giriş yapıldı." +
+          (language === "de"
+            ? "Pfand wurde physisch geprüft und im Lager erfasst."
+            : "Pfand fiziksel olarak doğrulandı ve depoya giriş yapıldı.") +
           differenceMessage,
 
         pfandReturn: updated ? serializePfandReturn(updated) : null,
@@ -534,7 +572,10 @@ export const PATCH = withTenant(async (
     });
 
     return NextResponse.json({
-      message: "Pfand iade durumu güncellendi.",
+      message:
+        language === "de"
+          ? "Pfand-Rückgabestatus wurde aktualisiert."
+          : "Pfand iade durumu güncellendi.",
 
       pfandReturn: serializePfandReturn(updated),
     });
@@ -545,7 +586,10 @@ export const PATCH = withTenant(async (
     ) {
       return NextResponse.json(
         {
-          error: "Bu Pfand daha önce depoya alınmış.",
+          error:
+            language === "de"
+              ? "Dieser Pfand wurde bereits ins Lager übernommen."
+              : "Bu Pfand daha önce depoya alınmış.",
         },
         {
           status: 409,
@@ -557,7 +601,10 @@ export const PATCH = withTenant(async (
 
     return NextResponse.json(
       {
-        error: "Pfand iadesi güncellenirken hata oluştu.",
+        error:
+          language === "de"
+            ? "Beim Aktualisieren der Pfand-Rückgabe ist ein Fehler aufgetreten."
+            : "Pfand iadesi güncellenirken hata oluştu.",
       },
       {
         status: 500,

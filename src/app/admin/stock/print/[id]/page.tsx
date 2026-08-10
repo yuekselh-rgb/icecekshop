@@ -6,8 +6,10 @@ import PrintControls from "./PrintControls";
 
 export default async function WarehousePrintPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ lang?: string }>;
 }) {
   const admin = await getAdminWithPermissions();
 
@@ -20,6 +22,72 @@ export default async function WarehousePrintPage({
   }
 
   const { id } = await params;
+  const { lang } = await searchParams;
+
+  const language = lang === "de" ? "de" : "tr";
+
+  const t =
+    language === "de"
+      ? {
+          incomingTitle: "Wareneingang-Lieferschein",
+          outgoingTitle: "Warenausgang-Lieferschein",
+          subtitle: "Unabhängige Lager-Ein-/Ausgangsbuchung",
+          recordNo: "Buchungs-Nr.",
+          date: "Datum",
+          incomingCompany: "Anliefernde Firma / Person",
+          outgoingCompany: "Abholende Firma / Person",
+          driverName: "Name des Fahrers",
+          vehiclePlate: "Kennzeichen",
+          deliveryNoteNo: "Lieferscheinnummer",
+          receivedBy: "Empfangen von",
+          handedOverBy: "Übergeben von",
+          origin: "Herkunftsort",
+          destination: "Zielort",
+          items: "Warenpositionen",
+          no: "Nr.",
+          itemName: "Warenname",
+          quantity: "Menge",
+          unit: "Einheit",
+          note: "Beschreibung",
+          generalNote: "Allgemeine Beschreibung",
+          handedOverSignature: "Übergeben von / Fahrer",
+          receivedGoodsSignature: "Ware entgegengenommen",
+          receivedStaffSignature: "Empfangen von Mitarbeiter",
+          handedOverStaffSignature: "Übergeben von Mitarbeiter",
+          nameSignature: "Name / Unterschrift",
+          footer:
+            "Dieses Dokument wurde vom unabhängigen Lagerbuchungssystem erstellt.",
+        }
+      : {
+          incomingTitle: "Mal Giriş Teslim Belgesi",
+          outgoingTitle: "Mal Çıkış Teslim Belgesi",
+          subtitle: "Bağımsız depo giriş–çıkış kaydı",
+          recordNo: "Kayıt No",
+          date: "Tarih",
+          incomingCompany: "Getiren Firma / Kişi",
+          outgoingCompany: "Götüren Firma / Kişi",
+          driverName: "Şoför Adı",
+          vehiclePlate: "Araç Plakası",
+          deliveryNoteNo: "İrsaliye Numarası",
+          receivedBy: "Teslim Alan Kişi",
+          handedOverBy: "Teslim Eden Kişi",
+          origin: "Geldiği Yer",
+          destination: "Gideceği Yer",
+          items: "Mal Kalemleri",
+          no: "No",
+          itemName: "Mal Adı",
+          quantity: "Miktar",
+          unit: "Birim",
+          note: "Açıklama",
+          generalNote: "Genel Açıklama",
+          handedOverSignature: "Teslim Eden / Şoför",
+          receivedGoodsSignature: "Malı Teslim Alan",
+          receivedStaffSignature: "Teslim Alan Personel",
+          handedOverStaffSignature: "Teslim Eden Personel",
+          nameSignature: "Ad Soyad / İmza",
+          footer: "Bu belge bağımsız depo kayıt sisteminden oluşturulmuştur.",
+        };
+
   const tenant = await getCurrentTenant();
 
   const log = tenant
@@ -47,7 +115,7 @@ export default async function WarehousePrintPage({
   return (
     <main className="min-h-screen bg-slate-100 p-2 text-slate-950 print:bg-white print:p-0">
       <div className="mx-auto max-w-[210mm] bg-white p-5 shadow print:max-w-none print:p-4 print:shadow-none">
-        <PrintControls />
+        <PrintControls language={language} />
 
         <header className="border-b-2 border-slate-950 pb-3">
           <div className="flex items-start justify-between gap-4">
@@ -57,19 +125,17 @@ export default async function WarehousePrintPage({
               </p>
 
               <h1 className="mt-1 text-2xl font-black">
-                {isIncoming
-                  ? "Mal Giriş Teslim Belgesi"
-                  : "Mal Çıkış Teslim Belgesi"}
+                {isIncoming ? t.incomingTitle : t.outgoingTitle}
               </h1>
 
               <p className="mt-1 text-xs text-slate-500">
-                Bağımsız depo giriş–çıkış kaydı
+                {t.subtitle}
               </p>
             </div>
 
             <div className="text-right text-xs">
               <p className="font-black">
-                Kayıt No
+                {t.recordNo}
               </p>
 
               <p className="font-mono text-[9px]">
@@ -77,7 +143,7 @@ export default async function WarehousePrintPage({
               </p>
 
               <p className="mt-1 font-black">
-                Tarih
+                {t.date}
               </p>
 
               <p>
@@ -89,53 +155,53 @@ export default async function WarehousePrintPage({
 
         <section className="mt-4 grid grid-cols-3 gap-x-5 gap-y-2 text-xs">
           <Info
-            label={isIncoming ? "Getiren Firma / Kişi" : "Götüren Firma / Kişi"}
+            label={isIncoming ? t.incomingCompany : t.outgoingCompany}
             value={log.companyName}
           />
 
-          <Info label="Şoför Adı" value={log.driverName} />
+          <Info label={t.driverName} value={log.driverName} />
 
-          <Info label="Araç Plakası" value={log.vehiclePlate} />
+          <Info label={t.vehiclePlate} value={log.vehiclePlate} />
 
-          <Info label="İrsaliye Numarası" value={log.deliveryNoteNo} />
+          <Info label={t.deliveryNoteNo} value={log.deliveryNoteNo} />
 
           <Info
-            label={isIncoming ? "Teslim Alan Kişi" : "Teslim Eden Kişi"}
+            label={isIncoming ? t.receivedBy : t.handedOverBy}
             value={log.contactPerson}
           />
 
           <Info
-            label={isIncoming ? "Geldiği Yer" : "Gideceği Yer"}
+            label={isIncoming ? t.origin : t.destination}
             value={log.destination}
           />
         </section>
 
         <section className="mt-5">
           <h2 className="text-base font-black">
-            Mal Kalemleri
+            {t.items}
           </h2>
 
           <table className="mt-2 w-full border-collapse text-xs">
             <thead>
               <tr className="bg-slate-950 text-white">
                 <th className="border border-slate-950 px-2 py-1.5 text-left">
-                  No
+                  {t.no}
                 </th>
 
                 <th className="border border-slate-950 px-2 py-1.5 text-left">
-                  Mal Adı
+                  {t.itemName}
                 </th>
 
                 <th className="border border-slate-950 px-2 py-1.5 text-right">
-                  Miktar
+                  {t.quantity}
                 </th>
 
                 <th className="border border-slate-950 px-2 py-1.5 text-left">
-                  Birim
+                  {t.unit}
                 </th>
 
                 <th className="border border-slate-950 px-2 py-1.5 text-left">
-                  Açıklama
+                  {t.note}
                 </th>
               </tr>
             </thead>
@@ -173,7 +239,7 @@ export default async function WarehousePrintPage({
         {log.note ? (
           <section className="mt-4 rounded-lg border border-slate-300 p-2.5">
             <p className="text-[9px] font-black uppercase text-slate-500">
-              Genel Açıklama
+              {t.generalNote}
             </p>
 
             <p className="mt-1 whitespace-pre-wrap text-xs">
@@ -184,18 +250,22 @@ export default async function WarehousePrintPage({
 
         <section className="mt-9 grid grid-cols-2 gap-10">
           <Signature
-            title={isIncoming ? "Teslim Eden / Şoför" : "Malı Teslim Alan"}
+            title={isIncoming ? t.handedOverSignature : t.receivedGoodsSignature}
             name={log.driverName}
+            nameFallback={t.nameSignature}
           />
 
           <Signature
-            title={isIncoming ? "Teslim Alan Personel" : "Teslim Eden Personel"}
+            title={
+              isIncoming ? t.receivedStaffSignature : t.handedOverStaffSignature
+            }
             name={log.contactPerson}
+            nameFallback={t.nameSignature}
           />
         </section>
 
         <footer className="mt-7 border-t pt-2 text-center text-[9px] text-slate-500">
-          Bu belge bağımsız depo kayıt sisteminden oluşturulmuştur.
+          {t.footer}
         </footer>
       </div>
     </main>
@@ -225,9 +295,11 @@ function Info({
 function Signature({
   title,
   name,
+  nameFallback,
 }: {
   title: string;
   name: string | null;
+  nameFallback: string;
 }) {
   return (
     <div className="pt-10 text-center">
@@ -237,7 +309,7 @@ function Signature({
         </p>
 
         <p className="mt-0.5 text-xs text-slate-500">
-          {name || "Ad Soyad / İmza"}
+          {name || nameFallback}
         </p>
       </div>
     </div>

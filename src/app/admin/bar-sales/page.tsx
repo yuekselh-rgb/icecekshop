@@ -170,6 +170,16 @@ export default function BarSalesPage() {
           receiptPfand: "Pfand",
           receiptTotal: "Gesamt",
           receiptSubtotal: "Zwischensumme",
+          openAccountCustomer: "Kunde mit offener Rechnung",
+          chooseSeller: "Bitte wählen Sie den Kunden aus.",
+          closeNewCustomerForm: "Neues Kundenformular schließen",
+          saveNewCustomer: "+ Neuen Kunden speichern",
+          company: "Firma",
+          privateCustomer: "Privatkunde",
+          addressOptional: "Adresse, optional",
+          noCustomersFound: "Kein Kunde gefunden.",
+          openAccountHolder: "Inhaber der offenen Rechnung",
+          unpaidAmountNote: "Der offene Betrag wird diesem Kunden zugeordnet.",
         }
       : {
           all: "Alle",
@@ -229,6 +239,16 @@ export default function BarSalesPage() {
           receiptPfand: "Pfand",
           receiptTotal: "Toplam",
           receiptSubtotal: "Ara Toplam",
+          openAccountCustomer: "Açık Hesap Müşterisi",
+          chooseSeller: "Lütfen müşteriyi seçin.",
+          closeNewCustomerForm: "Yeni müşteri formunu kapat",
+          saveNewCustomer: "+ Yeni müşteri kaydet",
+          company: "Firma",
+          privateCustomer: "Özel Müşteri",
+          addressOptional: "Adres, isteğe bağlı",
+          noCustomersFound: "Müşteri bulunamadı.",
+          openAccountHolder: "Açık hesap sahibi",
+          unpaidAmountNote: "Ödenmeyen tutar bu müşteriye kaydedilecek.",
         };
 
 
@@ -1521,11 +1541,11 @@ const adminName =
               <div className="mt-5 rounded-2xl border border-orange-200 bg-orange-50 p-4">
                 <div>
                   <p className="font-black text-orange-900">
-                    Açık Hesap Müşterisi
+                    {t.openAccountCustomer}
                   </p>
 
                   <p className="mt-1 text-xs text-orange-700">
-                    Bitte wählen Sie den Verkäufer aus.
+                    {t.chooseSeller}
                   </p>
                 </div>
 
@@ -1539,8 +1559,8 @@ const adminName =
                   className="mt-3 w-full rounded-xl border border-orange-300 bg-white px-4 py-3 text-sm font-black text-orange-600 transition hover:bg-orange-100"
                 >
                   {showNewCustomerForm
-                    ? "Yeni müşteri formunu kapat"
-                    : "+ Yeni müşteri kaydet"}
+                    ? t.closeNewCustomerForm
+                    : t.saveNewCustomer}
                 </button>
 
                 {showNewCustomerForm ? (
@@ -1558,7 +1578,7 @@ const adminName =
                             : "border-slate-200 text-slate-600"
                         }`}
                       >
-                        Firma
+                        {t.company}
                       </button>
 
                       <button
@@ -1570,7 +1590,7 @@ const adminName =
                             : "border-slate-200 text-slate-600"
                         }`}
                       >
-                        Özel Müşteri
+                        {t.privateCustomer}
                       </button>
                     </div>
 
@@ -1615,7 +1635,7 @@ const adminName =
                       />
 
                       <p className="pt-1 text-xs font-black text-slate-600">
-                        Adres, isteğe bağlı
+                        {t.addressOptional}
                       </p>
 
                       <div className="grid grid-cols-[1fr_90px] gap-2">
@@ -1703,7 +1723,7 @@ const adminName =
                 <div className="mt-3 max-h-56 space-y-2 overflow-y-auto">
                   {filteredCustomers.length === 0 ? (
                     <div className="rounded-xl bg-white p-3 text-sm font-bold text-slate-500">
-                      Müşteri bulunamadı.
+                      {t.noCustomersFound}
                     </div>
                   ) : (
                     filteredCustomers.map((customer) => {
@@ -1762,7 +1782,7 @@ const adminName =
                 {selectedCustomer ? (
                   <div className="mt-3 rounded-xl bg-slate-950 p-3 text-white">
                     <p className="text-xs font-bold text-orange-400">
-                      Açık hesap sahibi
+                      {t.openAccountHolder}
                     </p>
 
                     <p className="mt-1 font-black">
@@ -1770,7 +1790,7 @@ const adminName =
                     </p>
 
                     <p className="mt-1 text-xs text-slate-300">
-                      Ödenmeyen tutar bu müşteriye kaydedilecek.
+                      {t.unpaidAmountNote}
                     </p>
                   </div>
                 ) : null}
@@ -1813,7 +1833,7 @@ const adminName =
               {saving ? (
                 <>
                   <Loader2 size={20} className="animate-spin" />
-                  Kaydediliyor...
+                  {t.saving}
                 </>
               ) : (
                 t.completeSale

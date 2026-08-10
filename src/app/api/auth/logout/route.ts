@@ -1,10 +1,13 @@
+import { getRequestLanguage } from "@/lib/request-language";
 import { NextResponse } from "next/server";
 
 export async function POST() {
+  const language = await getRequestLanguage();
+
   const response =
     NextResponse.json({
       message:
-        "Çıkış yapıldı.",
+        language === "de" ? "Abgemeldet." : "Çıkış yapıldı.",
     });
 
   response.cookies.set(

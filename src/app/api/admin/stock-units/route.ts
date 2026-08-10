@@ -1,5 +1,6 @@
 import { requireAdminPermission } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
+import { getRequestLanguage } from "@/lib/request-language";
 import { withTenant } from "@/lib/tenant";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -18,12 +19,17 @@ function createUnitCode(value: unknown) {
 }
 
 export const GET = withTenant(async () => {
+  const language = await getRequestLanguage();
+
   const admin = await requireAdminPermission("viewProducts");
 
   if (!admin) {
     return NextResponse.json(
       {
-        error: "Birimleri görüntüleme yetkiniz yok.",
+        error:
+          language === "de"
+            ? "Sie sind nicht berechtigt, Einheiten einzusehen."
+            : "Birimleri görüntüleme yetkiniz yok.",
       },
       {
         status: 403,
@@ -54,7 +60,10 @@ export const GET = withTenant(async () => {
 
     return NextResponse.json(
       {
-        error: "Birimler yüklenemedi.",
+        error:
+          language === "de"
+            ? "Einheiten konnten nicht geladen werden."
+            : "Birimler yüklenemedi.",
       },
       {
         status: 500,
@@ -64,12 +73,17 @@ export const GET = withTenant(async () => {
 });
 
 export const POST = withTenant(async (request: NextRequest, _context, tenant) => {
+  const language = await getRequestLanguage();
+
   const admin = await requireAdminPermission("updateProduct");
 
   if (!admin) {
     return NextResponse.json(
       {
-        error: "Yeni birim ekleme yetkiniz yok.",
+        error:
+          language === "de"
+            ? "Sie sind nicht berechtigt, neue Einheiten hinzuzufügen."
+            : "Yeni birim ekleme yetkiniz yok.",
       },
       {
         status: 403,
@@ -87,7 +101,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     if (!nameTr || !nameDe || !code) {
       return NextResponse.json(
         {
-          error: "Türkçe ve Almanca birim adı zorunludur.",
+          error:
+            language === "de"
+              ? "Türkischer und deutscher Einheitenname sind erforderlich."
+              : "Türkçe ve Almanca birim adı zorunludur.",
         },
         {
           status: 400,
@@ -115,14 +132,20 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
         });
 
         return NextResponse.json({
-          message: "Birim yeniden aktifleştirildi.",
+          message:
+            language === "de"
+              ? "Einheit wurde wieder aktiviert."
+              : "Birim yeniden aktifleştirildi.",
           unit,
         });
       }
 
       return NextResponse.json(
         {
-          error: "Bu birim zaten kayıtlı.",
+          error:
+            language === "de"
+              ? "Diese Einheit ist bereits vorhanden."
+              : "Bu birim zaten kayıtlı.",
         },
         {
           status: 409,
@@ -151,7 +174,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
 
     return NextResponse.json(
       {
-        message: "Yeni birim başarıyla eklendi.",
+        message:
+          language === "de"
+            ? "Neue Einheit wurde erfolgreich hinzugefügt."
+            : "Yeni birim başarıyla eklendi.",
         unit,
       },
       {
@@ -163,7 +189,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
 
     return NextResponse.json(
       {
-        error: "Yeni birim eklenemedi.",
+        error:
+          language === "de"
+            ? "Neue Einheit konnte nicht hinzugefügt werden."
+            : "Yeni birim eklenemedi.",
       },
       {
         status: 500,
@@ -173,12 +202,17 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
 });
 
 export const PATCH = withTenant(async (request: NextRequest) => {
+  const language = await getRequestLanguage();
+
   const admin = await requireAdminPermission("updateProduct");
 
   if (!admin) {
     return NextResponse.json(
       {
-        error: "Birim düzenleme yetkiniz yok.",
+        error:
+          language === "de"
+            ? "Sie sind nicht berechtigt, Einheiten zu bearbeiten."
+            : "Birim düzenleme yetkiniz yok.",
       },
       {
         status: 403,
@@ -196,7 +230,10 @@ export const PATCH = withTenant(async (request: NextRequest) => {
     if (!id) {
       return NextResponse.json(
         {
-          error: "Düzenlenecek birim seçilmedi.",
+          error:
+            language === "de"
+              ? "Es wurde keine Einheit zum Bearbeiten ausgewählt."
+              : "Düzenlenecek birim seçilmedi.",
         },
         {
           status: 400,
@@ -207,7 +244,10 @@ export const PATCH = withTenant(async (request: NextRequest) => {
     if (!nameTr || !nameDe) {
       return NextResponse.json(
         {
-          error: "Türkçe ve Almanca birim adı zorunludur.",
+          error:
+            language === "de"
+              ? "Türkischer und deutscher Einheitenname sind erforderlich."
+              : "Türkçe ve Almanca birim adı zorunludur.",
         },
         {
           status: 400,
@@ -224,7 +264,10 @@ export const PATCH = withTenant(async (request: NextRequest) => {
     if (!existing || !existing.active) {
       return NextResponse.json(
         {
-          error: "Düzenlenecek birim bulunamadı.",
+          error:
+            language === "de"
+              ? "Die zu bearbeitende Einheit wurde nicht gefunden."
+              : "Düzenlenecek birim bulunamadı.",
         },
         {
           status: 404,
@@ -251,7 +294,10 @@ export const PATCH = withTenant(async (request: NextRequest) => {
     });
 
     return NextResponse.json({
-      message: "Birim başarıyla düzenlendi.",
+      message:
+        language === "de"
+          ? "Einheit wurde erfolgreich bearbeitet."
+          : "Birim başarıyla düzenlendi.",
       unit,
     });
   } catch (error) {
@@ -259,7 +305,10 @@ export const PATCH = withTenant(async (request: NextRequest) => {
 
     return NextResponse.json(
       {
-        error: "Birim düzenlenemedi.",
+        error:
+          language === "de"
+            ? "Einheit konnte nicht bearbeitet werden."
+            : "Birim düzenlenemedi.",
       },
       {
         status: 500,

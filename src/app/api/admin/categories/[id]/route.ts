@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdminPermission } from "@/lib/admin-auth";
+import { getRequestLanguage } from "@/lib/request-language";
 import { withTenant } from "@/lib/tenant";
 function createSlug(value: string) {
   return value
@@ -28,11 +29,18 @@ export const PUT = withTenant(async (
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) => {
+  const language = await getRequestLanguage();
+
   const admin = await requireAdminPermission("updateCategory");
 
   if (!admin) {
     return NextResponse.json(
-      { error: "Kategori düzenleme yetkiniz yok." },
+      {
+        error:
+          language === "de"
+            ? "Sie sind nicht berechtigt, Kategorien zu bearbeiten."
+            : "Kategori düzenleme yetkiniz yok.",
+      },
       { status: 403 },
     );
   }
@@ -64,7 +72,10 @@ export const PUT = withTenant(async (
     if (exists) {
       return NextResponse.json(
         {
-          error: "Bu slug başka bir kategori tarafından kullanılıyor.",
+          error:
+            language === "de"
+              ? "Dieser Slug wird bereits von einer anderen Kategorie verwendet."
+              : "Bu slug başka bir kategori tarafından kullanılıyor.",
         },
         {
           status: 409,
@@ -94,7 +105,10 @@ export const PUT = withTenant(async (
 
     return NextResponse.json(
       {
-        error: "Kategori güncellenemedi.",
+        error:
+          language === "de"
+            ? "Kategorie konnte nicht aktualisiert werden."
+            : "Kategori güncellenemedi.",
       },
       {
         status: 500,

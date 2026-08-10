@@ -1,6 +1,7 @@
 import { requireAdminPermission } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
 import { withTenant } from "@/lib/tenant";
+import { getRequestLanguage } from "@/lib/request-language";
 import { NextRequest, NextResponse } from "next/server";
 
 async function getDealer(id: string) {
@@ -32,12 +33,16 @@ export const GET = withTenant(async (
     }>;
   },
 ) => {
+  const language = await getRequestLanguage();
   const admin = await requireAdminPermission("manageDealerPrices");
 
   if (!admin) {
     return NextResponse.json(
       {
-        error: "Bayi özel fiyatlarını görüntüleme yetkiniz yok.",
+        error:
+          language === "de"
+            ? "Sie haben keine Berechtigung, händlerspezifische Preise anzuzeigen."
+            : "Bayi özel fiyatlarını görüntüleme yetkiniz yok.",
       },
       {
         status: 403,
@@ -53,7 +58,7 @@ export const GET = withTenant(async (
     if (!dealer || !dealer.dealerProfile) {
       return NextResponse.json(
         {
-          error: "Bayi bulunamadı.",
+          error: language === "de" ? "Händler nicht gefunden." : "Bayi bulunamadı.",
         },
         {
           status: 404,
@@ -138,7 +143,10 @@ export const GET = withTenant(async (
 
     return NextResponse.json(
       {
-        error: "Bayi özel fiyatları yüklenemedi.",
+        error:
+          language === "de"
+            ? "Händlerspezifische Preise konnten nicht geladen werden."
+            : "Bayi özel fiyatları yüklenemedi.",
       },
       {
         status: 500,
@@ -156,12 +164,16 @@ export const PUT = withTenant(async (
   },
   tenant,
 ) => {
+  const language = await getRequestLanguage();
   const admin = await requireAdminPermission("manageDealerPrices");
 
   if (!admin) {
     return NextResponse.json(
       {
-        error: "Bayi özel fiyatlarını değiştirme yetkiniz yok.",
+        error:
+          language === "de"
+            ? "Sie haben keine Berechtigung, händlerspezifische Preise zu ändern."
+            : "Bayi özel fiyatlarını değiştirme yetkiniz yok.",
       },
       {
         status: 403,
@@ -178,7 +190,7 @@ export const PUT = withTenant(async (
     if (!dealer || !dealer.dealerProfile) {
       return NextResponse.json(
         {
-          error: "Bayi bulunamadı.",
+          error: language === "de" ? "Händler nicht gefunden." : "Bayi bulunamadı.",
         },
         {
           status: 404,
@@ -189,7 +201,10 @@ export const PUT = withTenant(async (
     if (!Array.isArray(body.prices)) {
       return NextResponse.json(
         {
-          error: "Geçerli fiyat listesi gönderilmedi.",
+          error:
+            language === "de"
+              ? "Es wurde keine gültige Preisliste gesendet."
+              : "Geçerli fiyat listesi gönderilmedi.",
         },
         {
           status: 400,
@@ -223,7 +238,10 @@ export const PUT = withTenant(async (
     if (invalidItem) {
       return NextResponse.json(
         {
-          error: "Geçersiz ürün veya özel fiyat bulundu.",
+          error:
+            language === "de"
+              ? "Ungültiges Produkt oder ungültiger Sonderpreis gefunden."
+              : "Geçersiz ürün veya özel fiyat bulundu.",
         },
         {
           status: 400,
@@ -241,7 +259,10 @@ export const PUT = withTenant(async (
     if (duplicateProductIds.length > 0) {
       return NextResponse.json(
         {
-          error: "Aynı ürün fiyat listesinde birden fazla kez gönderildi.",
+          error:
+            language === "de"
+              ? "Dasselbe Produkt wurde mehrfach in der Preisliste gesendet."
+              : "Aynı ürün fiyat listesinde birden fazla kez gönderildi.",
         },
         {
           status: 400,
@@ -269,7 +290,10 @@ export const PUT = withTenant(async (
     if (existingProducts.length !== productIds.length) {
       return NextResponse.json(
         {
-          error: "Fiyat listesinde bulunamayan veya pasif ürün var.",
+          error:
+            language === "de"
+              ? "Die Preisliste enthält ein nicht gefundenes oder inaktives Produkt."
+              : "Fiyat listesinde bulunamayan veya pasif ürün var.",
         },
         {
           status: 400,
@@ -310,7 +334,10 @@ export const PUT = withTenant(async (
     });
 
     return NextResponse.json({
-      message: "Bayi özel fiyatları başarıyla kaydedildi.",
+      message:
+        language === "de"
+          ? "Händlerspezifische Preise erfolgreich gespeichert."
+          : "Bayi özel fiyatları başarıyla kaydedildi.",
       savedCount: pricesToSave.length,
     });
   } catch (error) {
@@ -318,7 +345,10 @@ export const PUT = withTenant(async (
 
     return NextResponse.json(
       {
-        error: "Bayi özel fiyatları kaydedilemedi.",
+        error:
+          language === "de"
+            ? "Händlerspezifische Preise konnten nicht gespeichert werden."
+            : "Bayi özel fiyatları kaydedilemedi.",
       },
       {
         status: 500,

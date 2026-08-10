@@ -38,6 +38,7 @@ export function LanguageProvider({
 
     setLanguageState(initialLanguage);
     document.documentElement.lang = initialLanguage;
+    document.cookie = `paketmarket_language=${initialLanguage}; path=/; max-age=31536000; samesite=lax`;
   }, []);
 
   function setLanguage(
@@ -52,6 +53,8 @@ export function LanguageProvider({
 
     document.documentElement.lang =
       newLanguage;
+
+    document.cookie = `paketmarket_language=${newLanguage}; path=/; max-age=31536000; samesite=lax`;
   }
 
   return (

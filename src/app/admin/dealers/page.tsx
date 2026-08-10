@@ -171,6 +171,67 @@ export default function DealerManagementPage() {
             "Maximaler Betrag, den der Händler auf offener Rechnung beziehen kann.",
           creating: "Wird erstellt...",
           createDealerAccount: "Händlerkonto erstellen",
+          adminPanel: "Admin-Panel",
+          heroDescription:
+            "Erstellen Sie Großhandelspartner, sehen Sie deren Kontodaten ein und verwalten Sie anschließend händlerspezifische Produktpreise.",
+          noCreateDealerPermission:
+            "Sie haben keine Berechtigung, neue Händler anzulegen.",
+          registeredDealers: "Registrierte Händler",
+          totalDealerAccounts: "Insgesamt {count} Händlerkonten",
+          loadingDealers: "Händler werden geladen...",
+          noDealersYet: "Es sind noch keine Händlerkonten vorhanden.",
+          phoneLabel: "Telefon",
+          creditLimitCard: "Kreditlimit",
+          balance: "Saldo",
+          customPrice: "Sonderpreis",
+          manageCustomPrices: "Sonderpreise verwalten",
+          editDealer: "Händler bearbeiten",
+          dealerSpecificPrices: "Händlerspezifische Produktpreise",
+          dealerPricesHint:
+            "Ändern Sie für {dealerName} nur den Produktpreis. Der Pfandbetrag wird automatisch vom Produkt übernommen und bleibt fest. Bei leer gelassenen Produkten wird der normale Produktpreis verwendet.",
+          loadingProducts: "Produkte werden geladen...",
+          productCategory: "Produktkategorie",
+          unitCount: "{count} Produkte",
+          normalSale: "Normalpreis",
+          total: "Gesamt",
+          dealerProductPrice: "Händlerproduktpreis",
+          excludingPfand: "ohne Pfand",
+          fixedPfand: "Festes Pfand",
+          dealerTotalShort: "Händlersumme",
+          difference: "Differenz",
+          noActiveProducts: "Keine aktiven Produkte gefunden.",
+          savingPrices: "Preise werden gespeichert...",
+          saveCustomPrices: "Sonderpreise speichern",
+          editDealerInfo: "Händlerdaten bearbeiten",
+          editDealerHint:
+            "Saldo und Sonderpreise bleiben erhalten.",
+          dealerNumberLabel: "Händlernummer *",
+          companyNameLabel: "Firmenname *",
+          contactPersonLabel: "Ansprechpartner",
+          emailLabel: "E-Mail *",
+          phoneFieldLabel: "Telefon",
+          taxNumberLabel: "Steuernummer",
+          creditLimitLabel: "Kreditlimit",
+          dealerAccount: "Händlerkonto",
+          dealerCanLogin: "Der Händler kann sich im System anmelden.",
+          dealerAccountDisabled: "Das Händlerkonto wird gesperrt.",
+          saving: "Wird gespeichert...",
+          permissionsLoadError: "Berechtigungen konnten nicht geladen werden.",
+          dealersLoadError: "Händler konnten nicht geladen werden.",
+          dealerCreateError: "Händler konnte nicht erstellt werden.",
+          dealerCreateSuccess: "Händlerkonto erfolgreich erstellt.",
+          dealerProfileNotFound: "Händlerprofil nicht gefunden.",
+          dealerUpdateError: "Händlerdaten konnten nicht aktualisiert werden.",
+          dealerUpdateSuccess: "Händlerdaten wurden aktualisiert.",
+          noManageDealerPricesPermission:
+            "Sie haben keine Berechtigung, händlerspezifische Preise zu ändern.",
+          dealerPricesLoadError:
+            "Händlerspezifische Preise konnten nicht geladen werden.",
+          invalidCustomPrice:
+            "Der Sonderpreis muss null oder ein positiver Betrag sein.",
+          dealerPricesSaveError:
+            "Händlerspezifische Preise konnten nicht gespeichert werden.",
+          dealerPricesSaveSuccess: "Sonderpreise für {dealerName} gespeichert.",
         }
       : {
           title: "Bayi Yönetimi",
@@ -209,6 +270,62 @@ export default function DealerManagementPage() {
           creditLimitHint: "Bayinin açık hesapla alabileceği azami tutar.",
           creating: "Oluşturuluyor...",
           createDealerAccount: "Bayi Hesabı Oluştur",
+          adminPanel: "Admin Paneli",
+          heroDescription:
+            "Toptan satış yapan bayileri oluşturun, hesap bilgilerini görüntüleyin ve daha sonra bayiye özel ürün fiyatlarını yönetin.",
+          noCreateDealerPermission: "Yeni bayi oluşturma yetkiniz bulunmuyor.",
+          registeredDealers: "Kayıtlı Bayiler",
+          totalDealerAccounts: "Toplam {count} bayi hesabı",
+          loadingDealers: "Bayiler yükleniyor...",
+          noDealersYet: "Henüz bayi hesabı bulunmuyor.",
+          phoneLabel: "Telefon",
+          creditLimitCard: "Kredi limiti",
+          balance: "Bakiye",
+          customPrice: "Özel fiyat",
+          manageCustomPrices: "Özel Fiyatları Yönet",
+          editDealer: "Bayiyi Düzenle",
+          dealerSpecificPrices: "Bayiye Özel Ürün Fiyatları",
+          dealerPricesHint:
+            "{dealerName} için yalnızca ürün fiyatını değiştirin. Pfand tutarı üründen otomatik gelir ve sabit kalır. Boş bırakılan ürünlerde normal ürün fiyatı kullanılır.",
+          loadingProducts: "Ürünler yükleniyor...",
+          productCategory: "Ürün kategorisi",
+          unitCount: "{count} ürün",
+          normalSale: "Normal satış",
+          total: "Toplam",
+          dealerProductPrice: "Bayi ürün fiyatı",
+          excludingPfand: "Pfand hariç",
+          fixedPfand: "Sabit Pfand",
+          dealerTotalShort: "Bayi toplamı",
+          difference: "fark",
+          noActiveProducts: "Aktif ürün bulunamadı.",
+          savingPrices: "Fiyatlar kaydediliyor...",
+          saveCustomPrices: "Özel Fiyatları Kaydet",
+          editDealerInfo: "Bayi Bilgilerini Düzenle",
+          editDealerHint: "Bakiye ve özel fiyat kayıtları korunur.",
+          dealerNumberLabel: "Bayi numarası *",
+          companyNameLabel: "Firma adı *",
+          contactPersonLabel: "Yetkili kişi",
+          emailLabel: "E-posta *",
+          phoneFieldLabel: "Telefon",
+          taxNumberLabel: "Vergi numarası",
+          creditLimitLabel: "Kredi limiti",
+          dealerAccount: "Bayi hesabı",
+          dealerCanLogin: "Bayi sisteme giriş yapabilir.",
+          dealerAccountDisabled: "Bayi hesabı kapalı olacaktır.",
+          saving: "Kaydediliyor...",
+          permissionsLoadError: "Yetkiler yüklenemedi.",
+          dealersLoadError: "Bayiler yüklenemedi.",
+          dealerCreateError: "Bayi oluşturulamadı.",
+          dealerCreateSuccess: "Bayi hesabı başarıyla oluşturuldu.",
+          dealerProfileNotFound: "Bayi profili bulunamadı.",
+          dealerUpdateError: "Bayi bilgileri güncellenemedi.",
+          dealerUpdateSuccess: "Bayi bilgileri güncellendi.",
+          noManageDealerPricesPermission:
+            "Bayi özel fiyatlarını değiştirme yetkiniz yok.",
+          dealerPricesLoadError: "Bayi özel fiyatları yüklenemedi.",
+          invalidCustomPrice: "Özel fiyat sıfır veya pozitif bir tutar olmalıdır.",
+          dealerPricesSaveError: "Bayi özel fiyatları kaydedilemedi.",
+          dealerPricesSaveSuccess: "{dealerName} için özel fiyatlar kaydedildi.",
         };
 
 
@@ -265,20 +382,20 @@ export default function DealerManagementPage() {
       const meData = await meResponse.json();
 
       if (!meResponse.ok) {
-        setError(meData.error || "Yetkiler yüklenemedi.");
+        setError(meData.error || t.permissionsLoadError);
         return;
       }
 
       setPermissions(meData.permissions);
 
       if (!dealerResponse.ok) {
-        setError(dealerData.error || "Bayiler yüklenemedi.");
+        setError(dealerData.error || t.dealersLoadError);
         return;
       }
 
       setDealers(dealerData.dealers || []);
     } catch {
-      setError("Bayiler yüklenemedi.");
+      setError(t.dealersLoadError);
     } finally {
       setLoading(false);
     }
@@ -342,17 +459,17 @@ export default function DealerManagementPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Bayi oluşturulamadı.");
+        setError(data.error || t.dealerCreateError);
         return;
       }
 
-      setSuccess("Bayi hesabı başarıyla oluşturuldu.");
+      setSuccess(t.dealerCreateSuccess);
 
       form.reset();
 
       await loadDealers();
     } catch {
-      setError("Bayi oluşturulamadı.");
+      setError(t.dealerCreateError);
     } finally {
       setSaving(false);
     }
@@ -362,7 +479,7 @@ export default function DealerManagementPage() {
     const profile = dealer.dealerProfile;
 
     if (!profile) {
-      setError("Bayi profili bulunamadı.");
+      setError(t.dealerProfileNotFound);
       return;
     }
 
@@ -433,17 +550,17 @@ export default function DealerManagementPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Bayi bilgileri güncellenemedi.");
+        setError(data.error || t.dealerUpdateError);
         return;
       }
 
-      setSuccess(data.message || "Bayi bilgileri güncellendi.");
+      setSuccess(data.message || t.dealerUpdateSuccess);
 
       closeDealerEdit();
 
       await loadDealers();
     } catch {
-      setError("Bayi bilgileri güncellenemedi.");
+      setError(t.dealerUpdateError);
     } finally {
       setEditSaving(false);
     }
@@ -451,7 +568,7 @@ export default function DealerManagementPage() {
 
   async function openDealerPrices(dealer: Dealer) {
     if (!permissions?.manageDealerPrices) {
-      setError("Bayi özel fiyatlarını değiştirme yetkiniz yok.");
+      setError(t.noManageDealerPricesPermission);
       return;
     }
 
@@ -476,7 +593,7 @@ export default function DealerManagementPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setDealerPriceError(data.error || "Bayi özel fiyatları yüklenemedi.");
+        setDealerPriceError(data.error || t.dealerPricesLoadError);
         return;
       }
 
@@ -493,7 +610,7 @@ export default function DealerManagementPage() {
         ),
       );
     } catch {
-      setDealerPriceError("Bayi özel fiyatları yüklenemedi.");
+      setDealerPriceError(t.dealerPricesLoadError);
     } finally {
       setLoadingDealerPrices(false);
     }
@@ -535,9 +652,7 @@ export default function DealerManagementPage() {
       );
 
       if (invalidPrice) {
-        setDealerPriceError(
-          "Özel fiyat sıfır veya pozitif bir tutar olmalıdır.",
-        );
+        setDealerPriceError(t.invalidCustomPrice);
         return;
       }
 
@@ -557,11 +672,13 @@ export default function DealerManagementPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setDealerPriceError(data.error || "Bayi özel fiyatları kaydedilemedi.");
+        setDealerPriceError(data.error || t.dealerPricesSaveError);
         return;
       }
 
-      setSuccess(`${dealerPriceDealerName} için özel fiyatlar kaydedildi.`);
+      setSuccess(
+        t.dealerPricesSaveSuccess.replace("{dealerName}", dealerPriceDealerName),
+      );
 
       await loadDealers();
 
@@ -569,7 +686,7 @@ export default function DealerManagementPage() {
         ...dealers.find((dealer) => dealer.id === dealerPriceDealerId)!,
       });
     } catch {
-      setDealerPriceError("Bayi özel fiyatları kaydedilemedi.");
+      setDealerPriceError(t.dealerPricesSaveError);
     } finally {
       setSavingDealerPrices(false);
     }
@@ -583,7 +700,7 @@ export default function DealerManagementPage() {
           className="inline-flex items-center gap-2 font-bold text-slate-600 transition hover:text-orange-500"
         >
           <ArrowLeft size={18} />
-          Admin Paneli
+          {t.adminPanel}
         </Link>
 
         <section className="mt-6 rounded-[32px] bg-slate-950 p-7 text-white sm:p-10">
@@ -594,8 +711,7 @@ export default function DealerManagementPage() {
           <h1 className="mt-5 text-4xl font-black">{t.title}</h1>
 
           <p className="mt-3 max-w-3xl text-slate-400">
-            Toptan satış yapan bayileri oluşturun, hesap bilgilerini
-            görüntüleyin ve daha sonra bayiye özel ürün fiyatlarını yönetin.
+            {t.heroDescription}
           </p>
         </section>
 
@@ -862,7 +978,7 @@ export default function DealerManagementPage() {
               }`}
             >
               <p className="font-bold text-slate-600">
-                Yeni bayi oluşturma yetkiniz bulunmuyor.
+                {t.noCreateDealerPermission}
               </p>
             </section>
           )}
@@ -875,11 +991,14 @@ export default function DealerManagementPage() {
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h2 className="text-2xl font-black text-slate-950">
-                  Kayıtlı Bayiler
+                  {t.registeredDealers}
                 </h2>
 
                 <p className="mt-1 text-sm text-slate-500">
-                  Toplam {dealers.length} bayi hesabı
+                  {t.totalDealerAccounts.replace(
+                    "{count}",
+                    String(dealers.length),
+                  )}
                 </p>
               </div>
 
@@ -889,14 +1008,14 @@ export default function DealerManagementPage() {
             {loading ? (
               <div className="mt-8 flex items-center gap-2 font-bold text-slate-500">
                 <Loader2 size={20} className="animate-spin" />
-                Bayiler yükleniyor...
+                {t.loadingDealers}
               </div>
             ) : dealers.length === 0 ? (
               <div className="mt-8 rounded-2xl bg-slate-50 p-8 text-center">
                 <Building2 size={36} className="mx-auto text-slate-300" />
 
                 <p className="mt-3 font-bold text-slate-500">
-                  Henüz bayi hesabı bulunmuyor.
+                  {t.noDealersYet}
                 </p>
               </div>
             ) : (
@@ -952,7 +1071,9 @@ export default function DealerManagementPage() {
                             <p className="truncate">{dealer.email}</p>
 
                             {profile?.phone || dealer.phone ? (
-                              <p>Telefon: {profile?.phone || dealer.phone}</p>
+                              <p>
+                                {t.phoneLabel}: {profile?.phone || dealer.phone}
+                              </p>
                             ) : null}
 
                             {profile?.city ? (
@@ -976,7 +1097,7 @@ export default function DealerManagementPage() {
                               <BadgeEuro size={15} />
 
                               <span className="text-[11px] font-bold uppercase">
-                                Kredi limiti
+                                {t.creditLimitCard}
                               </span>
                             </div>
 
@@ -996,7 +1117,7 @@ export default function DealerManagementPage() {
                               <WalletCards size={15} />
 
                               <span className="text-[11px] font-bold uppercase">
-                                Bakiye
+                                {t.balance}
                               </span>
                             </div>
 
@@ -1021,7 +1142,7 @@ export default function DealerManagementPage() {
                               <PackageSearch size={16} />
 
                               <span className="text-xs font-black">
-                                Özel fiyat
+                                {t.customPrice}
                               </span>
                             </div>
 
@@ -1037,7 +1158,7 @@ export default function DealerManagementPage() {
                               className="col-span-2 flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-black text-white transition hover:bg-blue-700"
                             >
                               <PackageSearch size={16} />
-                              Özel Fiyatları Yönet
+                              {t.manageCustomPrices}
                             </button>
                           ) : null}
 
@@ -1048,7 +1169,7 @@ export default function DealerManagementPage() {
                               className="col-span-2 flex items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 py-3 text-sm font-black text-white transition hover:bg-orange-500"
                             >
                               <Pencil size={16} />
-                              Bayiyi Düzenle
+                              {t.editDealer}
                             </button>
                           ) : null}
                         </div>
@@ -1059,14 +1180,14 @@ export default function DealerManagementPage() {
                           <div className="flex flex-wrap items-start justify-between gap-3">
                             <div>
                               <h4 className="text-lg font-black text-slate-950">
-                                Bayiye Özel Ürün Fiyatları
+                                {t.dealerSpecificPrices}
                               </h4>
 
                               <p className="mt-1 text-xs text-slate-500">
-                                {dealerPriceDealerName} için yalnızca ürün
-                                fiyatını değiştirin. Pfand tutarı üründen
-                                otomatik gelir ve sabit kalır. Boş bırakılan
-                                ürünlerde normal ürün fiyatı kullanılır.
+                                {t.dealerPricesHint.replace(
+                                  "{dealerName}",
+                                  dealerPriceDealerName,
+                                )}
                               </p>
                             </div>
 
@@ -1075,7 +1196,7 @@ export default function DealerManagementPage() {
                               onClick={closeDealerPrices}
                               className="rounded-lg border border-blue-200 bg-white px-3 py-2 text-xs font-black text-blue-700"
                             >
-                              Kapat
+                              {t.close}
                             </button>
                           </div>
 
@@ -1088,7 +1209,7 @@ export default function DealerManagementPage() {
                           {loadingDealerPrices ? (
                             <div className="mt-6 flex items-center justify-center gap-2 rounded-xl bg-white p-8 font-bold text-slate-500">
                               <Loader2 size={20} className="animate-spin" />
-                              Ürünler yükleniyor...
+                              {t.loadingProducts}
                             </div>
                           ) : (
                             <>
@@ -1173,7 +1294,9 @@ export default function DealerManagementPage() {
                                         product.category.nameTr ||
                                         product.category.nameDe ||
                                         product.category.name ||
-                                        "Diğer";
+                                        (language === "de"
+                                          ? "Sonstiges"
+                                          : "Diğer");
 
                                       const previousProduct =
                                         filteredProducts[productIndex - 1];
@@ -1202,7 +1325,7 @@ export default function DealerManagementPage() {
                                               <div className="flex flex-wrap items-center justify-between gap-3">
                                                 <div>
                                                   <p className="text-[10px] font-black uppercase tracking-[0.18em] opacity-80">
-                                                    Ürün kategorisi
+                                                    {t.productCategory}
                                                   </p>
 
                                                   <h5 className="mt-0.5 text-lg font-black">
@@ -1211,7 +1334,10 @@ export default function DealerManagementPage() {
                                                 </div>
 
                                                 <span className="rounded-full border border-white/70 bg-white/65 px-3 py-1 text-xs font-black shadow-sm">
-                                                  {categoryProductCount} ürün
+                                                  {t.unitCount.replace(
+                                                    "{count}",
+                                                    String(categoryProductCount),
+                                                  )}
                                                 </span>
                                               </div>
                                             </div>
@@ -1240,7 +1366,7 @@ export default function DealerManagementPage() {
 
                                             <div className="rounded-lg bg-slate-50 px-3 py-2">
                                               <p className="text-[10px] font-black uppercase text-slate-400">
-                                                Normal satış
+                                                {t.normalSale}
                                               </p>
 
                                               <div className="mt-1 space-y-0.5 text-[11px]">
@@ -1260,7 +1386,7 @@ export default function DealerManagementPage() {
 
                                                 {fixedPfand > 0 ? (
                                                   <div className="flex justify-between gap-2 text-orange-600">
-                                                    <span>{language === "de" ? "Pfand" : "Pfand"}</span>
+                                                    <span>{t.pfand}</span>
 
                                                     <span className="font-bold">
                                                       {fixedPfand.toLocaleString(
@@ -1276,7 +1402,7 @@ export default function DealerManagementPage() {
 
                                                 <div className="flex justify-between gap-2 border-t border-slate-200 pt-1 text-slate-950">
                                                   <span className="font-black">
-                                                    Toplam
+                                                    {t.total}
                                                   </span>
 
                                                   <span className="font-black">
@@ -1294,11 +1420,11 @@ export default function DealerManagementPage() {
 
                                             <label className="block">
                                               <span className="text-[10px] font-black uppercase text-blue-700">
-                                                Bayi ürün fiyatı
+                                                {t.dealerProductPrice}
                                               </span>
 
                                               <p className="mt-0.5 text-[9px] font-bold text-slate-400">
-                                                Pfand hariç
+                                                {t.excludingPfand}
                                               </p>
 
                                               <div className="relative mt-1">
@@ -1330,7 +1456,7 @@ export default function DealerManagementPage() {
                                               {fixedPfand > 0 ? (
                                                 <div className="mt-2 rounded-lg bg-orange-50 px-2.5 py-2 text-[10px]">
                                                   <div className="flex justify-between gap-2 text-orange-700">
-                                                    <span>{language === "de" ? "Festes Pfand" : "Sabit Pfand"}</span>
+                                                    <span>{t.fixedPfand}</span>
 
                                                     <span className="font-black">
                                                       {fixedPfand.toLocaleString(
@@ -1345,7 +1471,7 @@ export default function DealerManagementPage() {
 
                                                   <div className="mt-1 flex justify-between gap-2 border-t border-orange-100 pt-1 text-slate-950">
                                                     <span className="font-black">
-                                                      Bayi toplamı
+                                                      {t.dealerTotalShort}
                                                     </span>
 
                                                     <span className="font-black">
@@ -1361,7 +1487,7 @@ export default function DealerManagementPage() {
                                                 </div>
                                               ) : (
                                                 <p className="mt-1 text-[10px] font-black text-blue-700">
-                                                  Bayi toplamı:{" "}
+                                                  {t.dealerTotalShort}:{" "}
                                                   {dealerTotal.toLocaleString(
                                                     "de-DE",
                                                     {
@@ -1393,7 +1519,7 @@ export default function DealerManagementPage() {
                                                           style: "currency",
                                                           currency: "EUR",
                                                         },
-                                                      )} fark`}
+                                                      )} ${t.difference}`}
                                               </p>
                                             </label>
                                           </div>
@@ -1404,7 +1530,7 @@ export default function DealerManagementPage() {
 
                                 {dealerPriceProducts.length === 0 ? (
                                   <div className="rounded-xl bg-white p-6 text-center font-bold text-slate-500">
-                                    Aktif ürün bulunamadı.
+                                    {t.noActiveProducts}
                                   </div>
                                 ) : null}
                               </div>
@@ -1421,12 +1547,12 @@ export default function DealerManagementPage() {
                                       size={18}
                                       className="animate-spin"
                                     />
-                                    Fiyatlar kaydediliyor...
+                                    {t.savingPrices}
                                   </>
                                 ) : (
                                   <>
                                     <BadgeEuro size={18} />
-                                    Özel Fiyatları Kaydet
+                                    {t.saveCustomPrices}
                                   </>
                                 )}
                               </button>
@@ -1440,11 +1566,11 @@ export default function DealerManagementPage() {
                           <div className="flex flex-wrap items-center justify-between gap-3">
                             <div>
                               <h4 className="text-lg font-black text-slate-950">
-                                Bayi Bilgilerini Düzenle
+                                {t.editDealerInfo}
                               </h4>
 
                               <p className="mt-1 text-xs text-slate-500">
-                                Bakiye ve özel fiyat kayıtları korunur.
+                                {t.editDealerHint}
                               </p>
                             </div>
 
@@ -1454,14 +1580,14 @@ export default function DealerManagementPage() {
                               className="flex items-center gap-1 rounded-lg border border-orange-200 bg-white px-3 py-2 text-xs font-black text-orange-600"
                             >
                               <X size={15} />
-                              Kapat
+                              {t.close}
                             </button>
                           </div>
 
                           <div className="mt-4 grid gap-3 sm:grid-cols-2">
                             <label className="block">
                               <span className="text-xs font-bold text-slate-600">
-                                Bayi numarası *
+                                {t.dealerNumberLabel}
                               </span>
 
                               <input
@@ -1478,7 +1604,7 @@ export default function DealerManagementPage() {
 
                             <label className="block">
                               <span className="text-xs font-bold text-slate-600">
-                                Firma adı *
+                                {t.companyNameLabel}
                               </span>
 
                               <input
@@ -1495,7 +1621,7 @@ export default function DealerManagementPage() {
 
                             <label className="block sm:col-span-2">
                               <span className="text-xs font-bold text-slate-600">
-                                Yetkili kişi
+                                {t.contactPersonLabel}
                               </span>
 
                               <input
@@ -1536,7 +1662,7 @@ export default function DealerManagementPage() {
 
                             <label className="block">
                               <span className="text-xs font-bold text-slate-600">
-                                E-posta *
+                                {t.emailLabel}
                               </span>
 
                               <input
@@ -1554,7 +1680,7 @@ export default function DealerManagementPage() {
 
                             <label className="block">
                               <span className="text-xs font-bold text-slate-600">
-                                Telefon
+                                {t.phoneFieldLabel}
                               </span>
 
                               <input
@@ -1571,7 +1697,7 @@ export default function DealerManagementPage() {
 
                             <label className="block">
                               <span className="text-xs font-bold text-slate-600">
-                                Vergi numarası
+                                {t.taxNumberLabel}
                               </span>
 
                               <input
@@ -1588,7 +1714,7 @@ export default function DealerManagementPage() {
 
                             <label className="block">
                               <span className="text-xs font-bold text-slate-600">
-                                Kredi limiti
+                                {t.creditLimitLabel}
                               </span>
 
                               <div className="relative mt-1">
@@ -1697,13 +1823,13 @@ export default function DealerManagementPage() {
                             >
                               <span>
                                 <span className="block text-sm font-black text-slate-900">
-                                  Bayi hesabı
+                                  {t.dealerAccount}
                                 </span>
 
                                 <span className="mt-0.5 block text-xs text-slate-500">
                                   {editForm.isActive
-                                    ? "Bayi sisteme giriş yapabilir."
-                                    : "Bayi hesabı kapalı olacaktır."}
+                                    ? t.dealerCanLogin
+                                    : t.dealerAccountDisabled}
                                 </span>
                               </span>
 
@@ -1736,7 +1862,7 @@ export default function DealerManagementPage() {
                             )}
 
                             {editSaving
-                              ? "Kaydediliyor..."
+                              ? t.saving
                               : t.saveChanges}
                           </button>
                         </div>

@@ -2,6 +2,7 @@ import {
   requireAdminPermission,
 } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
+import { getRequestLanguage } from "@/lib/request-language";
 import { withTenant } from "@/lib/tenant";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -30,6 +31,8 @@ function createSlug(value: string) {
 }
 
 export const GET = withTenant(async () => {
+  const language = await getRequestLanguage();
+
   const admin =
     await requireAdminPermission(
       "viewCategories"
@@ -39,7 +42,9 @@ export const GET = withTenant(async () => {
     return NextResponse.json(
       {
         error:
-          "Kategori görüntüleme yetkiniz yok.",
+          language === "de"
+            ? "Sie sind nicht berechtigt, Kategorien einzusehen."
+            : "Kategori görüntüleme yetkiniz yok.",
       },
       {
         status: 403,
@@ -72,6 +77,8 @@ export const POST = withTenant(async (
   _context,
   tenant,
 ) => {
+  const language = await getRequestLanguage();
+
   const admin =
     await requireAdminPermission(
       "createCategory"
@@ -81,7 +88,9 @@ export const POST = withTenant(async (
     return NextResponse.json(
       {
         error:
-          "Kategori ekleme yetkiniz yok.",
+          language === "de"
+            ? "Sie sind nicht berechtigt, Kategorien hinzuzufügen."
+            : "Kategori ekleme yetkiniz yok.",
       },
       {
         status: 403,
@@ -117,7 +126,9 @@ export const POST = withTenant(async (
       return NextResponse.json(
         {
           error:
-            "Türkçe ad, Almanca ad ve slug zorunludur.",
+            language === "de"
+              ? "Türkischer Name, deutscher Name und Slug sind erforderlich."
+              : "Türkçe ad, Almanca ad ve slug zorunludur.",
         },
         {
           status: 400,
@@ -136,7 +147,9 @@ export const POST = withTenant(async (
       return NextResponse.json(
         {
           error:
-            "Bu slug ile bir kategori zaten bulunuyor.",
+            language === "de"
+              ? "Es gibt bereits eine Kategorie mit diesem Slug."
+              : "Bu slug ile bir kategori zaten bulunuyor.",
         },
         {
           status: 409,
@@ -159,7 +172,9 @@ export const POST = withTenant(async (
     return NextResponse.json(
       {
         message:
-          "Kategori başarıyla eklendi.",
+          language === "de"
+            ? "Kategorie wurde erfolgreich hinzugefügt."
+            : "Kategori başarıyla eklendi.",
         category,
       },
       {
@@ -175,7 +190,9 @@ export const POST = withTenant(async (
     return NextResponse.json(
       {
         error:
-          "Kategori oluşturulurken hata oluştu.",
+          language === "de"
+            ? "Beim Erstellen der Kategorie ist ein Fehler aufgetreten."
+            : "Kategori oluşturulurken hata oluştu.",
       },
       {
         status: 500,
@@ -186,6 +203,8 @@ export const POST = withTenant(async (
 
 
 export const PUT = withTenant(async (request: NextRequest) => {
+  const language = await getRequestLanguage();
+
   const admin =
     await requireAdminPermission(
       "updateCategory"
@@ -195,7 +214,9 @@ export const PUT = withTenant(async (request: NextRequest) => {
     return NextResponse.json(
       {
         error:
-          "Kategori düzenleme yetkiniz yok.",
+          language === "de"
+            ? "Sie sind nicht berechtigt, Kategorien zu bearbeiten."
+            : "Kategori düzenleme yetkiniz yok.",
       },
       {
         status: 403,
@@ -241,7 +262,9 @@ export const PUT = withTenant(async (request: NextRequest) => {
     return NextResponse.json(
       {
         error:
-          "Kategori sırası kaydedilemedi.",
+          language === "de"
+            ? "Kategoriereihenfolge konnte nicht gespeichert werden."
+            : "Kategori sırası kaydedilemedi.",
       },
       {
         status: 500,

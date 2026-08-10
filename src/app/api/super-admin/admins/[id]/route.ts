@@ -1,5 +1,6 @@
 import { verifySessionToken } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getRequestLanguage } from "@/lib/request-language";
 import { withTenant } from "@/lib/tenant";
 import { Prisma } from "@prisma/client";
 import { cookies } from "next/headers";
@@ -30,12 +31,14 @@ type RouteContext = {
 };
 
 export const PATCH = withTenant(async (request: NextRequest, context: RouteContext) => {
+  const language = await getRequestLanguage();
+
   const session = await getSuperAdminSession();
 
   if (!session) {
     return NextResponse.json(
       {
-        error: "Yetkisiz erişim.",
+        error: language === "de" ? "Unbefugter Zugriff." : "Yetkisiz erişim.",
       },
       {
         status: 403,
@@ -51,7 +54,10 @@ export const PATCH = withTenant(async (request: NextRequest, context: RouteConte
     if (typeof body.isActive !== "boolean") {
       return NextResponse.json(
         {
-          error: "Geçerli hesap durumu gönderilmedi.",
+          error:
+            language === "de"
+              ? "Es wurde kein gültiger Kontostatus übermittelt."
+              : "Geçerli hesap durumu gönderilmedi.",
         },
         {
           status: 400,
@@ -72,7 +78,10 @@ export const PATCH = withTenant(async (request: NextRequest, context: RouteConte
     if (!existingAdmin) {
       return NextResponse.json(
         {
-          error: "Admin hesabı bulunamadı.",
+          error:
+            language === "de"
+              ? "Admin-Konto nicht gefunden."
+              : "Admin hesabı bulunamadı.",
         },
         {
           status: 404,
@@ -149,9 +158,14 @@ export const PATCH = withTenant(async (request: NextRequest, context: RouteConte
     });
 
     return NextResponse.json({
-      message: body.isActive
-        ? "Admin hesabı tekrar açıldı."
-        : "Admin hesabı kapatıldı.",
+      message:
+        language === "de"
+          ? body.isActive
+            ? "Admin-Konto wurde wieder aktiviert."
+            : "Admin-Konto wurde deaktiviert."
+          : body.isActive
+            ? "Admin hesabı tekrar açıldı."
+            : "Admin hesabı kapatıldı.",
       admin,
     });
   } catch (error) {
@@ -159,7 +173,10 @@ export const PATCH = withTenant(async (request: NextRequest, context: RouteConte
 
     return NextResponse.json(
       {
-        error: "Admin hesap durumu değiştirilemedi.",
+        error:
+          language === "de"
+            ? "Admin-Kontostatus konnte nicht geändert werden."
+            : "Admin hesap durumu değiştirilemedi.",
       },
       {
         status: 500,
@@ -169,12 +186,14 @@ export const PATCH = withTenant(async (request: NextRequest, context: RouteConte
 });
 
 export const DELETE = withTenant(async (_request: NextRequest, context: RouteContext) => {
+  const language = await getRequestLanguage();
+
   const session = await getSuperAdminSession();
 
   if (!session) {
     return NextResponse.json(
       {
-        error: "Yetkisiz erişim.",
+        error: language === "de" ? "Unbefugter Zugriff." : "Yetkisiz erişim.",
       },
       {
         status: 403,
@@ -198,7 +217,10 @@ export const DELETE = withTenant(async (_request: NextRequest, context: RouteCon
     if (!existingAdmin) {
       return NextResponse.json(
         {
-          error: "Admin hesabı bulunamadı.",
+          error:
+            language === "de"
+              ? "Admin-Konto nicht gefunden."
+              : "Admin hesabı bulunamadı.",
         },
         {
           status: 404,
@@ -213,7 +235,10 @@ export const DELETE = withTenant(async (_request: NextRequest, context: RouteCon
     });
 
     return NextResponse.json({
-      message: "Admin hesabı kalıcı olarak silindi.",
+      message:
+        language === "de"
+          ? "Admin-Konto wurde endgültig gelöscht."
+          : "Admin hesabı kalıcı olarak silindi.",
     });
   } catch (error) {
     console.error("DELETE_ADMIN_ERROR", error);
@@ -225,7 +250,9 @@ export const DELETE = withTenant(async (_request: NextRequest, context: RouteCon
       return NextResponse.json(
         {
           error:
-            "Bu admin başka kayıtlarda kullanıldığı için kalıcı olarak silinemiyor. Bunun yerine hesabı kapatın.",
+            language === "de"
+              ? "Dieser Admin wird noch in anderen Datensätzen verwendet und kann nicht endgültig gelöscht werden. Deaktivieren Sie das Konto stattdessen."
+              : "Bu admin başka kayıtlarda kullanıldığı için kalıcı olarak silinemiyor. Bunun yerine hesabı kapatın.",
         },
         {
           status: 409,
@@ -235,7 +262,10 @@ export const DELETE = withTenant(async (_request: NextRequest, context: RouteCon
 
     return NextResponse.json(
       {
-        error: "Admin hesabı silinemedi.",
+        error:
+          language === "de"
+            ? "Admin-Konto konnte nicht gelöscht werden."
+            : "Admin hesabı silinemedi.",
       },
       {
         status: 500,

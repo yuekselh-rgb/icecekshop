@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { sendVerificationCode } from "@/lib/email";
+import { getRequestLanguage } from "@/lib/request-language";
 import { withTenant } from "@/lib/tenant";
 import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
@@ -9,12 +10,14 @@ function generateCode() {
 }
 
 export const POST = withTenant(async (request: NextRequest, _context, tenant) => {
+  const language = await getRequestLanguage();
+
   try {
     const { email } = await request.json();
 
     if (!email) {
       return NextResponse.json(
-        { error: "E-posta gerekli." },
+        { error: language === "de" ? "E-Mail-Adresse erforderlich." : "E-posta gerekli." },
         { status: 400 },
       );
     }
@@ -27,7 +30,12 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
 
     if (user && user.emailVerified) {
       return NextResponse.json(
-        { error: "Bu hesap zaten doğrulanmış." },
+        {
+          error:
+            language === "de"
+              ? "Dieses Konto ist bereits bestätigt."
+              : "Bu hesap zaten doğrulanmış.",
+        },
         { status: 400 },
       );
     }
@@ -66,7 +74,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     }
 
     return NextResponse.json({
-      message: "Bu e-posta adresine ait bir hesap varsa, yeni kod gönderildi.",
+      message:
+        language === "de"
+          ? "Falls zu dieser E-Mail-Adresse ein Konto existiert, wurde ein neuer Code gesendet."
+          : "Bu e-posta adresine ait bir hesap varsa, yeni kod gönderildi.",
     });
 
   } catch (error) {
@@ -74,7 +85,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
 
     return NextResponse.json(
       {
-        error: "Kod gönderilemedi.",
+        error:
+          language === "de"
+            ? "Code konnte nicht gesendet werden."
+            : "Kod gönderilemedi.",
       },
       {
         status: 500,

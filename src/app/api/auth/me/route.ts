@@ -1,15 +1,19 @@
 import { getSession } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
+import { getRequestLanguage } from "@/lib/request-language";
 import { withTenant } from "@/lib/tenant";
 import { NextResponse } from "next/server";
 
 export const GET = withTenant(async () => {
+  const language = await getRequestLanguage();
+
   const session = await getSession();
 
   if (!session) {
     return NextResponse.json(
       {
-        error: "Lütfen giriş yapın.",
+        error:
+          language === "de" ? "Bitte melden Sie sich an." : "Lütfen giriş yapın.",
       },
       {
         status: 401,
@@ -79,7 +83,8 @@ export const GET = withTenant(async () => {
   if (!user) {
     return NextResponse.json(
       {
-        error: "Kullanıcı bulunamadı.",
+        error:
+          language === "de" ? "Benutzer nicht gefunden." : "Kullanıcı bulunamadı.",
       },
       {
         status: 404,

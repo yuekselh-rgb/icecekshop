@@ -1,5 +1,6 @@
 import { requireAdminPermission } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
+import { getRequestLanguage } from "@/lib/request-language";
 import { withTenant } from "@/lib/tenant";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -40,12 +41,17 @@ export const POST = withTenant(async (
   },
   tenant,
 ) => {
+  const language = await getRequestLanguage();
+
   const admin = await requireAdminPermission("updateOrder");
 
   if (!admin) {
     return NextResponse.json(
       {
-        error: "Bayi Pfand girişini kaydetme yetkiniz yok.",
+        error:
+          language === "de"
+            ? "Sie sind nicht berechtigt, Pfandbuchungen für Händler zu erfassen."
+            : "Bayi Pfand girişini kaydetme yetkiniz yok.",
       },
       {
         status: 403,
@@ -76,7 +82,10 @@ export const POST = withTenant(async (
       ) {
         return NextResponse.json(
           {
-            error: "Pfand adetlerinden biri geçersiz.",
+            error:
+              language === "de"
+                ? "Eine der Pfand-Mengen ist ungültig."
+                : "Pfand adetlerinden biri geçersiz.",
           },
           {
             status: 400,
@@ -103,7 +112,10 @@ export const POST = withTenant(async (
     if (preparedItems.length === 0) {
       return NextResponse.json(
         {
-          error: "En az bir Pfand adedi girin.",
+          error:
+            language === "de"
+              ? "Geben Sie mindestens eine Pfand-Menge ein."
+              : "En az bir Pfand adedi girin.",
         },
         {
           status: 400,
@@ -162,7 +174,8 @@ export const POST = withTenant(async (
     if (!order) {
       return NextResponse.json(
         {
-          error: "Sipariş bulunamadı.",
+          error:
+            language === "de" ? "Bestellung nicht gefunden." : "Sipariş bulunamadı.",
         },
         {
           status: 404,
@@ -173,7 +186,10 @@ export const POST = withTenant(async (
     if (order.user.role !== "DEALER") {
       return NextResponse.json(
         {
-          error: "Bu işlem yalnızca bayi siparişlerinde kullanılabilir.",
+          error:
+            language === "de"
+              ? "Dieser Vorgang ist nur für Händlerbestellungen verfügbar."
+              : "Bu işlem yalnızca bayi siparişlerinde kullanılabilir.",
         },
         {
           status: 400,
@@ -188,7 +204,10 @@ export const POST = withTenant(async (
     if (existingWarehouseReturn) {
       return NextResponse.json(
         {
-          error: "Bu bayi siparişi için Pfand daha önce kaydedilmiş.",
+          error:
+            language === "de"
+              ? "Für diese Händlerbestellung wurde bereits Pfand erfasst."
+              : "Bu bayi siparişi için Pfand daha önce kaydedilmiş.",
         },
         {
           status: 409,
@@ -272,10 +291,16 @@ export const POST = withTenant(async (
 
     return NextResponse.json(
       {
-        message: `${approvedAmount.toLocaleString("de-DE", {
-          style: "currency",
-          currency: "EUR",
-        })} Pfand depoya kaydedildi ve sipariş hesabından düşüldü.`,
+        message:
+          language === "de"
+            ? `${approvedAmount.toLocaleString("de-DE", {
+                style: "currency",
+                currency: "EUR",
+              })} Pfand wurde im Lager erfasst und von der Bestellung abgezogen.`
+            : `${approvedAmount.toLocaleString("de-DE", {
+                style: "currency",
+                currency: "EUR",
+              })} Pfand depoya kaydedildi ve sipariş hesabından düşüldü.`,
 
         pfandReturn: {
           id: createdPfandReturn.id,
@@ -293,7 +318,10 @@ export const POST = withTenant(async (
 
     return NextResponse.json(
       {
-        error: "Bayi Pfand girişi kaydedilemedi.",
+        error:
+          language === "de"
+            ? "Die Pfand-Buchung für den Händler konnte nicht gespeichert werden."
+            : "Bayi Pfand girişi kaydedilemedi.",
       },
       {
         status: 500,

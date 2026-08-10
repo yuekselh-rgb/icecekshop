@@ -4,16 +4,22 @@ import {
   serializeAdminOrder,
 } from "@/lib/admin-order-serializer";
 import { prisma } from "@/lib/prisma";
+import { getRequestLanguage } from "@/lib/request-language";
 import { withTenant } from "@/lib/tenant";
 import { NextResponse } from "next/server";
 
 export const GET = withTenant(async () => {
+  const language = await getRequestLanguage();
+
   const admin = await requireAdminPermission("viewOrders");
 
   if (!admin) {
     return NextResponse.json(
       {
-        error: "Siparişleri görüntüleme yetkiniz yok.",
+        error:
+          language === "de"
+            ? "Sie sind nicht berechtigt, Bestellungen einzusehen."
+            : "Siparişleri görüntüleme yetkiniz yok.",
       },
       {
         status: 403,
@@ -42,7 +48,10 @@ export const GET = withTenant(async () => {
 
     return NextResponse.json(
       {
-        error: "Siparişler yüklenirken hata oluştu.",
+        error:
+          language === "de"
+            ? "Beim Laden der Bestellungen ist ein Fehler aufgetreten."
+            : "Siparişler yüklenirken hata oluştu.",
       },
       {
         status: 500,

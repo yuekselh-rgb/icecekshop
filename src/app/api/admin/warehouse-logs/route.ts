@@ -1,5 +1,6 @@
 import { getAdminWithPermissions } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
+import { getRequestLanguage } from "@/lib/request-language";
 import { withTenant } from "@/lib/tenant";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -9,12 +10,17 @@ function cleanOptional(value: unknown) {
 }
 
 export const GET = withTenant(async () => {
+  const language = await getRequestLanguage();
+
   const admin = await getAdminWithPermissions();
 
   if (!admin || (!admin.isSuperAdmin && !admin.permissions.viewStock)) {
     return NextResponse.json(
       {
-        error: "Depo kayıtlarını görüntüleme yetkiniz yok.",
+        error:
+          language === "de"
+            ? "Sie sind nicht berechtigt, Lagerprotokolle einzusehen."
+            : "Depo kayıtlarını görüntüleme yetkiniz yok.",
       },
       {
         status: 403,
@@ -56,7 +62,10 @@ export const GET = withTenant(async () => {
 
     return NextResponse.json(
       {
-        error: "Depo kayıtları yüklenemedi.",
+        error:
+          language === "de"
+            ? "Lagerprotokolle konnten nicht geladen werden."
+            : "Depo kayıtları yüklenemedi.",
       },
       {
         status: 500,
@@ -66,12 +75,17 @@ export const GET = withTenant(async () => {
 });
 
 export const POST = withTenant(async (request: NextRequest, _context, tenant) => {
+  const language = await getRequestLanguage();
+
   const admin = await getAdminWithPermissions();
 
   if (!admin || (!admin.isSuperAdmin && !admin.permissions.addStock)) {
     return NextResponse.json(
       {
-        error: "Depo kaydı oluşturma yetkiniz yok.",
+        error:
+          language === "de"
+            ? "Sie sind nicht berechtigt, Lagerprotokolle anzulegen."
+            : "Depo kaydı oluşturma yetkiniz yok.",
       },
       {
         status: 403,
@@ -104,7 +118,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     if (items.length === 0) {
       return NextResponse.json(
         {
-          error: "En az bir geçerli mal satırı eklemelisiniz.",
+          error:
+            language === "de"
+              ? "Sie müssen mindestens eine gültige Warenzeile hinzufügen."
+              : "En az bir geçerli mal satırı eklemelisiniz.",
         },
         {
           status: 400,
@@ -150,9 +167,13 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     return NextResponse.json(
       {
         message:
-          type === "IN"
-            ? "Mal giriş kaydı başarıyla oluşturuldu."
-            : "Mal çıkış kaydı başarıyla oluşturuldu.",
+          language === "de"
+            ? type === "IN"
+              ? "Wareneingang wurde erfolgreich erfasst."
+              : "Warenausgang wurde erfolgreich erfasst."
+            : type === "IN"
+              ? "Mal giriş kaydı başarıyla oluşturuldu."
+              : "Mal çıkış kaydı başarıyla oluşturuldu.",
 
         log: {
           ...log,
@@ -171,7 +192,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
 
     return NextResponse.json(
       {
-        error: "Depo kaydı oluşturulamadı.",
+        error:
+          language === "de"
+            ? "Lagerprotokoll konnte nicht angelegt werden."
+            : "Depo kaydı oluşturulamadı.",
       },
       {
         status: 500,

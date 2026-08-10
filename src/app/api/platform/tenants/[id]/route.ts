@@ -19,7 +19,7 @@ export async function PATCH(
   const session = await requirePlatformOwner();
 
   if (!session) {
-    return NextResponse.json({ error: "Yetkisiz erişim." }, { status: 403 });
+    return NextResponse.json({ error: "Nicht autorisiert." }, { status: 403 });
   }
 
   try {

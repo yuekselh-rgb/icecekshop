@@ -1,5 +1,6 @@
 import { requireAdminPermission } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
+import { getRequestLanguage } from "@/lib/request-language";
 import { withTenant } from "@/lib/tenant";
 import { NextResponse } from "next/server";
 
@@ -55,6 +56,8 @@ function parseAmount(
 }
 
 export const GET = withTenant(async () => {
+  const language = await getRequestLanguage();
+
   const admin =
     await requireAdminPermission(
       "viewBarSalesReport"
@@ -64,7 +67,9 @@ export const GET = withTenant(async () => {
     return NextResponse.json(
       {
         error:
-          "Bar satış raporunu görüntüleme yetkiniz yok.",
+          language === "de"
+            ? "Sie sind nicht berechtigt, den Barverkaufsbericht einzusehen."
+            : "Bar satış raporunu görüntüleme yetkiniz yok.",
       },
       {
         status: 403,
@@ -143,7 +148,10 @@ export const GET = withTenant(async () => {
           getNoteValue(
             order.customerNote,
             "Satışı yapan:"
-          ) || "Bilinmeyen personel";
+          ) ||
+          (language === "de"
+            ? "Unbekanntes Personal"
+            : "Bilinmeyen personel");
 
         const customerFullName = [
           order.user.firstName,
@@ -167,7 +175,7 @@ export const GET = withTenant(async () => {
           noteCustomerName ||
           (
             isGenericBarCustomer
-              ? "Bar müşterisi"
+              ? (language === "de" ? "Barkunde" : "Bar müşterisi")
               : (
                   order.user
                     .companyName ||
@@ -219,10 +227,10 @@ export const GET = withTenant(async () => {
 
         const paymentMethod =
           paymentMethodKey === "CASH"
-            ? "Nakit"
+            ? (language === "de" ? "Bar" : "Nakit")
             : paymentMethodKey === "CARD"
-              ? "Kart"
-              : "Açık Hesap";
+              ? (language === "de" ? "Karte" : "Kart")
+              : (language === "de" ? "Offene Rechnung" : "Açık Hesap");
 
         const notePfandReturn =
           parseAmount(
@@ -428,7 +436,9 @@ export const GET = withTenant(async () => {
     return NextResponse.json(
       {
         error:
-          "Bar satış raporu yüklenirken hata oluştu.",
+          language === "de"
+            ? "Beim Laden des Barverkaufsberichts ist ein Fehler aufgetreten."
+            : "Bar satış raporu yüklenirken hata oluştu.",
       },
       {
         status: 500,

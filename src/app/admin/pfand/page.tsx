@@ -388,11 +388,13 @@ export default function AdminPfandPage() {
           />
 
           <h1 className="mt-4 text-4xl font-black">
-            Pfand İade Yönetimi
+            {language === "de" ? "Pfand-Rückgabeverwaltung" : "Pfand İade Yönetimi"}
           </h1>
 
           <p className="mt-3 text-slate-400">
-            Şoförün müşteriden aldığı Pfandları depoya teslim alın ve stok hareketlerini yönetin.
+            {language === "de"
+              ? "Nehmen Sie die vom Fahrer beim Kunden eingesammelten Pfands ins Lager auf und verwalten Sie die Lagerbewegungen."
+              : "Şoförün müşteriden aldığı Pfandları depoya teslim alın ve stok hareketlerini yönetin."}
           </p>
         </section>
 
@@ -473,17 +475,21 @@ export default function AdminPfandPage() {
             <div className="border-t border-slate-200">
               {warehouseSummary.negativeStockCount > 0 ? (
                 <div className="m-5 rounded-2xl border border-red-200 bg-red-50 p-4 font-bold text-red-700">
-                  Dikkat:{" "}
+                  {language === "de" ? "Achtung:" : "Dikkat:"}{" "}
                   {
                     warehouseSummary.negativeStockCount
                   }{" "}
-                  Pfand türünde depo miktarı negatiftir. Giriş ve çıkış hareketlerini kontrol edin.
+                  {language === "de"
+                    ? "Pfand-Arten haben eine negative Lagermenge. Prüfen Sie die Ein- und Ausgangsbewegungen."
+                    : "Pfand türünde depo miktarı negatiftir. Giriş ve çıkış hareketlerini kontrol edin."}
                 </div>
               ) : null}
 
               {warehouseSummary.items.length === 0 ? (
                 <div className="p-6 text-slate-500">
-                  Depoda henüz kayıtlı Pfand bulunmuyor.
+                  {language === "de"
+                    ? "Im Lager ist noch kein Pfand erfasst."
+                    : "Depoda henüz kayıtlı Pfand bulunmuyor."}
                 </div>
               ) : (
                 <div className="overflow-x-auto">
@@ -963,13 +969,13 @@ export default function AdminPfandPage() {
 
                             <div>
                               <h3 className="font-black text-slate-950">
-                                Teslimat Bilgileri
+                                {language === "de" ? "Lieferinformationen" : "Teslimat Bilgileri"}
                               </h3>
 
                               <div className="mt-3 space-y-3 rounded-xl bg-white p-4 text-slate-600">
                                 <div>
                                   <p className="text-xs font-bold uppercase tracking-wide text-slate-400">
-                                    Müşteri
+                                    {language === "de" ? "Kunde" : "Müşteri"}
                                   </p>
 
                                   <p className="mt-1 font-bold text-slate-800">
@@ -990,7 +996,7 @@ export default function AdminPfandPage() {
 
                                 <div className="border-t border-slate-100 pt-3">
                                   <p className="text-xs font-bold uppercase tracking-wide text-slate-400">
-                                    Müşteriden Alan Şoför
+                                    {language === "de" ? "Fahrer, der es vom Kunden entgegengenommen hat" : "Müşteriden Alan Şoför"}
                                   </p>
 
                                   <p className="mt-1 font-bold text-slate-800">
@@ -1010,7 +1016,7 @@ export default function AdminPfandPage() {
                                 {pfandReturn.approvedBy ? (
                                   <div className="border-t border-slate-100 pt-3">
                                     <p className="text-xs font-bold uppercase tracking-wide text-slate-400">
-                                      Depoda Teslim Alan Admin
+                                      {language === "de" ? "Admin, der es im Lager entgegengenommen hat" : "Depoda Teslim Alan Admin"}
                                     </p>
 
                                     <p className="mt-1 font-bold text-slate-800">
@@ -1038,7 +1044,7 @@ export default function AdminPfandPage() {
                               {pfandReturn.note ? (
                                 <>
                                   <h3 className="mt-5 font-black text-slate-950">
-                                    Müşteri Notu
+                                    {language === "de" ? "Kundennotiz" : "Müşteri Notu"}
                                   </h3>
 
                                   <p className="mt-3 rounded-xl bg-white p-4 text-slate-600">

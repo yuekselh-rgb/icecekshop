@@ -291,7 +291,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
 
     return NextResponse.json(
       {
-        message: "Doğrulama kodu e-posta adresinize gönderildi.",
+        message:
+          language === "de"
+            ? "Der Bestätigungscode wurde an Ihre E-Mail-Adresse gesendet."
+            : "Doğrulama kodu e-posta adresinize gönderildi.",
         email: user.email,
       },
       {

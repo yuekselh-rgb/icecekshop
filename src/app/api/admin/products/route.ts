@@ -1,15 +1,21 @@
 import { requireAdminPermission } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
 import { withTenant } from "@/lib/tenant";
+import { getRequestLanguage } from "@/lib/request-language";
 import { NextRequest, NextResponse } from "next/server";
 
 export const GET = withTenant(async () => {
   const admin = await requireAdminPermission("viewProducts");
 
   if (!admin) {
+    const language = await getRequestLanguage();
+
     return NextResponse.json(
       {
-        error: "Bu işlem için yetkiniz yok.",
+        error:
+          language === "de"
+            ? "Sie sind für diese Aktion nicht berechtigt."
+            : "Bu işlem için yetkiniz yok.",
       },
       {
         status: 403,
@@ -58,10 +64,15 @@ return NextResponse.json({
 export const POST = withTenant(async (request: NextRequest, _context, tenant) => {
   const admin = await requireAdminPermission("createProduct");
 
+  const language = await getRequestLanguage();
+
   if (!admin) {
     return NextResponse.json(
       {
-        error: "Ürün ekleme yetkiniz yok.",
+        error:
+          language === "de"
+            ? "Sie sind nicht berechtigt, Produkte hinzuzufügen."
+            : "Ürün ekleme yetkiniz yok.",
       },
       {
         status: 403,
@@ -86,7 +97,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     if (!Number.isFinite(requestedPrice) || requestedPrice < 0) {
       return NextResponse.json(
         {
-          error: "Geçerli bir fiyat girin.",
+          error:
+            language === "de"
+              ? "Geben Sie einen gültigen Preis ein."
+              : "Geçerli bir fiyat girin.",
         },
         {
           status: 400,
@@ -97,7 +111,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     if (requestedOldPrice !== null && !Number.isFinite(requestedOldPrice)) {
       return NextResponse.json(
         {
-          error: "Geçerli bir kampanya öncesi fiyat girin.",
+          error:
+            language === "de"
+              ? "Geben Sie einen gültigen Preis vor dem Angebot ein."
+              : "Geçerli bir kampanya öncesi fiyat girin.",
         },
         {
           status: 400,
@@ -112,7 +129,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     ) {
       return NextResponse.json(
         {
-          error: "Kampanyalı ürün oluşturma yetkiniz yok.",
+          error:
+            language === "de"
+              ? "Sie sind nicht berechtigt, Angebotsprodukte zu erstellen."
+              : "Kampanyalı ürün oluşturma yetkiniz yok.",
         },
         {
           status: 403,
@@ -145,7 +165,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     ) {
       return NextResponse.json(
         {
-          error: "Türkçe ad, Almanca ad, slug, fiyat ve kategori zorunludur.",
+          error:
+            language === "de"
+              ? "Türkischer Name, deutscher Name, Slug, Preis und Kategorie sind erforderlich."
+              : "Türkçe ad, Almanca ad, slug, fiyat ve kategori zorunludur.",
         },
         {
           status: 400,
@@ -162,7 +185,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     if (existing) {
       return NextResponse.json(
         {
-          error: "Bu slug ile bir ürün zaten var.",
+          error:
+            language === "de"
+              ? "Ein Produkt mit diesem Slug existiert bereits."
+              : "Bu slug ile bir ürün zaten var.",
         },
         {
           status: 409,
@@ -179,7 +205,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     if (!category) {
       return NextResponse.json(
         {
-          error: "Seçilen kategori bulunamadı.",
+          error:
+            language === "de"
+              ? "Die ausgewählte Kategorie wurde nicht gefunden."
+              : "Seçilen kategori bulunamadı.",
         },
         {
           status: 404,
@@ -192,7 +221,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     if (!packageInfo) {
       return NextResponse.json(
         {
-          error: "Paket bilgisi zorunludur.",
+          error:
+            language === "de"
+              ? "Verpackungsinformation ist erforderlich."
+              : "Paket bilgisi zorunludur.",
         },
         {
           status: 400,
@@ -269,7 +301,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
 
     return NextResponse.json(
       {
-        message: "Ürün başarıyla eklendi.",
+        message:
+          language === "de"
+            ? "Produkt erfolgreich hinzugefügt."
+            : "Ürün başarıyla eklendi.",
         product,
       },
       {
@@ -281,7 +316,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
 
     return NextResponse.json(
       {
-        error: "Ürün oluşturulurken hata oluştu.",
+        error:
+          language === "de"
+            ? "Beim Erstellen des Produkts ist ein Fehler aufgetreten."
+            : "Ürün oluşturulurken hata oluştu.",
       },
       {
         status: 500,

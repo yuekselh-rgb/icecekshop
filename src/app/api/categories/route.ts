@@ -1,8 +1,11 @@
 import { prisma } from "@/lib/prisma";
+import { getRequestLanguage } from "@/lib/request-language";
 import { withTenant } from "@/lib/tenant";
 import { NextResponse } from "next/server";
 
 export const GET = withTenant(async () => {
+  const language = await getRequestLanguage();
+
   try {
     const categories = await prisma.category.findMany({
       orderBy: [
@@ -20,7 +23,10 @@ export const GET = withTenant(async () => {
 
     return NextResponse.json(
       {
-        error: "Kategoriler yüklenirken hata oluştu.",
+        error:
+          language === "de"
+            ? "Fehler beim Laden der Kategorien."
+            : "Kategoriler yüklenirken hata oluştu.",
       },
       {
         status: 500,

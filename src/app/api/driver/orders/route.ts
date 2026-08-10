@@ -1,6 +1,7 @@
 import { verifySessionToken } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { withTenant } from "@/lib/tenant";
+import { getRequestLanguage } from "@/lib/request-language";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
@@ -23,12 +24,13 @@ async function getDriverSession() {
 }
 
 export const GET = withTenant(async () => {
+  const language = await getRequestLanguage();
   const session = await getDriverSession();
 
   if (!session) {
     return NextResponse.json(
       {
-        error: "Yetkisiz erişim.",
+        error: language === "de" ? "Unbefugter Zugriff." : "Yetkisiz erişim.",
       },
       {
         status: 403,
@@ -239,7 +241,10 @@ export const GET = withTenant(async () => {
 
     return NextResponse.json(
       {
-        error: "Teslimatlar yüklenirken hata oluştu.",
+        error:
+          language === "de"
+            ? "Beim Laden der Lieferungen ist ein Fehler aufgetreten."
+            : "Teslimatlar yüklenirken hata oluştu.",
       },
       {
         status: 500,

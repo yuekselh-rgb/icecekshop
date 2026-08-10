@@ -1,9 +1,12 @@
 import { requireAdminPermission } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
+import { getRequestLanguage } from "@/lib/request-language";
 import { withTenant } from "@/lib/tenant";
 import { NextResponse } from "next/server";
 
 export const GET = withTenant(async () => {
+  const language = await getRequestLanguage();
+
   const admin =
     await requireAdminPermission(
       "viewOrders"
@@ -13,7 +16,9 @@ export const GET = withTenant(async () => {
     return NextResponse.json(
       {
         error:
-          "Personel listesini görüntüleme yetkiniz yok.",
+          language === "de"
+            ? "Sie sind nicht berechtigt, die Personalliste einzusehen."
+            : "Personel listesini görüntüleme yetkiniz yok.",
       },
       {
         status: 403,
@@ -80,7 +85,9 @@ export const GET = withTenant(async () => {
     return NextResponse.json(
       {
         error:
-          "Personel listesi yüklenirken hata oluştu.",
+          language === "de"
+            ? "Beim Laden der Personalliste ist ein Fehler aufgetreten."
+            : "Personel listesi yüklenirken hata oluştu.",
       },
       {
         status: 500,

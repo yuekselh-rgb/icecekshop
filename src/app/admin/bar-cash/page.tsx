@@ -107,12 +107,16 @@ type Permissions = {
   deleteBarCashMovement: boolean;
 };
 
-function getStockUnitLabel(code: string, stockUnits: StockUnitOption[]) {
+function getStockUnitLabel(
+  code: string,
+  stockUnits: StockUnitOption[],
+  language: "de" | "tr",
+) {
   const unit = stockUnits.find((item) => item.code === code);
+  const name = language === "de" ? unit?.nameDe : unit?.nameTr;
+  const locale = language === "de" ? "de-DE" : "tr-TR";
 
-  return (
-    unit?.nameTr.toLocaleLowerCase("tr-TR") || code.toLocaleLowerCase("tr-TR")
-  );
+  return (name || code).toLocaleLowerCase(locale);
 }
 
 
@@ -256,39 +260,67 @@ const categoryLabels: Record<string, string> =
           purchase: "Einkauf",
           piece: "Stück",
           pfand: "Pfand",
+
+          packagePurchasePrice: "Einkaufspreis der Verpackung",
+          packagePurchasePriceHint:
+            "Der Einkaufspreis einer Kiste, eines Kartons, eines Pakets oder eines Stücks beim Lieferanten.",
+          lineTotal: "Zeilensumme",
+          productSalePrice: "Verkaufspreis des Produkts",
+          productSalePriceHint: "Verkaufspreis ohne Pfand.",
+          pfandHint:
+            "Der Pfandbetrag, der zusätzlich zum Produktpreis berechnet wird.",
+          purchasePackageHint:
+            "Wählen Sie, wie Sie das Produkt vom Lieferanten einkaufen – als Kiste, Karton, Paket oder Stück.",
+          purchaseQuantityHint:
+            "Geben Sie die Anzahl der Kisten, Kartons, Pakete oder Stück ein, die Sie eingekauft haben.",
+          packageContentHint:
+            "Geben Sie an, wie viele Verkaufseinheiten in einer Einkaufsverpackung enthalten sind.",
+          salesUnitHint: "Wählen Sie, in welcher Einheit das Produkt verkauft wird.",
+          productLabel: "Produkt",
+          productCategory: "Produktkategorie",
+          editStockUnitTitle: "Einkaufs-/Verkaufseinheit bearbeiten",
+          addStockUnitTitle: "Neue Einkaufs-/Verkaufseinheit hinzufügen",
+          stockUnitFormHint:
+            "Sie können eine neue Einheit hinzufügen oder den türkischen und deutschen Namen einer vorhandenen Einheit ändern.",
+          addNewShort: "+ Neu hinzufügen",
+          edit: "Bearbeiten",
+          unitToEdit: "Zu bearbeitende Einheit",
+          stockUnitTechNote:
+            "Der technische Code wird nicht geändert. Bestehende Produkte und Kassenbuchungen bleiben verknüpft.",
+          crate: "Kiste",
         }
       : {
-          save: "Speichern",
-          companyName: "Firmenname",
-          description: "Beschreibung",
+          save: "Kaydet",
+          companyName: "Firma adı",
+          description: "Açıklama",
           amount: "Tutar (€)",
           invoiceOrDescription: "Fatura numarası veya açıklama",
-          cashMovements: "Kassenbewegungen",
-          goodsPurchase: "Wareneingang speichern und Lager aktualisieren",
-          companyNotSpecified: "Firma nicht angegeben",
-          selectProduct: "Produkt auswählen",
+          cashMovements: "Kasa Hareketleri",
+          goodsPurchase: "Mal girişini kaydet ve stoğu güncelle",
+          companyNotSpecified: "Firma belirtilmedi",
+          selectProduct: "Ürün seçin",
           selectCategoryFirst: "Önce kategori seçin",
 
           adminPanel: "Admin Paneli",
-          cashTitle: "Kasse",
+          cashTitle: "Kasa",
           cashDescription: "Nakit satışları, mal alımlarını, Pfand tahsilatlarını ve kasa giderlerini takip edin.",
-          totalIncome: "Gesamte Einnahmen",
-          totalExpense: "Gesamte Ausgaben",
+          totalIncome: "Toplam Gelir",
+          totalExpense: "Toplam Gider",
           currentBalance: "Güncel Bakiye",
-          newCashMovement: "Neue Kassenbewegung",
-          cashIn: "Geldeingang",
-          cashOut: "Geldausgang",
-          category: "Kategorie",
-          selectCategory: "Kategorie auswählen",
+          newCashMovement: "Yeni Kasa Hareketi",
+          cashIn: "Nakit Girişi",
+          cashOut: "Nakit Çıkışı",
+          category: "Kategori",
+          selectCategory: "Kategori seçin",
           noPermission: "Bu işlem için yetkiniz bulunmuyor.",
 
           supplier: "Firma",
-          selectSupplier: "Lieferant auswählen",
+          selectSupplier: "Firma seçin",
           selectOrCreateSupplier: "Kayıtlı firmayı seçin veya yeni firma oluşturun.",
           closeForm: "Formu kapat",
-          newSupplier: "+ Neuer Lieferant",
-          saveSupplier: "Lieferanten speichern",
-          newSupplierTitle: "Neuen Lieferanten anlegen",
+          newSupplier: "+ Yeni Firma",
+          saveSupplier: "Firmayı kaydet",
+          newSupplierTitle: "Yeni firma oluştur",
           contactPerson: "Yetkili kişi",
           phone: "Telefon",
           email: "E-posta",
@@ -298,11 +330,11 @@ const categoryLabels: Record<string, string> =
           city: "Şehir",
           country: "Ülke",
           taxNumber: "Vergi numarası",
-          customerNumber: "Kunden-/Firmennummer",
-          supplierNote: "Lieferantennotiz",
-          customerNo: "Kundennr.",
+          customerNumber: "Müşteri/Firma numarası",
+          supplierNote: "Firma notu",
+          customerNo: "Müşteri no",
 
-          newCategory: "+ Neue Kategorie",
+          newCategory: "+ Yeni Kategori",
           categoryNameTr: "Türkçe kategori adı",
           categoryNameDe: "Almanca kategori adı",
           saveCategory: "Kategori kaydet",
@@ -338,6 +370,31 @@ const categoryLabels: Record<string, string> =
           piece: "adet",
           pfand: "Pfand",
 
+          packagePurchasePrice: "Ambalaj alış fiyatı",
+          packagePurchasePriceHint:
+            "Bir kasa, karton, paket veya adedin firmadan alış fiyatıdır.",
+          lineTotal: "Satır toplamı",
+          productSalePrice: "Ürün satış fiyatı",
+          productSalePriceHint: "Pfand hariç satış fiyatıdır.",
+          pfandHint: "Ürün fiyatına ayrıca eklenecek depozito (Pfand) tutarıdır.",
+          purchasePackageHint:
+            "Ürünü tedarikçiden kasa, karton, paket veya adet olarak nasıl aldığınızı seçin.",
+          purchaseQuantityHint: "Kaç kasa, karton, paket veya adet aldığınızı girin.",
+          packageContentHint:
+            "Bir alış ambalajının içinde kaç satış birimi bulunduğunu girin.",
+          salesUnitHint: "Ürünün hangi birimle satılacağını seçin.",
+          productLabel: "Ürün",
+          productCategory: "Ürün kategorisi",
+          editStockUnitTitle: "Alış/Satış birimini düzenle",
+          addStockUnitTitle: "Yeni alış/satış birimi ekle",
+          stockUnitFormHint:
+            "Yeni bir birim ekleyebilir veya mevcut bir birimin Türkçe ve Almanca adını değiştirebilirsiniz.",
+          addNewShort: "+ Yeni ekle",
+          edit: "Düzenle",
+          unitToEdit: "Düzenlenecek birim",
+          stockUnitTechNote:
+            "Teknik kod değiştirilmez. Eski ürünler ve kasa kayıtları bağlı kalır.",
+          crate: "kasa",
         };
 
 
@@ -957,7 +1014,7 @@ const categoryLabels: Record<string, string> =
           className="inline-flex items-center gap-2 font-bold text-slate-600 hover:text-orange-500"
         >
           <ArrowLeft size={18} />
-          Admin Paneli
+          {t.adminPanel}
         </Link>
 
         <section className="mt-6 rounded-[32px] bg-slate-950 p-7 text-white sm:p-10">
@@ -1020,7 +1077,7 @@ const categoryLabels: Record<string, string> =
         <div className="mt-8 grid min-w-0 gap-6 xl:grid-cols-2">
           <section className="min-w-0 w-full rounded-[28px] bg-white p-5 shadow-sm lg:p-6">
             <h2 className="text-2xl font-black text-slate-950">
-              Neue Kassenbewegung
+              {t.newCashMovement}
             </h2>
 
             <div className="mt-5 grid gap-3 md:grid-cols-[1fr_1fr_1.4fr]">
@@ -1036,7 +1093,7 @@ const categoryLabels: Record<string, string> =
                     : "border-green-200 bg-white text-green-700 hover:bg-green-50"
                 }`}
               >
-                Geldeingang
+                {t.cashIn}
               </button>
 
               <button
@@ -1051,11 +1108,11 @@ const categoryLabels: Record<string, string> =
                     : "border-red-200 bg-white text-red-700 hover:bg-red-50"
                 }`}
               >
-                Geldausgang
+                {t.cashOut}
               </button>
 
               <label className="text-sm font-bold text-slate-600">
-                Kategorie
+                {t.category}
                 <select
                   required
                   value={category}
@@ -1072,7 +1129,7 @@ const categoryLabels: Record<string, string> =
                   ) : (
                     <>
                       <option value="SUPPLIER_PAYMENT">
-                        Tedarikçi Ödemesi
+                        {categoryLabels.SUPPLIER_PAYMENT}
                       </option>
                       <option value="GOODS_PURCHASE">{categoryLabels.GOODS_PURCHASE}</option>
                       <option value="FUEL">{categoryLabels.FUEL}</option>
@@ -1142,16 +1199,16 @@ const categoryLabels: Record<string, string> =
 
                           {selectedSupplier.contactName ? (
                             <p className="mt-1">
-                              Yetkili: {selectedSupplier.contactName}
+                              {t.contactPerson}: {selectedSupplier.contactName}
                             </p>
                           ) : null}
 
                           {selectedSupplier.phone ? (
-                            <p>Telefon: {selectedSupplier.phone}</p>
+                            <p>{t.phone}: {selectedSupplier.phone}</p>
                           ) : null}
 
                           {selectedSupplier.email ? (
-                            <p>E-posta: {selectedSupplier.email}</p>
+                            <p>{t.email}: {selectedSupplier.email}</p>
                           ) : null}
 
                           {selectedSupplier.street || selectedSupplier.city ? (
@@ -1305,7 +1362,7 @@ const categoryLabels: Record<string, string> =
                           >
                             <div className="flex items-center justify-between gap-3">
                               <p className="font-black text-slate-800">
-                                Produkt {index + 1}
+                                {t.productLabel} {index + 1}
                               </p>
 
                               <button
@@ -1321,7 +1378,7 @@ const categoryLabels: Record<string, string> =
                               <div>
                                 <div className="flex items-end justify-between gap-2">
                                   <label className="flex-1 text-xs font-bold text-slate-600">
-                                    Produktkategorie
+                                    {t.productCategory}
                                     <select
                                       required
                                       value={item.categoryId}
@@ -1393,13 +1450,13 @@ const categoryLabels: Record<string, string> =
                                       >
                                         <option value="DRINK">{t.drink}</option>
                                         <option value="PACKAGING">
-                                          Ambalaj
+                                          {t.packaging}
                                         </option>
                                         <option value="TAKEAWAY">
-                                          Take Away
+                                          {t.takeAway}
                                         </option>
                                         <option value="CLEANING">
-                                          Temizlik
+                                          {t.cleaning}
                                         </option>
                                         <option value="OTHER">{t.other}</option>
                                       </select>
@@ -1431,7 +1488,7 @@ const categoryLabels: Record<string, string> =
                               </div>
 
                               <label className="text-xs font-bold text-slate-600">
-                                Produkt
+                                {t.productLabel}
                                 <select
                                   required
                                   value={item.productId}
@@ -1463,10 +1520,11 @@ const categoryLabels: Record<string, string> =
                                         {product.nameTr ||
                                           product.nameDe ||
                                           product.name}{" "}
-                                        · Bestand: {product.stock}{" "}
+                                        · {t.stock}: {product.stock}{" "}
                                         {getStockUnitLabel(
                                           product.stockUnit,
                                           stockUnits,
+                                          language,
                                         )}
                                       </option>
                                     ))}
@@ -1480,6 +1538,7 @@ const categoryLabels: Record<string, string> =
                                 {getStockUnitLabel(
                                   selectedProduct.stockUnit,
                                   stockUnits,
+                                  language,
                                 )}
                                 {selectedProduct.packageInfo
                                   ? ` · Paket: ${selectedProduct.packageInfo}`
@@ -1529,14 +1588,12 @@ const categoryLabels: Record<string, string> =
                                     <div>
                                       <h4 className="font-black text-slate-900">
                                         {editingStockUnitId
-                                          ? "Einkaufs-/Verkaufseinheit bearbeiten"
-                                          : "Neue Einkaufs-/Verkaufseinheit hinzufügen"}
+                                          ? t.editStockUnitTitle
+                                          : t.addStockUnitTitle}
                                       </h4>
 
                                       <p className="mt-1 text-xs text-slate-500">
-                                        Sie können eine neue Einheit hinzufügen oder eine vorhandene
-                                        birimin Türkçe ve Almanca adını
-                                        değiştirebilirsiniz.
+                                        {t.stockUnitFormHint}
                                       </p>
                                     </div>
 
@@ -1553,7 +1610,7 @@ const categoryLabels: Record<string, string> =
                                             : "border border-orange-200 bg-white text-orange-600"
                                         }`}
                                       >
-                                        + Neu hinzufügen
+                                        {t.addNewShort}
                                       </button>
 
                                       <button
@@ -1581,7 +1638,7 @@ const categoryLabels: Record<string, string> =
                                             : "border border-slate-300 bg-white text-slate-700"
                                         }`}
                                       >
-                                        Düzenle
+                                        {t.edit}
                                       </button>
                                     </div>
                                   </div>
@@ -1589,7 +1646,7 @@ const categoryLabels: Record<string, string> =
                                   {editingStockUnitId ? (
                                     <label className="mt-4 block">
                                       <span className="text-xs font-black text-slate-700">
-                                        Düzenlenecek birim
+                                        {t.unitToEdit}
                                       </span>
 
                                       <select
@@ -1639,8 +1696,7 @@ const categoryLabels: Record<string, string> =
                                       </select>
 
                                       <p className="mt-1 text-[10px] font-medium text-slate-500">
-                                        Teknik kod değiştirilmez. Eski ürünler
-                                        ve kasa kayıtları bağlı kalır.
+                                        {t.stockUnitTechNote}
                                       </p>
                                     </label>
                                   ) : null}
@@ -1708,8 +1764,7 @@ const categoryLabels: Record<string, string> =
                                 <label className="text-xs font-bold text-slate-600">
                                   <span className="block">{t.purchasePackage}</span>
                                   <span className="mt-0.5 block text-[10px] font-medium leading-4 text-slate-400">
-                                    Produkt vom Lieferanten als Kiste, Karton, Paket oder Stück einkaufen
-                                    olarak nasıl aldığınızı seçin.
+                                    {t.purchasePackageHint}
                                   </span>
                                   <select
                                     required
@@ -1723,7 +1778,7 @@ const categoryLabels: Record<string, string> =
                                   >
                                     {stockUnits.map((unit) => (
                                       <option key={unit.id} value={unit.code}>
-                                        {unit.nameTr}
+                                        {language === "de" ? unit.nameDe : unit.nameTr}
                                       </option>
                                     ))}
                                   </select>
@@ -1732,8 +1787,7 @@ const categoryLabels: Record<string, string> =
                                 <label className="text-xs font-bold text-slate-600">
                                   <span className="block">{t.purchaseQuantity}</span>
                                   <span className="mt-0.5 block text-[10px] font-medium leading-4 text-slate-400">
-                                    Anzahl der Kisten, Kartons, Pakete oder Stück
-                                    aldığınızı girin.
+                                    {t.purchaseQuantityHint}
                                   </span>
                                   <input
                                     required
@@ -1759,8 +1813,7 @@ const categoryLabels: Record<string, string> =
                                 <label className="text-xs font-bold text-slate-600">
                                   <span className="block">{t.packageContent}</span>
                                   <span className="mt-0.5 block text-[10px] font-medium leading-4 text-slate-400">
-                                    Bir alış ambalajının içinde kaç satış birimi
-                                    bulunduğunu girin.
+                                    {t.packageContentHint}
                                   </span>
                                   <input
                                     required
@@ -1785,11 +1838,10 @@ const categoryLabels: Record<string, string> =
 
                                 <label className="text-xs font-bold text-slate-600">
                                   <span className="block">
-                                    Ambalaj alış fiyatı
+                                    {t.packagePurchasePrice}
                                   </span>
                                   <span className="mt-0.5 block text-[10px] font-medium leading-4 text-slate-400">
-                                    Bir kasa, karton, paket veya adedin firmadan
-                                    alış fiyatıdır.
+                                    {t.packagePurchasePriceHint}
                                   </span>
                                   <div className="relative mt-1">
                                     <input
@@ -1821,8 +1873,7 @@ const categoryLabels: Record<string, string> =
                                 <label className="text-xs font-bold text-slate-600">
                                   <span className="block">{t.salesUnit}</span>
                                   <span className="mt-0.5 block text-[10px] font-medium leading-4 text-slate-400">
-                                    Verkaufseinheit des Produkts
-                                    veya adet olarak nasıl satılacağını seçin.
+                                    {t.salesUnitHint}
                                   </span>
                                   <select
                                     required
@@ -1836,7 +1887,7 @@ const categoryLabels: Record<string, string> =
                                   >
                                     {stockUnits.map((unit) => (
                                       <option key={unit.id} value={unit.code}>
-                                        {unit.nameTr}
+                                        {language === "de" ? unit.nameDe : unit.nameTr}
                                       </option>
                                     ))}
                                   </select>
@@ -1844,11 +1895,10 @@ const categoryLabels: Record<string, string> =
 
                                 <label className="text-xs font-bold text-slate-600">
                                   <span className="block">
-                                    Produkt satış fiyatı
+                                    {t.productSalePrice}
                                   </span>
                                   <span className="mt-0.5 block text-[10px] font-medium leading-4 text-slate-400">
-                                    Verkaufspreis ohne Pfand
-                                    fiyatıdır.
+                                    {t.productSalePriceHint}
                                   </span>
                                   <div className="relative mt-1">
                                     <input
@@ -1880,8 +1930,7 @@ const categoryLabels: Record<string, string> =
                                 <label className="text-xs font-bold text-slate-600">
                                   <span className="block">{language === "de" ? "Pfand" : "Pfand"}</span>
                                   <span className="mt-0.5 block text-[10px] font-medium leading-4 text-slate-400">
-                                    Produkt fiyatına ayrıca eklenecek depozito
-                                    tutarıdır.
+                                    {t.pfandHint}
                                   </span>
                                   <div className="relative mt-1">
                                     <input
@@ -1912,10 +1961,10 @@ const categoryLabels: Record<string, string> =
 
                                 <div className="rounded-lg border border-slate-200 bg-white px-3 py-2.5">
                                   <p className="text-xs font-bold text-slate-500">
-                                    Satır toplamı
+                                    {t.lineTotal}
                                   </p>
                                   <p className="mt-0.5 text-[10px] font-medium leading-4 text-slate-400">
-                                    {t.purchaseQuantity} × ambalaj alış fiyatı.
+                                    {t.purchaseQuantity} × {t.packagePurchasePrice}.
                                   </p>
 
                                   <p className="mt-1 text-lg font-black text-slate-950">
@@ -1942,17 +1991,19 @@ const categoryLabels: Record<string, string> =
                                   {getStockUnitLabel(
                                     item.stockUnit,
                                     stockUnits,
+                                    language,
                                   )}
                                 </strong>
                               </p>
 
                               <p className="mt-1 font-bold text-slate-600">
-                                Einkauf:{" "}
+                                {t.purchase}:{" "}
                                 <strong className="text-slate-950">
                                   {item.packageCount}{" "}
                                   {getStockUnitLabel(
                                     item.purchaseUnit,
                                     stockUnits,
+                                    language,
                                   )}
                                 </strong>
                                 {" · "}{t.packageContent}:{" "}
@@ -1961,6 +2012,7 @@ const categoryLabels: Record<string, string> =
                                   {getStockUnitLabel(
                                     item.stockUnit,
                                     stockUnits,
+                                    language,
                                   )}
                                 </strong>
                               </p>

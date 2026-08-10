@@ -1,6 +1,7 @@
 import { verifySessionToken } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { withTenant } from "@/lib/tenant";
+import { getRequestLanguage } from "@/lib/request-language";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
@@ -38,12 +39,13 @@ type ProductStockSummary = {
 };
 
 export const GET = withTenant(async () => {
+  const language = await getRequestLanguage();
   const session = await getDriverSession();
 
   if (!session) {
     return NextResponse.json(
       {
-        error: "Yetkisiz erişim.",
+        error: language === "de" ? "Unbefugter Zugriff." : "Yetkisiz erişim.",
       },
       {
         status: 403,
@@ -372,7 +374,10 @@ export const GET = withTenant(async () => {
 
     return NextResponse.json(
       {
-        error: "Araç stok bilgileri yüklenemedi.",
+        error:
+          language === "de"
+            ? "Fahrzeugbestand konnte nicht geladen werden."
+            : "Araç stok bilgileri yüklenemedi.",
       },
       {
         status: 500,

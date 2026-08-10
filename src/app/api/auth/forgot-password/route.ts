@@ -1,10 +1,13 @@
 import { prisma } from "@/lib/prisma";
 import { sendPasswordResetCode } from "@/lib/email";
+import { getRequestLanguage } from "@/lib/request-language";
 import { withTenant } from "@/lib/tenant";
 import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 
 export const POST = withTenant(async (request: NextRequest, _context, tenant) => {
+  const language = await getRequestLanguage();
+
   try {
     const { email } = await request.json();
 
@@ -14,7 +17,12 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
 
     if (!normalizedEmail) {
       return NextResponse.json(
-        { error: "E-posta zorunludur." },
+        {
+          error:
+            language === "de"
+              ? "E-Mail ist erforderlich."
+              : "E-posta zorunludur.",
+        },
         { status: 400 },
       );
     }
@@ -66,14 +74,20 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     }
 
     return NextResponse.json({
-      message: "Bu e-posta adresine ait bir hesap varsa, kod gönderildi.",
+      message:
+        language === "de"
+          ? "Falls zu dieser E-Mail-Adresse ein Konto existiert, wurde ein Code gesendet."
+          : "Bu e-posta adresine ait bir hesap varsa, kod gönderildi.",
     });
   } catch (error) {
     console.error(error);
 
     return NextResponse.json(
       {
-        error: "Kod gönderilemedi.",
+        error:
+          language === "de"
+            ? "Code konnte nicht gesendet werden."
+            : "Kod gönderilemedi.",
       },
       {
         status: 500,

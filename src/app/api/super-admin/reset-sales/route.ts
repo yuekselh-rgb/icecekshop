@@ -1,5 +1,6 @@
 import { getAdminWithPermissions } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
+import { getRequestLanguage } from "@/lib/request-language";
 import { withTenant } from "@/lib/tenant";
 import { createEndOfPeriodPdf } from "@/lib/pdf/end-of-period-report";
 import { put } from "@vercel/blob";
@@ -8,12 +9,17 @@ import { NextRequest, NextResponse } from "next/server";
 const CONFIRM_TEXT = "NEHIR CAN";
 
 export const DELETE = withTenant(async (request: NextRequest) => {
+  const language = await getRequestLanguage();
+
   const admin = await getAdminWithPermissions();
 
   if (!admin || !admin.isSuperAdmin) {
     return NextResponse.json(
       {
-        error: "Bu işlem yalnızca Super Admin tarafından yapılabilir.",
+        error:
+          language === "de"
+            ? "Dieser Vorgang darf nur von einem Super-Admin durchgeführt werden."
+            : "Bu işlem yalnızca Super Admin tarafından yapılabilir.",
       },
       {
         status: 403,
@@ -29,7 +35,10 @@ export const DELETE = withTenant(async (request: NextRequest) => {
     if (confirmation !== CONFIRM_TEXT) {
       return NextResponse.json(
         {
-          error: "Onay metni hatalı. Devam etmek için NEHIR CAN yazın.",
+          error:
+            language === "de"
+              ? "Der Bestätigungstext ist falsch. Geben Sie NEHIR CAN ein, um fortzufahren."
+              : "Onay metni hatalı. Devam etmek için NEHIR CAN yazın.",
         },
         {
           status: 400,
@@ -195,7 +204,9 @@ export const DELETE = withTenant(async (request: NextRequest) => {
 
     return NextResponse.json({
       message:
-        "Bütün satışlar, kasa hareketleri, Pfand kayıtları ve şoför stok geçmişi kalıcı olarak silindi. Sistem yeni dönem için sıfırlandı.",
+        language === "de"
+          ? "Alle Verkäufe, Kassenbewegungen, Pfand-Datensätze und der Fahrer-Bestandsverlauf wurden endgültig gelöscht. Das System wurde für die neue Periode zurückgesetzt."
+          : "Bütün satışlar, kasa hareketleri, Pfand kayıtları ve şoför stok geçmişi kalıcı olarak silindi. Sistem yeni dönem için sıfırlandı.",
       result,
       reportUrl: reportBlob.url,
     });
@@ -205,7 +216,9 @@ export const DELETE = withTenant(async (request: NextRequest) => {
     return NextResponse.json(
       {
         error:
-          "Sistem sıfırlanamadı. Transaction iptal edildi ve hiçbir kayıt yarım silinmedi.",
+          language === "de"
+            ? "Das System konnte nicht zurückgesetzt werden. Die Transaktion wurde abgebrochen und keine Datensätze wurden teilweise gelöscht."
+            : "Sistem sıfırlanamadı. Transaction iptal edildi ve hiçbir kayıt yarım silinmedi.",
       },
       {
         status: 500,

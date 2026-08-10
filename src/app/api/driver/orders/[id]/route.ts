@@ -1,6 +1,7 @@
 import { verifySessionToken } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { withTenant } from "@/lib/tenant";
+import { getRequestLanguage } from "@/lib/request-language";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -31,12 +32,13 @@ export const PATCH = withTenant(async (
   },
   tenant,
 ) => {
+  const language = await getRequestLanguage();
   const session = await getDriverSession();
 
   if (!session) {
     return NextResponse.json(
       {
-        error: "Yetkisiz erişim.",
+        error: language === "de" ? "Unbefugter Zugriff." : "Yetkisiz erişim.",
       },
       {
         status: 403,
@@ -92,7 +94,10 @@ export const PATCH = withTenant(async (
     if (!order) {
       return NextResponse.json(
         {
-          error: "Sipariş bulunamadı veya bu sipariş size atanmadı.",
+          error:
+            language === "de"
+              ? "Bestellung nicht gefunden oder Ihnen nicht zugewiesen."
+              : "Sipariş bulunamadı veya bu sipariş size atanmadı.",
         },
         {
           status: 404,
@@ -108,7 +113,10 @@ export const PATCH = withTenant(async (
       ) {
         return NextResponse.json(
           {
-            error: "Bu sipariş şu anda teslimata çıkarılamaz.",
+            error:
+              language === "de"
+                ? "Diese Bestellung kann derzeit nicht ausgeliefert werden."
+                : "Bu sipariş şu anda teslimata çıkarılamaz.",
           },
           {
             status: 409,
@@ -159,7 +167,10 @@ export const PATCH = withTenant(async (
       });
 
       return NextResponse.json({
-        message: "Sipariş teslimata çıkarıldı.",
+        message:
+          language === "de"
+            ? "Bestellung wurde zur Auslieferung markiert."
+            : "Sipariş teslimata çıkarıldı.",
 
         order: serializeOrder(updated),
       });
@@ -176,7 +187,10 @@ export const PATCH = withTenant(async (
       if (order.paymentStatus === "PAID") {
         return NextResponse.json(
           {
-            error: "Bu ödeme daha önce admin tarafından onaylandı.",
+            error:
+              language === "de"
+                ? "Diese Zahlung wurde bereits vom Admin bestätigt."
+                : "Bu ödeme daha önce admin tarafından onaylandı.",
           },
           {
             status: 409,
@@ -242,7 +256,9 @@ export const PATCH = withTenant(async (
         return NextResponse.json(
           {
             error:
-              "Bu sipariş için zaten admin onayı bekleyen bir ödeme bildirimi bulunuyor.",
+              language === "de"
+                ? "Für diese Bestellung liegt bereits eine Zahlungsmeldung vor, die auf die Admin-Bestätigung wartet."
+                : "Bu sipariş için zaten admin onayı bekleyen bir ödeme bildirimi bulunuyor.",
           },
           {
             status: 409,
@@ -253,7 +269,10 @@ export const PATCH = withTenant(async (
       if (orderOpenAmount <= 0.009) {
         return NextResponse.json(
           {
-            error: "Bu siparişin açık hesabı kalmamıştır.",
+            error:
+              language === "de"
+                ? "Diese Bestellung hat keinen offenen Betrag mehr."
+                : "Bu siparişin açık hesabı kalmamıştır.",
           },
           {
             status: 409,
@@ -269,7 +288,10 @@ export const PATCH = withTenant(async (
       if (!Number.isFinite(collectedAmount) || collectedAmount <= 0) {
         return NextResponse.json(
           {
-            error: "Müşteriden alınan tutar sıfırdan büyük olmalıdır.",
+            error:
+              language === "de"
+                ? "Der vom Kunden erhaltene Betrag muss größer als null sein."
+                : "Müşteriden alınan tutar sıfırdan büyük olmalıdır.",
           },
           {
             status: 400,
@@ -281,11 +303,17 @@ export const PATCH = withTenant(async (
         return NextResponse.json(
           {
             error:
-              `Girilen tutar açık sipariş tutarından büyük olamaz. ` +
-              `En fazla ${orderOpenAmount.toLocaleString("de-DE", {
-                style: "currency",
-                currency: "EUR",
-              })} girebilirsiniz.`,
+              language === "de"
+                ? `Der eingegebene Betrag darf nicht höher als der offene Bestellbetrag sein. ` +
+                  `Sie können höchstens ${orderOpenAmount.toLocaleString("de-DE", {
+                    style: "currency",
+                    currency: "EUR",
+                  })} eingeben.`
+                : `Girilen tutar açık sipariş tutarından büyük olamaz. ` +
+                  `En fazla ${orderOpenAmount.toLocaleString("de-DE", {
+                    style: "currency",
+                    currency: "EUR",
+                  })} girebilirsiniz.`,
           },
           {
             status: 400,
@@ -385,14 +413,23 @@ export const PATCH = withTenant(async (
 
       return NextResponse.json({
         message:
-          `${collectedAmount.toLocaleString("de-DE", {
-            style: "currency",
-            currency: "EUR",
-          })} müşteriden alındı olarak bildirildi. ` +
-          `${remainingAmount.toLocaleString("de-DE", {
-            style: "currency",
-            currency: "EUR",
-          })} açık kalacak. Admin kasa onayı bekleniyor.`,
+          language === "de"
+            ? `${collectedAmount.toLocaleString("de-DE", {
+                style: "currency",
+                currency: "EUR",
+              })} als vom Kunden erhalten gemeldet. ` +
+              `${remainingAmount.toLocaleString("de-DE", {
+                style: "currency",
+                currency: "EUR",
+              })} bleiben offen. Admin-Kassenbestätigung ausstehend.`
+            : `${collectedAmount.toLocaleString("de-DE", {
+                style: "currency",
+                currency: "EUR",
+              })} müşteriden alındı olarak bildirildi. ` +
+              `${remainingAmount.toLocaleString("de-DE", {
+                style: "currency",
+                currency: "EUR",
+              })} açık kalacak. Admin kasa onayı bekleniyor.`,
 
         order: serializeOrder(updated),
       });
@@ -407,7 +444,9 @@ export const PATCH = withTenant(async (
         return NextResponse.json(
           {
             error:
-              "Admin tarafından onaylanmış ödeme şoför tarafından geri açılamaz.",
+              language === "de"
+                ? "Eine vom Admin bestätigte Zahlung kann vom Fahrer nicht wieder geöffnet werden."
+                : "Admin tarafından onaylanmış ödeme şoför tarafından geri açılamaz.",
           },
           {
             status: 409,
@@ -473,7 +512,10 @@ export const PATCH = withTenant(async (
       });
 
       return NextResponse.json({
-        message: "Şoför ödeme bildirimi geri alındı.",
+        message:
+          language === "de"
+            ? "Zahlungsmeldung des Fahrers wurde zurückgenommen."
+            : "Şoför ödeme bildirimi geri alındı.",
 
         order: serializeOrder(updated),
       });
@@ -522,7 +564,10 @@ export const PATCH = withTenant(async (
         ) {
           return NextResponse.json(
             {
-              error: "Pfand adetlerinden biri geçersiz.",
+              error:
+                language === "de"
+                  ? "Eine der Pfand-Mengen ist ungültig."
+                  : "Pfand adetlerinden biri geçersiz.",
             },
             {
               status: 400,
@@ -552,7 +597,10 @@ export const PATCH = withTenant(async (
       if (preparedItems.length === 0) {
         return NextResponse.json(
           {
-            error: "En az bir Pfand adedi girin.",
+            error:
+              language === "de"
+                ? "Geben Sie mindestens eine Pfand-Menge ein."
+                : "En az bir Pfand adedi girin.",
           },
           {
             status: 400,
@@ -563,7 +611,10 @@ export const PATCH = withTenant(async (
       if (order.pfandReturns.length > 0) {
         return NextResponse.json(
           {
-            error: "Bu sipariş için zaten bir Pfand kaydı bulunuyor.",
+            error:
+              language === "de"
+                ? "Für diese Bestellung besteht bereits ein Pfand-Eintrag."
+                : "Bu sipariş için zaten bir Pfand kaydı bulunuyor.",
           },
           {
             status: 409,
@@ -574,7 +625,10 @@ export const PATCH = withTenant(async (
       if (order.status === "DELIVERED") {
         return NextResponse.json(
           {
-            error: "Teslim edilmiş siparişe yeni Pfand eklenemez.",
+            error:
+              language === "de"
+                ? "Einer bereits ausgelieferten Bestellung kann kein neues Pfand hinzugefügt werden."
+                : "Teslim edilmiş siparişe yeni Pfand eklenemez.",
           },
           {
             status: 409,
@@ -675,10 +729,16 @@ export const PATCH = withTenant(async (
 
       return NextResponse.json(
         {
-          message: `${totalAmount.toLocaleString("de-DE", {
-            style: "currency",
-            currency: "EUR",
-          })} Pfand kaydedildi. Admin kontrolü bekleniyor.`,
+          message:
+            language === "de"
+              ? `${totalAmount.toLocaleString("de-DE", {
+                  style: "currency",
+                  currency: "EUR",
+                })} Pfand gespeichert. Admin-Prüfung ausstehend.`
+              : `${totalAmount.toLocaleString("de-DE", {
+                  style: "currency",
+                  currency: "EUR",
+                })} Pfand kaydedildi. Admin kontrolü bekleniyor.`,
 
           order: serializeOrder(updated),
         },
@@ -694,7 +754,10 @@ export const PATCH = withTenant(async (
       if (pfandItems.length === 0) {
         return NextResponse.json(
           {
-            error: "Pfand kalemleri eksik.",
+            error:
+              language === "de"
+                ? "Pfand-Positionen fehlen."
+                : "Pfand kalemleri eksik.",
           },
           {
             status: 400,
@@ -707,7 +770,10 @@ export const PATCH = withTenant(async (
       if (!latestPfandReturn) {
         return NextResponse.json(
           {
-            error: "Bu sipariş için Pfand iadesi bulunamadı.",
+            error:
+              language === "de"
+                ? "Für diese Bestellung wurde keine Pfand-Rückgabe gefunden."
+                : "Bu sipariş için Pfand iadesi bulunamadı.",
           },
           {
             status: 404,
@@ -723,7 +789,10 @@ export const PATCH = withTenant(async (
         if (!validItemIds.has(item.id)) {
           return NextResponse.json(
             {
-              error: "Geçersiz Pfand kalemi.",
+              error:
+                language === "de"
+                  ? "Ungültige Pfand-Position."
+                  : "Geçersiz Pfand kalemi.",
             },
             {
               status: 400,
@@ -736,7 +805,10 @@ export const PATCH = withTenant(async (
         if (!Number.isInteger(approvedQuantity) || approvedQuantity < 0) {
           return NextResponse.json(
             {
-              error: "Pfand miktarı geçersiz.",
+              error:
+                language === "de"
+                  ? "Ungültige Pfand-Menge."
+                  : "Pfand miktarı geçersiz.",
             },
             {
               status: 400,
@@ -847,7 +919,10 @@ export const PATCH = withTenant(async (
       });
 
       return NextResponse.json({
-        message: "Pfand miktarları kaydedildi.",
+        message:
+          language === "de"
+            ? "Pfand-Mengen wurden gespeichert."
+            : "Pfand miktarları kaydedildi.",
 
         order: serializeOrder(updated),
       });
@@ -857,7 +932,10 @@ export const PATCH = withTenant(async (
       if (order.status !== "OUT_FOR_DELIVERY") {
         return NextResponse.json(
           {
-            error: "Sipariş önce teslimata çıkarılmalıdır.",
+            error:
+              language === "de"
+                ? "Die Bestellung muss zuerst zur Auslieferung markiert werden."
+                : "Sipariş önce teslimata çıkarılmalıdır.",
           },
           {
             status: 409,
@@ -959,7 +1037,10 @@ export const PATCH = withTenant(async (
       });
 
       return NextResponse.json({
-        message: "Sipariş teslim edildi olarak işaretlendi.",
+        message:
+          language === "de"
+            ? "Bestellung wurde als ausgeliefert markiert."
+            : "Sipariş teslim edildi olarak işaretlendi.",
 
         order: serializeOrder(updated),
       });
@@ -967,7 +1048,7 @@ export const PATCH = withTenant(async (
 
     return NextResponse.json(
       {
-        error: "Geçersiz işlem.",
+        error: language === "de" ? "Ungültige Aktion." : "Geçersiz işlem.",
       },
       {
         status: 400,
@@ -978,7 +1059,10 @@ export const PATCH = withTenant(async (
 
     return NextResponse.json(
       {
-        error: "Sipariş güncellenirken hata oluştu.",
+        error:
+          language === "de"
+            ? "Beim Aktualisieren der Bestellung ist ein Fehler aufgetreten."
+            : "Sipariş güncellenirken hata oluştu.",
       },
       {
         status: 500,

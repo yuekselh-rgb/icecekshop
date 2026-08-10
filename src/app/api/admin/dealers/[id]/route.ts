@@ -1,6 +1,7 @@
 import { getAdminWithPermissions } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
 import { withTenant } from "@/lib/tenant";
+import { getRequestLanguage } from "@/lib/request-language";
 import { NextRequest, NextResponse } from "next/server";
 
 function nullableText(value: unknown) {
@@ -17,12 +18,16 @@ export const PATCH = withTenant(async (
     }>;
   },
 ) => {
+  const language = await getRequestLanguage();
   const admin = await getAdminWithPermissions();
 
   if (!admin || (!admin.isSuperAdmin && !admin.permissions.updateDealer)) {
     return NextResponse.json(
       {
-        error: "Bayi bilgilerini düzenleme yetkiniz yok.",
+        error:
+          language === "de"
+            ? "Sie haben keine Berechtigung, Händlerdaten zu bearbeiten."
+            : "Bayi bilgilerini düzenleme yetkiniz yok.",
       },
       {
         status: 403,
@@ -57,7 +62,7 @@ export const PATCH = withTenant(async (
     if (!existingDealer || !existingDealer.dealerProfile) {
       return NextResponse.json(
         {
-          error: "Bayi bulunamadı.",
+          error: language === "de" ? "Händler nicht gefunden." : "Bayi bulunamadı.",
         },
         {
           status: 404,
@@ -89,7 +94,10 @@ export const PATCH = withTenant(async (
     if (!dealerNumber) {
       return NextResponse.json(
         {
-          error: "Bayi numarası zorunludur.",
+          error:
+            language === "de"
+              ? "Händlernummer ist erforderlich."
+              : "Bayi numarası zorunludur.",
         },
         {
           status: 400,
@@ -100,7 +108,10 @@ export const PATCH = withTenant(async (
     if (!companyName) {
       return NextResponse.json(
         {
-          error: "Firma adı zorunludur.",
+          error:
+            language === "de"
+              ? "Firmenname ist erforderlich."
+              : "Firma adı zorunludur.",
         },
         {
           status: 400,
@@ -111,7 +122,10 @@ export const PATCH = withTenant(async (
     if (!email) {
       return NextResponse.json(
         {
-          error: "E-posta adresi zorunludur.",
+          error:
+            language === "de"
+              ? "E-Mail-Adresse ist erforderlich."
+              : "E-posta adresi zorunludur.",
         },
         {
           status: 400,
@@ -122,7 +136,10 @@ export const PATCH = withTenant(async (
     if (!Number.isFinite(creditLimit) || creditLimit < 0) {
       return NextResponse.json(
         {
-          error: "Geçerli bir kredi limiti girin.",
+          error:
+            language === "de"
+              ? "Bitte geben Sie ein gültiges Kreditlimit ein."
+              : "Geçerli bir kredi limiti girin.",
         },
         {
           status: 400,
@@ -163,7 +180,10 @@ export const PATCH = withTenant(async (
     if (emailOwner) {
       return NextResponse.json(
         {
-          error: "Bu e-posta adresi başka bir hesap tarafından kullanılıyor.",
+          error:
+            language === "de"
+              ? "Diese E-Mail-Adresse wird bereits von einem anderen Konto verwendet."
+              : "Bu e-posta adresi başka bir hesap tarafından kullanılıyor.",
         },
         {
           status: 409,
@@ -174,7 +194,10 @@ export const PATCH = withTenant(async (
     if (dealerNumberOwner) {
       return NextResponse.json(
         {
-          error: "Bu bayi numarası başka bir bayi tarafından kullanılıyor.",
+          error:
+            language === "de"
+              ? "Diese Händlernummer wird bereits von einem anderen Händler verwendet."
+              : "Bu bayi numarası başka bir bayi tarafından kullanılıyor.",
         },
         {
           status: 409,
@@ -254,7 +277,10 @@ export const PATCH = withTenant(async (
     if (!dealer) {
       return NextResponse.json(
         {
-          error: "Bayi güncellendikten sonra yüklenemedi.",
+          error:
+            language === "de"
+              ? "Händler konnte nach der Aktualisierung nicht geladen werden."
+              : "Bayi güncellendikten sonra yüklenemedi.",
         },
         {
           status: 500,
@@ -263,7 +289,10 @@ export const PATCH = withTenant(async (
     }
 
     return NextResponse.json({
-      message: "Bayi bilgileri başarıyla güncellendi.",
+      message:
+        language === "de"
+          ? "Händlerdaten erfolgreich aktualisiert."
+          : "Bayi bilgileri başarıyla güncellendi.",
 
       dealer: {
         ...dealer,
@@ -284,7 +313,10 @@ export const PATCH = withTenant(async (
 
     return NextResponse.json(
       {
-        error: "Bayi bilgileri güncellenemedi.",
+        error:
+          language === "de"
+            ? "Händlerdaten konnten nicht aktualisiert werden."
+            : "Bayi bilgileri güncellenemedi.",
       },
       {
         status: 500,

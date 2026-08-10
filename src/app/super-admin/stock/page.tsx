@@ -217,6 +217,8 @@ export default function SuperAdminStockPage() {
   const t =
     language === "de"
       ? {
+          backLink:
+            "Super-Admin",
           loadError:
             "Bestandsdaten konnten nicht geladen werden.",
           invalidPurchasePrice:
@@ -341,6 +343,8 @@ export default function SuperAdminStockPage() {
             "Buchung speichern",
         }
       : {
+          backLink:
+            "Süper Admin",
           loadError:
             "Stok bilgileri yüklenemedi.",
           invalidPurchasePrice:
@@ -985,7 +989,7 @@ export default function SuperAdminStockPage() {
           <ArrowLeft
             size={18}
           />
-          Super Admin
+          {t.backLink}
         </Link>
 
         <section className="mt-6 rounded-[32px] bg-slate-950 p-7 text-white sm:p-10">

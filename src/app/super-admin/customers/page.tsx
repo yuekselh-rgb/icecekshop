@@ -92,22 +92,38 @@ export default function MusterilerPage() {
       orientation: "landscape",
     });
 
+    const pdfTitle = language === "de" ? "Kunden" : "Musteriler";
+
     pdf.setFontSize(18);
-    pdf.text("Musteriler", 14, 16);
+    pdf.text(pdfTitle, 14, 16);
 
     autoTable(pdf, {
       startY: 24,
-      head: [[
-        "Musteri",
-        "Telefon",
-        "Toplam",
-        "Acik Cari",
-        "Tahsil",
-        "Siparis",
-        "Bekleyen",
-        "Pfand",
-        "Son Siparis",
-      ]],
+      head: [
+        language === "de"
+          ? [
+              "Kunde",
+              "Telefon",
+              "Gesamt",
+              "Offener Saldo",
+              "Eingezogen",
+              "Bestellungen",
+              "Ausstehend",
+              "Pfand",
+              "Letzte Bestellung",
+            ]
+          : [
+              "Musteri",
+              "Telefon",
+              "Toplam",
+              "Acik Cari",
+              "Tahsil",
+              "Siparis",
+              "Bekleyen",
+              "Pfand",
+              "Son Siparis",
+            ],
+      ],
       body: customers.map((c) => [
         c.companyName || `${c.firstName ?? ""} ${c.lastName ?? ""}`,
         c.phone ?? "",
@@ -129,7 +145,7 @@ export default function MusterilerPage() {
       },
     });
 
-    pdf.save("Musteriler.pdf");
+    pdf.save(`${pdfTitle}.pdf`);
   }
 
   if (loading) {

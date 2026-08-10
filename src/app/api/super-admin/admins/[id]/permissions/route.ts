@@ -1,5 +1,6 @@
 import { verifySessionToken } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getRequestLanguage } from "@/lib/request-language";
 import { withTenant } from "@/lib/tenant";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
@@ -70,10 +71,15 @@ export const GET = withTenant(async (
     params: Promise<{ id: string }>;
   },
 ) => {
+  const language = await getRequestLanguage();
+
   const session = await requireSuperAdmin();
 
   if (!session) {
-    return NextResponse.json({ error: "Yetkisiz erişim." }, { status: 403 });
+    return NextResponse.json(
+      { error: language === "de" ? "Unbefugter Zugriff." : "Yetkisiz erişim." },
+      { status: 403 },
+    );
   }
 
   const { id } = await context.params;
@@ -93,7 +99,10 @@ export const GET = withTenant(async (
   });
 
   if (!admin) {
-    return NextResponse.json({ error: "Admin bulunamadı." }, { status: 404 });
+    return NextResponse.json(
+      { error: language === "de" ? "Admin nicht gefunden." : "Admin bulunamadı." },
+      { status: 404 },
+    );
   }
 
   return NextResponse.json({ admin });
@@ -105,10 +114,15 @@ export const PATCH = withTenant(async (
     params: Promise<{ id: string }>;
   },
 ) => {
+  const language = await getRequestLanguage();
+
   const session = await requireSuperAdmin();
 
   if (!session) {
-    return NextResponse.json({ error: "Yetkisiz erişim." }, { status: 403 });
+    return NextResponse.json(
+      { error: language === "de" ? "Unbefugter Zugriff." : "Yetkisiz erişim." },
+      { status: 403 },
+    );
   }
 
   const { id } = await context.params;
@@ -125,7 +139,10 @@ export const PATCH = withTenant(async (
   });
 
   if (!admin) {
-    return NextResponse.json({ error: "Admin bulunamadı." }, { status: 404 });
+    return NextResponse.json(
+      { error: language === "de" ? "Admin nicht gefunden." : "Admin bulunamadı." },
+      { status: 404 },
+    );
   }
 
   const data: Partial<Record<PermissionName, boolean>> = {};
@@ -138,7 +155,12 @@ export const PATCH = withTenant(async (
 
   if (Object.keys(data).length === 0) {
     return NextResponse.json(
-      { error: "Güncellenecek geçerli yetki bulunamadı." },
+      {
+        error:
+          language === "de"
+            ? "Keine gültige Berechtigung zum Aktualisieren gefunden."
+            : "Güncellenecek geçerli yetki bulunamadı.",
+      },
       { status: 400 },
     );
   }
@@ -245,7 +267,10 @@ export const PATCH = withTenant(async (
   });
 
   return NextResponse.json({
-    message: "Admin yetkileri güncellendi.",
+    message:
+      language === "de"
+        ? "Admin-Berechtigungen wurden aktualisiert."
+        : "Admin yetkileri güncellendi.",
     permissions,
   });
 });

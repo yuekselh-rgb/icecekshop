@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getRequestLanguage } from "@/lib/request-language";
 import { withTenant } from "@/lib/tenant";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -10,6 +11,8 @@ export const GET = withTenant(async (
     }>;
   },
 ) => {
+  const language = await getRequestLanguage();
+
   try {
     const { id } = await context.params;
 
@@ -26,7 +29,8 @@ export const GET = withTenant(async (
     if (!product) {
       return NextResponse.json(
         {
-          error: "Ürün bulunamadı.",
+          error:
+            language === "de" ? "Produkt nicht gefunden." : "Ürün bulunamadı.",
         },
         {
           status: 404,

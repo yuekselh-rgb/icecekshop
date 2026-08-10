@@ -1,5 +1,6 @@
 import { requireAdminPermission } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
+import { getRequestLanguage } from "@/lib/request-language";
 import { withTenant } from "@/lib/tenant";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -136,12 +137,16 @@ function serializeLoad(load: {
 }
 
 export const GET = withTenant(async (request: NextRequest) => {
+  const language = await getRequestLanguage();
   const admin = await requireAdminPermission("viewDriverStock");
 
   if (!admin) {
     return NextResponse.json(
       {
-        error: "Şoför stoklarını görüntüleme yetkiniz yok.",
+        error:
+          language === "de"
+            ? "Sie haben keine Berechtigung, Fahrerbestände einzusehen."
+            : "Şoför stoklarını görüntüleme yetkiniz yok.",
       },
       {
         status: 403,
@@ -869,7 +874,10 @@ export const GET = withTenant(async (request: NextRequest) => {
 
     return NextResponse.json(
       {
-        error: "Şoför stok bilgileri yüklenemedi.",
+        error:
+          language === "de"
+            ? "Fahrerbestandsdaten konnten nicht geladen werden."
+            : "Şoför stok bilgileri yüklenemedi.",
       },
       {
         status: 500,
@@ -879,12 +887,16 @@ export const GET = withTenant(async (request: NextRequest) => {
 });
 
 export const POST = withTenant(async (request: NextRequest, _context, tenant) => {
+  const language = await getRequestLanguage();
   const admin = await requireAdminPermission("manageDriverStock");
 
   if (!admin) {
     return NextResponse.json(
       {
-        error: "Şoföre stok yükleme yetkiniz yok.",
+        error:
+          language === "de"
+            ? "Sie haben keine Berechtigung, den Fahrer zu beladen."
+            : "Şoföre stok yükleme yetkiniz yok.",
       },
       {
         status: 403,
@@ -917,7 +929,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     if (!driverId) {
       return NextResponse.json(
         {
-          error: "Şoför seçmelisiniz.",
+          error:
+            language === "de"
+              ? "Sie müssen einen Fahrer auswählen."
+              : "Şoför seçmelisiniz.",
         },
         {
           status: 400,
@@ -931,11 +946,17 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
       return NextResponse.json(
         {
           error:
-            action === "COUNT_RETURN"
-              ? "Onaylanacak en az bir ürün sayımı girin."
-              : action === "RETURN"
-                ? "İade alınacak en az bir ürün ve miktar girin."
-                : "Yüklenecek en az bir ürün ve miktar girin.",
+            language === "de"
+              ? action === "COUNT_RETURN"
+                ? "Geben Sie mindestens eine zu bestätigende Produktzählung ein."
+                : action === "RETURN"
+                  ? "Geben Sie mindestens ein zurückzunehmendes Produkt mit Menge ein."
+                  : "Geben Sie mindestens ein zu ladendes Produkt mit Menge ein."
+              : action === "COUNT_RETURN"
+                ? "Onaylanacak en az bir ürün sayımı girin."
+                : action === "RETURN"
+                  ? "İade alınacak en az bir ürün ve miktar girin."
+                  : "Yüklenecek en az bir ürün ve miktar girin.",
         },
         {
           status: 400,
@@ -961,7 +982,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     if (!driver) {
       return NextResponse.json(
         {
-          error: "Seçilen aktif şoför bulunamadı.",
+          error:
+            language === "de"
+              ? "Der ausgewählte aktive Fahrer wurde nicht gefunden."
+              : "Seçilen aktif şoför bulunamadı.",
         },
         {
           status: 404,
@@ -1002,11 +1026,17 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
       return NextResponse.json(
         {
           error:
-            action === "COUNT_RETURN"
-              ? "Araç sayımındaki bazı ürünler bulunamadı."
-              : action === "RETURN"
-                ? "İade listesindeki bazı ürünler bulunamadı."
-                : "Yükleme listesindeki bazı ürünler bulunamadı veya satışa kapalı.",
+            language === "de"
+              ? action === "COUNT_RETURN"
+                ? "Einige Produkte aus der Fahrzeugzählung wurden nicht gefunden."
+                : action === "RETURN"
+                  ? "Einige Produkte aus der Rückgabeliste wurden nicht gefunden."
+                  : "Einige Produkte aus der Ladeliste wurden nicht gefunden oder sind nicht verkaufbar."
+              : action === "COUNT_RETURN"
+                ? "Araç sayımındaki bazı ürünler bulunamadı."
+                : action === "RETURN"
+                  ? "İade listesindeki bazı ürünler bulunamadı."
+                  : "Yükleme listesindeki bazı ürünler bulunamadı veya satışa kapalı.",
         },
         {
           status: 409,
@@ -1054,7 +1084,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
         if (!product || expectedQuantity === undefined) {
           return NextResponse.json(
             {
-              error: "Sayımı yapılacak araç stoku bulunamadı.",
+              error:
+                language === "de"
+                  ? "Der zu zählende Fahrzeugbestand wurde nicht gefunden."
+                  : "Sayımı yapılacak araç stoku bulunamadı.",
             },
             {
               status: 404,
@@ -1068,9 +1101,13 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
           return NextResponse.json(
             {
               error:
-                `${productName} için geri gelen miktar araç stokundan fazla. ` +
-                `Araçta beklenen: ${expectedQuantity}, ` +
-                `geri gelen: ${item.returnedQuantity}.`,
+                language === "de"
+                  ? `Die zurückgemeldete Menge für ${productName} übersteigt den Fahrzeugbestand. ` +
+                    `Im Fahrzeug erwartet: ${expectedQuantity}, ` +
+                    `zurückgemeldet: ${item.returnedQuantity}.`
+                  : `${productName} için geri gelen miktar araç stokundan fazla. ` +
+                    `Araçta beklenen: ${expectedQuantity}, ` +
+                    `geri gelen: ${item.returnedQuantity}.`,
             },
             {
               status: 409,
@@ -1200,11 +1237,17 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
 
       return NextResponse.json({
         message:
-          `${countItems.length} ürün sayımı onaylandı. ` +
-          `${result.totalReturnedQuantity} ürün depoya geri alındı` +
-          (result.totalMissingQuantity > 0
-            ? `, ${result.totalMissingQuantity} ürün eksik kaydedildi.`
-            : ", eksik bulunmadı."),
+          language === "de"
+            ? `${countItems.length} Produktzählungen bestätigt. ` +
+              `${result.totalReturnedQuantity} Produkte ins Lager zurückgenommen` +
+              (result.totalMissingQuantity > 0
+                ? `, ${result.totalMissingQuantity} Produkte als fehlend erfasst.`
+                : ", kein Fehlbestand.")
+            : `${countItems.length} ürün sayımı onaylandı. ` +
+              `${result.totalReturnedQuantity} ürün depoya geri alındı` +
+              (result.totalMissingQuantity > 0
+                ? `, ${result.totalMissingQuantity} ürün eksik kaydedildi.`
+                : ", eksik bulunmadı."),
 
         approvedCount: countItems.length,
         totalReturnedQuantity: result.totalReturnedQuantity,
@@ -1246,7 +1289,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
         if (!product) {
           return NextResponse.json(
             {
-              error: "İade alınacak ürün bulunamadı.",
+              error:
+                language === "de"
+                  ? "Das zurückzunehmende Produkt wurde nicht gefunden."
+                  : "İade alınacak ürün bulunamadı.",
             },
             {
               status: 404,
@@ -1263,8 +1309,11 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
           return NextResponse.json(
             {
               error:
-                `${productName} için şoförde yeterli ürün bulunmuyor. ` +
-                `Şoförde: ${currentDriverQuantity}, iade: ${item.quantity}.`,
+                language === "de"
+                  ? `Der Fahrer hat nicht genügend ${productName} auf Lager. ` +
+                    `Beim Fahrer: ${currentDriverQuantity}, Rückgabe: ${item.quantity}.`
+                  : `${productName} için şoförde yeterli ürün bulunmuyor. ` +
+                    `Şoförde: ${currentDriverQuantity}, iade: ${item.quantity}.`,
             },
             {
               status: 409,
@@ -1374,7 +1423,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
       });
 
       return NextResponse.json({
-        message: "Ürünler şoförden geri alındı ve ana depo stokuna eklendi.",
+        message:
+          language === "de"
+            ? "Produkte wurden vom Fahrer zurückgenommen und dem Hauptlager hinzugefügt."
+            : "Ürünler şoförden geri alındı ve ana depo stokuna eklendi.",
       });
     }
 
@@ -1384,7 +1436,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
       if (!product) {
         return NextResponse.json(
           {
-            error: "Ürün bulunamadı.",
+            error:
+              language === "de"
+                ? "Produkt nicht gefunden."
+                : "Ürün bulunamadı.",
           },
           {
             status: 404,
@@ -1570,7 +1625,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
 
     return NextResponse.json(
       {
-        message: "Ürünler şoför stokuna başarıyla yüklendi.",
+        message:
+          language === "de"
+            ? "Produkte wurden erfolgreich auf den Fahrer geladen."
+            : "Ürünler şoför stokuna başarıyla yüklendi.",
         load: serializeLoad(load),
       },
       {
@@ -1623,7 +1681,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
 
     return NextResponse.json(
       {
-        error: "Şoför stok yüklemesi gerçekleştirilemedi.",
+        error:
+          language === "de"
+            ? "Fahrzeugbeladung konnte nicht durchgeführt werden."
+            : "Şoför stok yüklemesi gerçekleştirilemedi.",
       },
       {
         status: 500,

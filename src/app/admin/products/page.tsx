@@ -122,12 +122,33 @@ const emptyCategoryForm = {
   type: "OTHER" as CategoryType,
 };
 
-const categoryTypeLabels: Record<CategoryType, string> = {
-  DRINK: "İçecek",
-  PACKAGING: "Ambalaj",
-  TAKEAWAY: "Take Away",
-  CLEANING: "Temizlik",
-  OTHER: "Diğer",
+const categoryTypeLabels: Record<
+  CategoryType,
+  {
+    de: string;
+    tr: string;
+  }
+> = {
+  DRINK: {
+    de: "Getränk",
+    tr: "İçecek",
+  },
+  PACKAGING: {
+    de: "Verpackung",
+    tr: "Ambalaj",
+  },
+  TAKEAWAY: {
+    de: "Take Away",
+    tr: "Take Away",
+  },
+  CLEANING: {
+    de: "Reinigung",
+    tr: "Temizlik",
+  },
+  OTHER: {
+    de: "Sonstiges",
+    tr: "Diğer",
+  },
 };
 
 const unitLabels: Record<PackageUnit, string> = {
@@ -236,7 +257,12 @@ export default function AdminProductsPage() {
       const stockUnitsData = await stockUnitsResponse.json();
 
       if (!meResponse.ok) {
-        setError(meData.error || "Yetkiler yüklenemedi.");
+        setError(
+          meData.error ||
+            (language === "de"
+              ? "Berechtigungen konnten nicht geladen werden."
+              : "Yetkiler yüklenemedi."),
+        );
         return;
       }
 
@@ -245,22 +271,41 @@ export default function AdminProductsPage() {
       if (productsResponse.ok) {
         setProducts(productsData.products);
       } else {
-        setError(productsData.error || "Ürünler yüklenemedi.");
+        setError(
+          productsData.error ||
+            (language === "de"
+              ? "Produkte konnten nicht geladen werden."
+              : "Ürünler yüklenemedi."),
+        );
       }
 
       if (categoriesResponse.ok) {
         setCategories(categoriesData.categories);
       } else {
-        setError(categoriesData.error || "Kategoriler yüklenemedi.");
+        setError(
+          categoriesData.error ||
+            (language === "de"
+              ? "Kategorien konnten nicht geladen werden."
+              : "Kategoriler yüklenemedi."),
+        );
       }
 
       if (stockUnitsResponse.ok) {
         setStockUnits(stockUnitsData.units || []);
       } else {
-        setError(stockUnitsData.error || "Stok birimleri yüklenemedi.");
+        setError(
+          stockUnitsData.error ||
+            (language === "de"
+              ? "Lagereinheiten konnten nicht geladen werden."
+              : "Stok birimleri yüklenemedi."),
+        );
       }
     } catch {
-      setError("Veriler yüklenirken hata oluştu.");
+      setError(
+        language === "de"
+          ? "Beim Laden der Daten ist ein Fehler aufgetreten."
+          : "Veriler yüklenirken hata oluştu.",
+      );
     } finally {
       setLoading(false);
     }
@@ -326,11 +371,20 @@ export default function AdminProductsPage() {
         const data = await response.json().catch(() => null);
 
         setCategories(previous);
-        setError(data?.error || "Kategori sıralaması kaydedilemedi.");
+        setError(
+          data?.error ||
+            (language === "de"
+              ? "Kategoriereihenfolge konnte nicht gespeichert werden."
+              : "Kategori sıralaması kaydedilemedi."),
+        );
       }
     } catch {
       setCategories(previous);
-      setError("Kategori sıralaması kaydedilemedi.");
+      setError(
+        language === "de"
+          ? "Kategoriereihenfolge konnte nicht gespeichert werden."
+          : "Kategori sıralaması kaydedilemedi.",
+      );
     }
   }
 
@@ -453,12 +507,20 @@ export default function AdminProductsPage() {
     const nameDe = newStockUnit.nameDe.trim();
 
     if (!nameTr || !nameDe) {
-      setStockUnitError("Türkçe ve Almanca birim adı zorunludur.");
+      setStockUnitError(
+        language === "de"
+          ? "Türkischer und deutscher Einheitenname sind erforderlich."
+          : "Türkçe ve Almanca birim adı zorunludur.",
+      );
       return;
     }
 
     if (stockUnitMode === "EDIT" && !editingStockUnitId) {
-      setStockUnitError("Bearbeitennecek birimi seçin.");
+      setStockUnitError(
+        language === "de"
+          ? "Wählen Sie die zu bearbeitende Einheit aus."
+          : "Düzenlenecek birimi seçin.",
+      );
       return;
     }
 
@@ -494,7 +556,13 @@ export default function AdminProductsPage() {
       if (!response.ok) {
         setStockUnitError(
           data.error ||
-            (isEditing ? "Birim düzenlenemedi." : "Yeni birim eklenemedi."),
+            (language === "de"
+              ? isEditing
+                ? "Einheit konnte nicht bearbeitet werden."
+                : "Neue Einheit konnte nicht hinzugefügt werden."
+              : isEditing
+                ? "Birim düzenlenemedi."
+                : "Yeni birim eklenemedi."),
         );
         return;
       }
@@ -522,16 +590,27 @@ export default function AdminProductsPage() {
       setStockUnitMode("CREATE");
       setShowStockUnitForm(false);
 
+      const savedUnitName =
+        language === "de" ? savedUnit.nameDe : savedUnit.nameTr;
+
       setSuccess(
-        isEditing
-          ? `${savedUnit.nameTr} birimi başarıyla düzenlendi.`
-          : `${savedUnit.nameTr} birimi kaydedildi ve otomatik seçildi.`,
+        language === "de"
+          ? isEditing
+            ? `Einheit „${savedUnitName}" erfolgreich bearbeitet.`
+            : `Einheit „${savedUnitName}" gespeichert und automatisch ausgewählt.`
+          : isEditing
+            ? `${savedUnitName} birimi başarıyla düzenlendi.`
+            : `${savedUnitName} birimi kaydedildi ve otomatik seçildi.`,
       );
     } catch {
       setStockUnitError(
-        stockUnitMode === "EDIT"
-          ? "Birim düzenlenemedi."
-          : "Yeni birim eklenemedi.",
+        language === "de"
+          ? stockUnitMode === "EDIT"
+            ? "Einheit konnte nicht bearbeitet werden."
+            : "Neue Einheit konnte nicht hinzugefügt werden."
+          : stockUnitMode === "EDIT"
+            ? "Birim düzenlenemedi."
+            : "Yeni birim eklenemedi.",
       );
     } finally {
       setSavingStockUnit(false);
@@ -566,9 +645,13 @@ export default function AdminProductsPage() {
       if (!response.ok) {
         setError(
           data.error ||
-            (isEditing
-              ? "Kategori güncellenemedi."
-              : "Kategori eklenemedi."),
+            (language === "de"
+              ? isEditing
+                ? "Kategorie konnte nicht aktualisiert werden."
+                : "Kategorie konnte nicht hinzugefügt werden."
+              : isEditing
+                ? "Kategori güncellenemedi."
+                : "Kategori eklenemedi."),
         );
         return;
       }
@@ -585,7 +668,11 @@ export default function AdminProductsPage() {
           categoryId: data.category.id,
         }));
 
-        setSuccess("Kategori başarıyla güncellendi.");
+        setSuccess(
+          language === "de"
+            ? "Kategorie erfolgreich aktualisiert."
+            : "Kategori başarıyla güncellendi.",
+        );
       } else {
         setCategories((current) =>
           [...current, data.category].sort((a, b) =>
@@ -601,7 +688,11 @@ export default function AdminProductsPage() {
           categoryId: data.category.id,
         }));
 
-        setSuccess("Kategori başarıyla eklendi.");
+        setSuccess(
+          language === "de"
+            ? "Kategorie erfolgreich hinzugefügt."
+            : "Kategori başarıyla eklendi.",
+        );
       }
 
       setEditingCategory(null);
@@ -611,9 +702,13 @@ export default function AdminProductsPage() {
       setShowProductForm(true);
     } catch {
       setError(
-        isEditing
-          ? "Kategori güncellenirken hata oluştu."
-          : "Kategori eklenirken hata oluştu.",
+        language === "de"
+          ? isEditing
+            ? "Beim Aktualisieren der Kategorie ist ein Fehler aufgetreten."
+            : "Beim Hinzufügen der Kategorie ist ein Fehler aufgetreten."
+          : isEditing
+            ? "Kategori güncellenirken hata oluştu."
+            : "Kategori eklenirken hata oluştu.",
       );
     } finally {
       setCategorySaving(false);
@@ -700,7 +795,12 @@ export default function AdminProductsPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setImageUploadError(data.error || "Resim yüklenemedi.");
+        setImageUploadError(
+          data.error ||
+            (language === "de"
+              ? "Bild konnte nicht hochgeladen werden."
+              : "Resim yüklenemedi."),
+        );
         return;
       }
 
@@ -709,9 +809,17 @@ export default function AdminProductsPage() {
         imageUrl: data.imageUrl,
       }));
 
-      setSuccess("Ürün resmi yüklendi.");
+      setSuccess(
+        language === "de"
+          ? "Produktbild hochgeladen."
+          : "Ürün resmi yüklendi.",
+      );
     } catch {
-      setImageUploadError("Resim yüklenemedi.");
+      setImageUploadError(
+        language === "de"
+          ? "Bild konnte nicht hochgeladen werden."
+          : "Resim yüklenemedi.",
+      );
     } finally {
       setImageUploading(false);
     }
@@ -761,12 +869,23 @@ export default function AdminProductsPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "İşlem başarısız.");
+        setError(
+          data.error ||
+            (language === "de"
+              ? "Vorgang fehlgeschlagen."
+              : "İşlem başarısız."),
+        );
         return;
       }
 
       setSuccess(
-        isEditing ? "Ürün başarıyla güncellendi." : "Ürün başarıyla eklendi.",
+        language === "de"
+          ? isEditing
+            ? "Produkt erfolgreich aktualisiert."
+            : "Produkt erfolgreich hinzugefügt."
+          : isEditing
+            ? "Ürün başarıyla güncellendi."
+            : "Ürün başarıyla eklendi.",
       );
 
       setShowProductForm(false);
@@ -776,7 +895,11 @@ export default function AdminProductsPage() {
 
       await loadData();
     } catch {
-      setError("İşlem sırasında hata oluştu.");
+      setError(
+        language === "de"
+          ? "Beim Vorgang ist ein Fehler aufgetreten."
+          : "İşlem sırasında hata oluştu.",
+      );
     } finally {
       setSaving(false);
     }
@@ -784,7 +907,11 @@ export default function AdminProductsPage() {
 
   async function toggleProductOffer(product: Product) {
     if (!permissions?.manageOffers) {
-      setError("Kampanyalı ürünleri yönetme yetkiniz yok.");
+      setError(
+        language === "de"
+          ? "Sie sind nicht berechtigt, Angebotsprodukte zu verwalten."
+          : "Kampanyalı ürünleri yönetme yetkiniz yok.",
+      );
       return;
     }
 
@@ -805,25 +932,45 @@ export default function AdminProductsPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Angebot durumu değiştirilemedi.");
+        setError(
+          data.error ||
+            (language === "de"
+              ? "Angebotsstatus konnte nicht geändert werden."
+              : "Angebot durumu değiştirilemedi."),
+        );
         return;
       }
 
       setSuccess(
-        product.isOffer
-          ? "Ürün Angebot bölümünden çıkarıldı."
-          : "Ürün Angebot bölümüne eklendi.",
+        language === "de"
+          ? product.isOffer
+            ? "Produkt aus dem Angebot entfernt."
+            : "Produkt zum Angebot hinzugefügt."
+          : product.isOffer
+            ? "Ürün Angebot bölümünden çıkarıldı."
+            : "Ürün Angebot bölümüne eklendi.",
       );
 
       await loadData();
     } catch {
-      setError("Angebot durumu değiştirilirken hata oluştu.");
+      setError(
+        language === "de"
+          ? "Beim Ändern des Angebotsstatus ist ein Fehler aufgetreten."
+          : "Angebot durumu değiştirilirken hata oluştu.",
+      );
     }
   }
 
   async function deleteProduct(product: Product) {
+    const productName =
+      language === "de"
+        ? product.nameDe || product.name
+        : product.nameTr || product.name;
+
     const confirmed = window.confirm(
-      `${language === "de" ? (product.nameDe || product.name) : (product.nameTr || product.name)} ürünü silinsin mi?`,
+      language === "de"
+        ? `Soll „${productName}" gelöscht werden?`
+        : `${productName} ürünü silinsin mi?`,
     );
 
     if (!confirmed) {
@@ -841,15 +988,28 @@ export default function AdminProductsPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Ürün silinemedi.");
+        setError(
+          data.error ||
+            (language === "de"
+              ? "Produkt konnte nicht gelöscht werden."
+              : "Ürün silinemedi."),
+        );
         return;
       }
 
-      setSuccess("Ürün başarıyla silindi.");
+      setSuccess(
+        language === "de"
+          ? "Produkt erfolgreich gelöscht."
+          : "Ürün başarıyla silindi.",
+      );
 
       await loadData();
     } catch {
-      setError("Ürün silinemedi.");
+      setError(
+        language === "de"
+          ? "Produkt konnte nicht gelöscht werden."
+          : "Ürün silinemedi.",
+      );
     }
   }
 
@@ -858,7 +1018,7 @@ export default function AdminProductsPage() {
       <main className="flex min-h-screen items-center justify-center bg-slate-100">
         <div className="flex items-center gap-3 font-bold text-slate-600">
           <Loader2 className="animate-spin" />
-          Ürünler yükleniyor...
+          {language === "de" ? "Produkte werden geladen..." : "Ürünler yükleniyor..."}
         </div>
       </main>
     );
@@ -873,7 +1033,7 @@ export default function AdminProductsPage() {
             className="inline-flex items-center gap-2 font-bold text-slate-600 transition hover:text-orange-500"
           >
             <ArrowLeft size={18} />
-            Admin Paneli
+            {language === "de" ? "Admin-Panel" : "Admin Paneli"}
           </Link>
 
           <div className="flex flex-wrap gap-3">
@@ -884,7 +1044,7 @@ export default function AdminProductsPage() {
                 className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 font-black text-slate-900 shadow-sm transition hover:text-orange-500"
               >
                 <FolderPlus size={19} />
-                Yeni Kategori
+                {language === "de" ? "Neue Kategorie" : "Yeni Kategori"}
               </button>
             ) : null}
 
@@ -895,7 +1055,7 @@ export default function AdminProductsPage() {
                 className="inline-flex items-center gap-2 rounded-xl bg-orange-500 px-5 py-3 font-black text-white transition hover:bg-orange-600"
               >
                 <Plus size={19} />
-                Yeni Ürün
+                {language === "de" ? "Neues Produkt" : "Yeni Ürün"}
               </button>
             ) : null}
           </div>
@@ -983,7 +1143,7 @@ export default function AdminProductsPage() {
                 >
                   {Object.entries(categoryTypeLabels).map(([value, label]) => (
                     <option key={value} value={value}>
-                      {label}
+                      {language === "de" ? label.de : label.tr}
                     </option>
                   ))}
                 </select>
@@ -1496,14 +1656,25 @@ export default function AdminProductsPage() {
               />
 
               <Input
-                label={`Stok (${
-                  {
-                    KASA: "kasa",
-                    KARTON: "karton",
-                    PAKET: "paket",
-                    ADET: "adet",
-                  }[form.stockUnit]
-                })`}
+                label={
+                  language === "de"
+                    ? `Lagerbestand (${
+                        {
+                          KASA: "Kiste",
+                          KARTON: "Karton",
+                          PAKET: "Paket",
+                          ADET: "Stück",
+                        }[form.stockUnit]
+                      })`
+                    : `Stok (${
+                        {
+                          KASA: "kasa",
+                          KARTON: "karton",
+                          PAKET: "paket",
+                          ADET: "adet",
+                        }[form.stockUnit]
+                      })`
+                }
                 type="number"
                 disabled={
                   editingProduct
@@ -1656,7 +1827,7 @@ export default function AdminProductsPage() {
                         form.imageUrl.startsWith("blob:")) ? (
                         <img
                           src={form.imageUrl}
-                          alt="Ürün görseli önizlemesi"
+                          alt={language === "de" ? "Produktbildvorschau" : "Ürün görseli önizlemesi"}
                           className="h-full w-full object-contain"
                           style={{
                             transform: `translate(${Number(
@@ -1835,7 +2006,9 @@ export default function AdminProductsPage() {
                       color: categoryTheme.softText,
                     }}
                   >
-                    {categoryTypeLabels[group.category.type]}
+                    {language === "de"
+                      ? categoryTypeLabels[group.category.type].de
+                      : categoryTypeLabels[group.category.type].tr}
                   </p>
 
                   <div className="mt-1 flex items-center justify-between">
@@ -1856,7 +2029,7 @@ export default function AdminProductsPage() {
                         type="button"
                         onClick={() => openEditCategory(group.category)}
                         className="rounded-lg bg-white p-2 hover:bg-slate-100"
-                        title="Kategori Düzenle"
+                        title={language === "de" ? "Kategorie bearbeiten" : "Kategori Düzenle"}
                       >
                         <Pencil size={18}/>
                       </button>

@@ -1,5 +1,6 @@
 import { getAdminWithPermissions } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
+import { getRequestLanguage } from "@/lib/request-language";
 import { withTenant } from "@/lib/tenant";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -10,12 +11,17 @@ function cleanOptional(value: unknown) {
 }
 
 export const GET = withTenant(async () => {
+  const language = await getRequestLanguage();
+
   const admin = await getAdminWithPermissions();
 
   if (!admin || (!admin.isSuperAdmin && !admin.permissions.viewBarCash)) {
     return NextResponse.json(
       {
-        error: "Firmaları görüntüleme yetkiniz yok.",
+        error:
+          language === "de"
+            ? "Sie sind nicht berechtigt, Lieferanten einzusehen."
+            : "Firmaları görüntüleme yetkiniz yok.",
       },
       {
         status: 403,
@@ -42,7 +48,10 @@ export const GET = withTenant(async () => {
 
     return NextResponse.json(
       {
-        error: "Firmalar yüklenemedi.",
+        error:
+          language === "de"
+            ? "Lieferanten konnten nicht geladen werden."
+            : "Firmalar yüklenemedi.",
       },
       {
         status: 500,
@@ -52,6 +61,8 @@ export const GET = withTenant(async () => {
 });
 
 export const POST = withTenant(async (request: NextRequest, _context, tenant) => {
+  const language = await getRequestLanguage();
+
   const admin = await getAdminWithPermissions();
 
   if (
@@ -60,7 +71,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
   ) {
     return NextResponse.json(
       {
-        error: "Firma oluşturma yetkiniz yok.",
+        error:
+          language === "de"
+            ? "Sie sind nicht berechtigt, Lieferanten anzulegen."
+            : "Firma oluşturma yetkiniz yok.",
       },
       {
         status: 403,
@@ -76,7 +90,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     if (!name) {
       return NextResponse.json(
         {
-          error: "Firma adı zorunludur.",
+          error:
+            language === "de"
+              ? "Firmenname ist erforderlich."
+              : "Firma adı zorunludur.",
         },
         {
           status: 400,
@@ -87,7 +104,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     if (name.length > 160) {
       return NextResponse.json(
         {
-          error: "Firma adı en fazla 160 karakter olabilir.",
+          error:
+            language === "de"
+              ? "Der Firmenname darf höchstens 160 Zeichen lang sein."
+              : "Firma adı en fazla 160 karakter olabilir.",
         },
         {
           status: 400,
@@ -112,7 +132,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     if (duplicate) {
       return NextResponse.json(
         {
-          error: `${duplicate.name} isimli firma zaten kayıtlıdır.`,
+          error:
+            language === "de"
+              ? `Eine Firma namens ${duplicate.name} ist bereits registriert.`
+              : `${duplicate.name} isimli firma zaten kayıtlıdır.`,
 
           supplier: duplicate,
         },
@@ -153,7 +176,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
 
     return NextResponse.json(
       {
-        message: "Firma başarıyla kaydedildi.",
+        message:
+          language === "de"
+            ? "Firma wurde erfolgreich gespeichert."
+            : "Firma başarıyla kaydedildi.",
 
         supplier,
       },
@@ -166,7 +192,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
 
     return NextResponse.json(
       {
-        error: "Firma kaydedilemedi.",
+        error:
+          language === "de"
+            ? "Firma konnte nicht gespeichert werden."
+            : "Firma kaydedilemedi.",
       },
       {
         status: 500,

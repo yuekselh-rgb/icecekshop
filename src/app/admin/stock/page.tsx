@@ -16,6 +16,7 @@ import {
   X,
 } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import { useLanguage } from "@/context/LanguageContext";
 
 type LogType = "IN" | "OUT";
 
@@ -67,6 +68,183 @@ const unitOptions = [
 ];
 
 export default function AdminWarehousePage() {
+  const { language } = useLanguage();
+
+  const t =
+    language === "de"
+      ? {
+          adminPanel: "Admin-Panel",
+          mainMenu: "Hauptmenü",
+          pageTitle: "Unabhängige Lagerbuchungen",
+          pageDescription:
+            "Erfassen Sie ein- und ausgehende Waren völlig unabhängig vom bestehenden Produkt-, Bestell-, Fahrer- und Kassensystem.",
+          loadLogsError: "Lagerbuchungen konnten nicht geladen werden.",
+          createLogError: "Lagerbuchung konnte nicht erstellt werden.",
+          createLogSuccess: "Buchung erfolgreich erstellt.",
+          deleteLogError: "Lagerbuchung konnte nicht gelöscht werden.",
+          deleteLogSuccess: "Lagerbuchung gelöscht.",
+          print: "PDF / Drucken",
+          incomingTitle: "Wareneingang",
+          incomingDesc:
+            "Erfassen Sie, wer die Ware gebracht hat – Firma, Fahrer, Kennzeichen und eingehende Artikel.",
+          outgoingTitle: "Warenausgang",
+          outgoingDesc:
+            "Erfassen Sie, wer die Ware abgeholt hat, wohin sie ging, Kennzeichen und ausgehende Artikel.",
+          stockTitle: "Lagerbestand",
+          stockDesc:
+            "Zeigt an, wie viel von welcher Ware im unabhängigen Lager noch vorhanden ist.",
+          historyTitle: "Buchungsverlauf",
+          historyDesc: "Zeigt alle Eingangs- und Ausgangsbuchungen an.",
+          incomingRecord: "EINGANGSBUCHUNG",
+          outgoingRecord: "AUSGANGSBUCHUNG",
+          incomingInfo: "Informationen zum Wareneingang",
+          outgoingInfo: "Informationen zum Warenausgang",
+          companyPerson: "Firma / Person",
+          driverNameLabel: "Name des Fahrers",
+          vehiclePlateLabel: "Kennzeichen",
+          deliveryNoteNoLabel: "Lieferscheinnummer",
+          receivedBy: "Empfangen von",
+          handedOverBy: "Übergeben von",
+          origin: "Herkunftsort",
+          destination: "Zielort",
+          items: "Warenpositionen",
+          addItem: "Artikel hinzufügen",
+          itemName: "Warenname *",
+          quantity: "Menge *",
+          unit: "Einheit *",
+          lineNote: "Zeilenbeschreibung",
+          generalNote: "Allgemeine Beschreibung",
+          saveIncoming: "Wareneingang speichern",
+          saveOutgoing: "Warenausgang speichern",
+          itemVarietyCount: "Erfasste Warenarten",
+          hasStock: "Mit Bestand",
+          calculation: "Berechnung",
+          calcFormula: "Eingang − Ausgang",
+          calculatingStock: "Lagerbestand wird berechnet...",
+          noStockRecords: "Es liegen noch keine unabhängigen Lagerbuchungen vor.",
+          currentStockTitle: "Aktueller unabhängiger Lagerbestand",
+          currentStockDesc:
+            "Die laufende Summe aller Eingangs- und Ausgangsbuchungen.",
+          tableItemName: "Warenname",
+          totalIn: "Gesamt Eingang",
+          totalOut: "Gesamt Ausgang",
+          currentRemaining: "Aktuell verbleibend",
+          unitColumn: "Einheit",
+          unitTotalsTitle: "Gesamtsummen je Einheit",
+          incomingLabel: "Eingang:",
+          outgoingLabel: "Ausgang:",
+          remainingLabel: "Verbleibend:",
+          negativeNote:
+            "Negative Werte bedeuten, dass die erfassten Ausgänge die Eingänge übersteigen. Unterschiedliche Einheiten werden nicht zusammengerechnet.",
+          searchPlaceholder:
+            "Firma, Fahrer, Kennzeichen, Lieferschein oder Ware suchen...",
+          filterAll: "Alle",
+          filterIncomingOnly: "Nur Eingänge",
+          filterOutgoingOnly: "Nur Ausgänge",
+          loadingRecords: "Buchungen werden geladen...",
+          noRecordsFound: "Keine Buchung gefunden.",
+          incomingBadge: "WARENEINGANG",
+          outgoingBadge: "WARENAUSGANG",
+          companyNotSpecified: "Firma / Person nicht angegeben",
+          delete: "Löschen",
+          driverLabel: "Fahrer",
+          plateLabel: "Kennzeichen",
+          deliveryNoteLabel: "Lieferschein",
+          receivedByLabel: "Empfangen von",
+          handedOverByLabel: "Übergeben von",
+          noteLabel: "Beschreibung",
+          tableGoodsHeader: "Ware",
+          tableQuantityHeader: "Menge",
+          tableUnitHeader: "Einheit",
+          tableNoteHeader: "Beschreibung",
+          incomingBookingWord: "Wareneingangsbuchung",
+          outgoingBookingWord: "Warenausgangsbuchung",
+        }
+      : {
+          adminPanel: "Admin Paneli",
+          mainMenu: "Ana Menü",
+          pageTitle: "Bağımsız Depo Kayıtları",
+          pageDescription:
+            "Gelen ve giden malları mevcut ürün, sipariş, şoför ve kasa sisteminden tamamen bağımsız şekilde kaydedin.",
+          loadLogsError: "Depo kayıtları yüklenemedi.",
+          createLogError: "Depo kaydı oluşturulamadı.",
+          createLogSuccess: "Kayıt başarıyla oluşturuldu.",
+          deleteLogError: "Depo kaydı silinemedi.",
+          deleteLogSuccess: "Depo kaydı silindi.",
+          print: "PDF / Yazdır",
+          incomingTitle: "Mal Girişi",
+          incomingDesc: "Kim getirdi, firma, şoför, plaka ve gelen malları kaydedin.",
+          outgoingTitle: "Mal Çıkışı",
+          outgoingDesc: "Kim götürdü, nereye götürdü, plaka ve çıkan malları kaydedin.",
+          stockTitle: "Depo Mevcudu",
+          stockDesc:
+            "Bağımsız depoda hangi maldan ne kadar kaldığını görüntüleyin.",
+          historyTitle: "Kayıt Geçmişi",
+          historyDesc: "Bütün giriş ve çıkış kayıtlarını görüntüleyin.",
+          incomingRecord: "GİRİŞ KAYDI",
+          outgoingRecord: "ÇIKIŞ KAYDI",
+          incomingInfo: "Gelen Mal Bilgileri",
+          outgoingInfo: "Giden Mal Bilgileri",
+          companyPerson: "Firma / Kişi",
+          driverNameLabel: "Şoför Adı",
+          vehiclePlateLabel: "Araç Plakası",
+          deliveryNoteNoLabel: "İrsaliye Numarası",
+          receivedBy: "Teslim Alan Kişi",
+          handedOverBy: "Teslim Eden Kişi",
+          origin: "Geldiği Yer",
+          destination: "Gideceği Yer",
+          items: "Mal Kalemleri",
+          addItem: "Mal Ekle",
+          itemName: "Mal Adı *",
+          quantity: "Miktar *",
+          unit: "Birim *",
+          lineNote: "Satır Açıklaması",
+          generalNote: "Genel Açıklama",
+          saveIncoming: "Mal Girişini Kaydet",
+          saveOutgoing: "Mal Çıkışını Kaydet",
+          itemVarietyCount: "Kayıtlı Mal Çeşidi",
+          hasStock: "Mevcudu Bulunan",
+          calculation: "Hesaplama",
+          calcFormula: "Giriş − Çıkış",
+          calculatingStock: "Depo mevcudu hesaplanıyor...",
+          noStockRecords: "Henüz bağımsız depo kaydı bulunmuyor.",
+          currentStockTitle: "Güncel Bağımsız Depo Mevcudu",
+          currentStockDesc: "Bütün giriş ve çıkış kayıtlarının anlık toplamıdır.",
+          tableItemName: "Mal Adı",
+          totalIn: "Toplam Giren",
+          totalOut: "Toplam Çıkan",
+          currentRemaining: "Şu Anda Kalan",
+          unitColumn: "Birim",
+          unitTotalsTitle: "Birim Bazında Genel Toplamlar",
+          incomingLabel: "Giren:",
+          outgoingLabel: "Çıkan:",
+          remainingLabel: "Kalan:",
+          negativeNote:
+            "Negatif miktarlar, kayıtlı çıkışın girişten fazla olduğunu gösterir. Farklı birimler birbirine eklenmez.",
+          searchPlaceholder: "Firma, şoför, plaka, irsaliye veya mal ara...",
+          filterAll: "Tümü",
+          filterIncomingOnly: "Sadece Girişler",
+          filterOutgoingOnly: "Sadece Çıkışlar",
+          loadingRecords: "Kayıtlar yükleniyor...",
+          noRecordsFound: "Kayıt bulunamadı.",
+          incomingBadge: "MAL GİRİŞİ",
+          outgoingBadge: "MAL ÇIKIŞI",
+          companyNotSpecified: "Firma / kişi belirtilmedi",
+          delete: "Sil",
+          driverLabel: "Şoför",
+          plateLabel: "Plaka",
+          deliveryNoteLabel: "İrsaliye",
+          receivedByLabel: "Teslim Alan",
+          handedOverByLabel: "Teslim Eden",
+          noteLabel: "Açıklama",
+          tableGoodsHeader: "Mal",
+          tableQuantityHeader: "Miktar",
+          tableUnitHeader: "Birim",
+          tableNoteHeader: "Açıklama",
+          incomingBookingWord: "mal giriş",
+          outgoingBookingWord: "mal çıkış",
+        };
+
   const [mode, setMode] = useState<
     "HOME" | "FORM" | "HISTORY" | "STOCK"
   >("HOME");
@@ -105,14 +283,14 @@ export default function AdminWarehousePage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Depo kayıtları yüklenemedi.");
+        setError(data.error || t.loadLogsError);
         return;
       }
 
       setLogs(data.logs || []);
       setCanDeleteWarehouseLog(Boolean(data.canDeleteWarehouseLog));
     } catch {
-      setError("Depo kayıtları yüklenemedi.");
+      setError(t.loadLogsError);
     } finally {
       setLoadingLogs(false);
     }
@@ -208,11 +386,11 @@ export default function AdminWarehousePage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Depo kaydı oluşturulamadı.");
+        setError(data.error || t.createLogError);
         return;
       }
 
-      setSuccess(data.message || "Kayıt başarıyla oluşturuldu.");
+      setSuccess(data.message || t.createLogSuccess);
       setLastSavedLogId(data.log.id);
       setLogs((current) => [
         data.log,
@@ -220,18 +398,25 @@ export default function AdminWarehousePage() {
       ]);
       resetForm();
     } catch {
-      setError("Depo kaydı oluşturulamadı.");
+      setError(t.createLogError);
     } finally {
       setSaving(false);
     }
   }
 
   async function deleteWarehouseLog(log: WarehouseLog) {
-    const typeLabel = log.type === "IN" ? "mal giriş" : "mal çıkış";
+    const companyLabel = log.companyName || t.companyNotSpecified;
 
-    const confirmed = window.confirm(
-      `${log.companyName || "Firma / kişi belirtilmemiş"} kaydına ait ${typeLabel} kaydı kalıcı olarak silinsin mi?\n\nBu işlem geri alınamaz.`,
-    );
+    const confirmMessage =
+      language === "de"
+        ? `Soll die ${
+            log.type === "IN" ? t.incomingBookingWord : t.outgoingBookingWord
+          } von "${companyLabel}" endgültig gelöscht werden?\n\nDiese Aktion kann nicht rückgängig gemacht werden.`
+        : `${companyLabel} kaydına ait ${
+            log.type === "IN" ? t.incomingBookingWord : t.outgoingBookingWord
+          } kaydı kalıcı olarak silinsin mi?\n\nBu işlem geri alınamaz.`;
+
+    const confirmed = window.confirm(confirmMessage);
 
     if (!confirmed) {
       return;
@@ -252,7 +437,7 @@ export default function AdminWarehousePage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Depo kaydı silinemedi.");
+        setError(data.error || t.deleteLogError);
         return;
       }
 
@@ -260,9 +445,9 @@ export default function AdminWarehousePage() {
         current.filter((item) => item.id !== log.id),
       );
 
-      setSuccess(data.message || "Depo kaydı silindi.");
+      setSuccess(data.message || t.deleteLogSuccess);
     } catch {
-      setError("Depo kaydı silinemedi.");
+      setError(t.deleteLogError);
     } finally {
       setDeletingLogId("");
     }
@@ -414,7 +599,7 @@ export default function AdminWarehousePage() {
             className="inline-flex items-center gap-2 font-bold text-slate-600 transition hover:text-orange-500"
           >
             <ArrowLeft size={18} />
-            Admin Paneli
+            {t.adminPanel}
           </Link>
 
           {mode !== "HOME" ? (
@@ -427,7 +612,7 @@ export default function AdminWarehousePage() {
               }}
               className="rounded-xl bg-white px-4 py-2 font-bold text-slate-700 shadow-sm"
             >
-              Ana Menü
+              {t.mainMenu}
             </button>
           ) : null}
         </div>
@@ -436,12 +621,11 @@ export default function AdminWarehousePage() {
           <Warehouse size={26} className="text-orange-400" />
 
           <h1 className="mt-3 text-3xl font-black">
-            Bağımsız Depo Kayıtları
+            {t.pageTitle}
           </h1>
 
           <p className="mt-2 max-w-3xl text-sm text-slate-400">
-            Gelen ve giden malları mevcut ürün, sipariş, şoför ve kasa
-            sisteminden tamamen bağımsız şekilde kaydedin.
+            {t.pageDescription}
           </p>
         </section>
 
@@ -457,12 +641,12 @@ export default function AdminWarehousePage() {
 
             {lastSavedLogId ? (
               <Link
-                href={`/admin/stock/print/${lastSavedLogId}`}
+                href={`/admin/stock/print/${lastSavedLogId}?lang=${language}`}
                 target="_blank"
                 className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-3 text-sm font-black text-white"
               >
                 <Printer size={18} />
-                PDF / Yazdır
+                {t.print}
               </Link>
             ) : null}
           </div>
@@ -477,10 +661,10 @@ export default function AdminWarehousePage() {
             >
               <ArrowDownToLine size={30} />
 
-              <h2 className="mt-5 text-2xl font-black">Mal Girişi</h2>
+              <h2 className="mt-5 text-2xl font-black">{t.incomingTitle}</h2>
 
               <p className="mt-2 text-green-50">
-                Kim getirdi, firma, şoför, plaka ve gelen malları kaydedin.
+                {t.incomingDesc}
               </p>
             </button>
 
@@ -491,10 +675,10 @@ export default function AdminWarehousePage() {
             >
               <ArrowUpFromLine size={30} />
 
-              <h2 className="mt-5 text-2xl font-black">Mal Çıkışı</h2>
+              <h2 className="mt-5 text-2xl font-black">{t.outgoingTitle}</h2>
 
               <p className="mt-2 text-red-50">
-                Kim götürdü, nereye götürdü, plaka ve çıkan malları kaydedin.
+                {t.outgoingDesc}
               </p>
             </button>
 
@@ -506,11 +690,11 @@ export default function AdminWarehousePage() {
               <PackageCheck size={30} />
 
               <h2 className="mt-5 text-2xl font-black">
-                Depo Mevcudu
+                {t.stockTitle}
               </h2>
 
               <p className="mt-2 text-blue-50">
-                Bağımsız depoda hangi maldan ne kadar kaldığını görüntüleyin.
+                {t.stockDesc}
               </p>
             </button>
 
@@ -522,11 +706,11 @@ export default function AdminWarehousePage() {
               <ClipboardList size={30} className="text-orange-500" />
 
               <h2 className="mt-5 text-2xl font-black">
-                Kayıt Geçmişi
+                {t.historyTitle}
               </h2>
 
               <p className="mt-2 text-slate-500">
-                Bütün giriş ve çıkış kayıtlarını görüntüleyin.
+                {t.historyDesc}
               </p>
             </button>
           </section>
@@ -544,11 +728,11 @@ export default function AdminWarehousePage() {
                     type === "IN" ? "text-green-600" : "text-red-600"
                   }`}
                 >
-                  {type === "IN" ? "GİRİŞ KAYDI" : "ÇIKIŞ KAYDI"}
+                  {type === "IN" ? t.incomingRecord : t.outgoingRecord}
                 </p>
 
                 <h2 className="mt-1 text-2xl font-black text-slate-950">
-                  {type === "IN" ? "Gelen Mal Bilgileri" : "Giden Mal Bilgileri"}
+                  {type === "IN" ? t.incomingInfo : t.outgoingInfo}
                 </h2>
               </div>
 
@@ -563,7 +747,7 @@ export default function AdminWarehousePage() {
 
             <div className="mt-4 grid gap-x-3 gap-y-2 md:grid-cols-3">
               <Input
-                label="Firma / Kişi"
+                label={t.companyPerson}
                 value={companyName}
                 onChange={setCompanyName}
                 listId="warehouse-companies"
@@ -571,7 +755,7 @@ export default function AdminWarehousePage() {
               />
 
               <Input
-                label="Şoför Adı"
+                label={t.driverNameLabel}
                 value={driverName}
                 onChange={setDriverName}
                 listId="warehouse-drivers"
@@ -579,7 +763,7 @@ export default function AdminWarehousePage() {
               />
 
               <Input
-                label="Araç Plakası"
+                label={t.vehiclePlateLabel}
                 value={vehiclePlate}
                 onChange={setVehiclePlate}
                 listId="warehouse-plates"
@@ -587,7 +771,7 @@ export default function AdminWarehousePage() {
               />
 
               <Input
-                label="İrsaliye Numarası"
+                label={t.deliveryNoteNoLabel}
                 value={deliveryNoteNo}
                 onChange={setDeliveryNoteNo}
                 listId="warehouse-delivery-notes"
@@ -595,7 +779,7 @@ export default function AdminWarehousePage() {
               />
 
               <Input
-                label={type === "IN" ? "Teslim Alan Kişi" : "Teslim Eden Kişi"}
+                label={type === "IN" ? t.receivedBy : t.handedOverBy}
                 value={contactPerson}
                 onChange={setContactPerson}
                 listId="warehouse-contacts"
@@ -603,7 +787,7 @@ export default function AdminWarehousePage() {
               />
 
               <Input
-                label={type === "IN" ? "Geldiği Yer" : "Gideceği Yer"}
+                label={type === "IN" ? t.origin : t.destination}
                 value={destination}
                 onChange={setDestination}
                 listId="warehouse-destinations"
@@ -614,7 +798,7 @@ export default function AdminWarehousePage() {
             <div className="mt-5">
               <div className="flex items-center justify-between gap-4">
                 <h3 className="text-lg font-black text-slate-950">
-                  Mal Kalemleri
+                  {t.items}
                 </h3>
 
                 <button
@@ -623,7 +807,7 @@ export default function AdminWarehousePage() {
                   className="inline-flex items-center gap-2 rounded-lg bg-slate-950 px-3 py-2 text-sm font-bold text-white"
                 >
                   <Plus size={18} />
-                  Mal Ekle
+                  {t.addItem}
                 </button>
               </div>
 
@@ -634,7 +818,7 @@ export default function AdminWarehousePage() {
                     className="grid gap-2 rounded-xl border border-slate-200 p-2.5 md:grid-cols-[2fr_0.7fr_0.8fr_1.4fr_auto]"
                   >
                     <Input
-                      label="Mal Adı *"
+                      label={t.itemName}
                       value={item.itemName}
                       onChange={(value) =>
                         updateItem(index, "itemName", value)
@@ -644,7 +828,7 @@ export default function AdminWarehousePage() {
                     />
 
                     <Input
-                      label="Miktar *"
+                      label={t.quantity}
                       type="number"
                       step="0.001"
                       value={item.quantity}
@@ -655,7 +839,7 @@ export default function AdminWarehousePage() {
 
                     <label className="block">
                       <span className="text-xs font-bold text-slate-700">
-                        Birim *
+                        {t.unit}
                       </span>
 
                       <select
@@ -674,7 +858,7 @@ export default function AdminWarehousePage() {
                     </label>
 
                     <Input
-                      label="Satır Açıklaması"
+                      label={t.lineNote}
                       value={item.note}
                       onChange={(value) =>
                         updateItem(index, "note", value)
@@ -698,7 +882,7 @@ export default function AdminWarehousePage() {
 
             <label className="mt-4 block">
               <span className="text-xs font-bold text-slate-700">
-                Genel Açıklama
+                {t.generalNote}
               </span>
 
               <textarea
@@ -722,9 +906,7 @@ export default function AdminWarehousePage() {
                 <Save size={19} />
               )}
 
-              {type === "IN"
-                ? "Mal Girişini Kaydet"
-                : "Mal Çıkışını Kaydet"}
+              {type === "IN" ? t.saveIncoming : t.saveOutgoing}
             </button>
           </form>
         ) : null}
@@ -734,7 +916,7 @@ export default function AdminWarehousePage() {
             <div className="grid gap-4 sm:grid-cols-3">
               <div className="rounded-2xl bg-white p-5 shadow-sm">
                 <p className="text-xs font-black uppercase text-slate-400">
-                  Kayıtlı Mal Çeşidi
+                  {t.itemVarietyCount}
                 </p>
 
                 <p className="mt-2 text-3xl font-black text-slate-950">
@@ -744,7 +926,7 @@ export default function AdminWarehousePage() {
 
               <div className="rounded-2xl bg-white p-5 shadow-sm">
                 <p className="text-xs font-black uppercase text-slate-400">
-                  Mevcudu Bulunan
+                  {t.hasStock}
                 </p>
 
                 <p className="mt-2 text-3xl font-black text-green-600">
@@ -754,11 +936,11 @@ export default function AdminWarehousePage() {
 
               <div className="rounded-2xl bg-white p-5 shadow-sm">
                 <p className="text-xs font-black uppercase text-slate-400">
-                  Hesaplama
+                  {t.calculation}
                 </p>
 
                 <p className="mt-2 font-black text-slate-950">
-                  Giriş − Çıkış
+                  {t.calcFormula}
                 </p>
               </div>
             </div>
@@ -766,32 +948,32 @@ export default function AdminWarehousePage() {
             {loadingLogs ? (
               <div className="mt-5 flex items-center justify-center gap-3 rounded-2xl bg-white p-10 font-bold text-slate-500">
                 <Loader2 className="animate-spin" />
-                Depo mevcudu hesaplanıyor...
+                {t.calculatingStock}
               </div>
             ) : warehouseBalances.length === 0 ? (
               <div className="mt-5 rounded-2xl bg-white p-10 text-center font-bold text-slate-500">
-                Henüz bağımsız depo kaydı bulunmuyor.
+                {t.noStockRecords}
               </div>
             ) : (
               <div className="mt-5 overflow-hidden rounded-[24px] bg-white shadow-sm">
                 <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 p-5">
                   <div>
                     <h2 className="text-2xl font-black text-slate-950">
-                      Güncel Bağımsız Depo Mevcudu
+                      {t.currentStockTitle}
                     </h2>
 
                     <p className="mt-1 text-sm text-slate-500">
-                      Bütün giriş ve çıkış kayıtlarının anlık toplamıdır.
+                      {t.currentStockDesc}
                     </p>
                   </div>
 
                   <Link
-                    href="/admin/stock/current/print"
+                    href={`/admin/stock/current/print?lang=${language}`}
                     target="_blank"
                     className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-black text-white transition hover:bg-orange-500"
                   >
                     <Printer size={17} />
-                    PDF / Yazdır
+                    {t.print}
                   </Link>
                 </div>
 
@@ -799,17 +981,17 @@ export default function AdminWarehousePage() {
                   <table className="w-full min-w-[700px] text-left">
                     <thead className="bg-slate-950 text-sm text-white">
                       <tr>
-                        <th className="px-5 py-3">Mal Adı</th>
+                        <th className="px-5 py-3">{t.tableItemName}</th>
                         <th className="px-5 py-3 text-right">
-                          Toplam Giren
+                          {t.totalIn}
                         </th>
                         <th className="px-5 py-3 text-right">
-                          Toplam Çıkan
+                          {t.totalOut}
                         </th>
                         <th className="px-5 py-3 text-right">
-                          Şu Anda Kalan
+                          {t.currentRemaining}
                         </th>
-                        <th className="px-5 py-3">Birim</th>
+                        <th className="px-5 py-3">{t.unitColumn}</th>
                       </tr>
                     </thead>
 
@@ -860,7 +1042,7 @@ export default function AdminWarehousePage() {
 
                 <div className="border-t border-slate-200 bg-slate-50 p-5">
                   <h3 className="text-lg font-black text-slate-950">
-                    Birim Bazında Genel Toplamlar
+                    {t.unitTotalsTitle}
                   </h3>
 
                   <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -875,7 +1057,7 @@ export default function AdminWarehousePage() {
 
                         <div className="mt-2 space-y-1 text-sm">
                           <p>
-                            Giren:{" "}
+                            {t.incomingLabel}{" "}
                             <strong className="text-green-600">
                               {total.incoming.toLocaleString("tr-TR", {
                                 maximumFractionDigits: 3,
@@ -884,7 +1066,7 @@ export default function AdminWarehousePage() {
                           </p>
 
                           <p>
-                            Çıkan:{" "}
+                            {t.outgoingLabel}{" "}
                             <strong className="text-red-600">
                               {total.outgoing.toLocaleString("tr-TR", {
                                 maximumFractionDigits: 3,
@@ -893,7 +1075,7 @@ export default function AdminWarehousePage() {
                           </p>
 
                           <p>
-                            Kalan:{" "}
+                            {t.remainingLabel}{" "}
                             <strong className="text-blue-600">
                               {total.current.toLocaleString("tr-TR", {
                                 maximumFractionDigits: 3,
@@ -906,8 +1088,7 @@ export default function AdminWarehousePage() {
                   </div>
 
                   <p className="mt-4 text-xs font-bold text-slate-500">
-                    Negatif miktarlar, kayıtlı çıkışın girişten fazla olduğunu
-                    gösterir. Farklı birimler birbirine eklenmez.
+                    {t.negativeNote}
                   </p>
                 </div>
               </div>
@@ -922,7 +1103,7 @@ export default function AdminWarehousePage() {
                 <input
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
-                  placeholder="Firma, şoför, plaka, irsaliye veya mal ara..."
+                  placeholder={t.searchPlaceholder}
                   className="rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-orange-500"
                 />
 
@@ -935,9 +1116,9 @@ export default function AdminWarehousePage() {
                   }
                   className="rounded-xl border border-slate-200 px-4 py-3 outline-none"
                 >
-                  <option value="ALL">Tümü</option>
-                  <option value="IN">Sadece Girişler</option>
-                  <option value="OUT">Sadece Çıkışlar</option>
+                  <option value="ALL">{t.filterAll}</option>
+                  <option value="IN">{t.filterIncomingOnly}</option>
+                  <option value="OUT">{t.filterOutgoingOnly}</option>
                 </select>
               </div>
             </div>
@@ -945,11 +1126,11 @@ export default function AdminWarehousePage() {
             {loadingLogs ? (
               <div className="mt-6 flex items-center justify-center gap-3 rounded-2xl bg-white p-10 font-bold text-slate-500">
                 <Loader2 className="animate-spin" />
-                Kayıtlar yükleniyor...
+                {t.loadingRecords}
               </div>
             ) : filteredLogs.length === 0 ? (
               <div className="mt-6 rounded-2xl bg-white p-10 text-center font-bold text-slate-500">
-                Kayıt bulunamadı.
+                {t.noRecordsFound}
               </div>
             ) : (
               <div className="mt-6 space-y-5">
@@ -967,12 +1148,12 @@ export default function AdminWarehousePage() {
                         <div>
                           <p className="text-sm font-black">
                             {log.type === "IN"
-                              ? "MAL GİRİŞİ"
-                              : "MAL ÇIKIŞI"}
+                              ? t.incomingBadge
+                              : t.outgoingBadge}
                           </p>
 
                           <h3 className="mt-1 text-2xl font-black">
-                            {log.companyName || "Firma / kişi belirtilmedi"}
+                            {log.companyName || t.companyNotSpecified}
                           </h3>
                         </div>
 
@@ -985,12 +1166,12 @@ export default function AdminWarehousePage() {
                     <div className="p-6">
                       <div className="mb-5 flex flex-wrap justify-end gap-2">
                         <Link
-                          href={`/admin/stock/print/${log.id}`}
+                          href={`/admin/stock/print/${log.id}?lang=${language}`}
                           target="_blank"
                           className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-black text-white transition hover:bg-orange-500"
                         >
                           <Printer size={17} />
-                          PDF / Yazdır
+                          {t.print}
                         </Link>
 
                         {canDeleteWarehouseLog ? (
@@ -1005,45 +1186,49 @@ export default function AdminWarehousePage() {
                             ) : (
                               <Trash2 size={17} />
                             )}
-                            Sil
+                            {t.delete}
                           </button>
                         ) : null}
                       </div>
 
                       <div className="grid gap-3 text-sm md:grid-cols-3">
-                        <Info label="Şoför" value={log.driverName} />
-                        <Info label="Plaka" value={log.vehiclePlate} />
+                        <Info label={t.driverLabel} value={log.driverName} />
+                        <Info label={t.plateLabel} value={log.vehiclePlate} />
                         <Info
-                          label="İrsaliye"
+                          label={t.deliveryNoteLabel}
                           value={log.deliveryNoteNo}
                         />
                         <Info
                           label={
                             log.type === "IN"
-                              ? "Teslim Alan"
-                              : "Teslim Eden"
+                              ? t.receivedByLabel
+                              : t.handedOverByLabel
                           }
                           value={log.contactPerson}
                         />
                         <Info
-                          label={
-                            log.type === "IN"
-                              ? "Geldiği Yer"
-                              : "Gideceği Yer"
-                          }
+                          label={log.type === "IN" ? t.origin : t.destination}
                           value={log.destination}
                         />
-                        <Info label="Açıklama" value={log.note} />
+                        <Info label={t.noteLabel} value={log.note} />
                       </div>
 
                       <div className="mt-6 overflow-x-auto">
                         <table className="w-full min-w-[650px] text-left">
                           <thead>
                             <tr className="border-b border-slate-200 text-sm text-slate-500">
-                              <th className="px-3 py-3">Mal</th>
-                              <th className="px-3 py-3">Miktar</th>
-                              <th className="px-3 py-3">Birim</th>
-                              <th className="px-3 py-3">Açıklama</th>
+                              <th className="px-3 py-3">
+                                {t.tableGoodsHeader}
+                              </th>
+                              <th className="px-3 py-3">
+                                {t.tableQuantityHeader}
+                              </th>
+                              <th className="px-3 py-3">
+                                {t.tableUnitHeader}
+                              </th>
+                              <th className="px-3 py-3">
+                                {t.tableNoteHeader}
+                              </th>
                             </tr>
                           </thead>
 

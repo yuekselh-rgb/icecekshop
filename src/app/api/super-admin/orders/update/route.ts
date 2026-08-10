@@ -2,6 +2,7 @@ import {
   verifySessionToken,
 } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getRequestLanguage } from "@/lib/request-language";
 import { withTenant } from "@/lib/tenant";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
@@ -51,14 +52,15 @@ async function getSuperAdminSession() {
 export const PATCH = withTenant(async (
   request: NextRequest
 ) => {
+  const language = await getRequestLanguage();
+
   const session =
     await getSuperAdminSession();
 
   if (!session) {
     return NextResponse.json(
       {
-        error:
-          "Yetkisiz erişim.",
+        error: language === "de" ? "Unbefugter Zugriff." : "Yetkisiz erişim.",
       },
       {
         status: 403,
@@ -93,7 +95,9 @@ export const PATCH = withTenant(async (
       return NextResponse.json(
         {
           error:
-            "Sipariş ID eksik.",
+            language === "de"
+              ? "Bestell-ID fehlt."
+              : "Sipariş ID eksik.",
         },
         {
           status: 400,
@@ -118,7 +122,9 @@ export const PATCH = withTenant(async (
       return NextResponse.json(
         {
           error:
-            "Sipariş bulunamadı.",
+            language === "de"
+              ? "Bestellung nicht gefunden."
+              : "Sipariş bulunamadı.",
         },
         {
           status: 404,
@@ -145,7 +151,9 @@ export const PATCH = withTenant(async (
         return NextResponse.json(
           {
             error:
-              "Geçersiz sipariş durumu.",
+              language === "de"
+                ? "Ungültiger Bestellstatus."
+                : "Geçersiz sipariş durumu.",
           },
           {
             status: 400,
@@ -206,7 +214,9 @@ export const PATCH = withTenant(async (
           return NextResponse.json(
             {
               error:
-                "Lieferfahrer bulunamadı.",
+                language === "de"
+                  ? "Lieferfahrer nicht gefunden."
+                  : "Lieferfahrer bulunamadı.",
             },
             {
               status: 404,
@@ -229,7 +239,9 @@ export const PATCH = withTenant(async (
       return NextResponse.json(
         {
           error:
-            "Güncellenecek alan bulunamadı.",
+            language === "de"
+              ? "Kein zu aktualisierendes Feld gefunden."
+              : "Güncellenecek alan bulunamadı.",
         },
         {
           status: 400,
@@ -269,7 +281,9 @@ export const PATCH = withTenant(async (
 
     return NextResponse.json({
       message:
-        "Sipariş güncellendi.",
+        language === "de"
+          ? "Bestellung wurde aktualisiert."
+          : "Sipariş güncellendi.",
       order: {
         ...updated,
         totalAmount:
@@ -287,7 +301,9 @@ export const PATCH = withTenant(async (
     return NextResponse.json(
       {
         error:
-          "Sipariş güncellenirken hata oluştu.",
+          language === "de"
+            ? "Beim Aktualisieren der Bestellung ist ein Fehler aufgetreten."
+            : "Sipariş güncellenirken hata oluştu.",
       },
       {
         status: 500,

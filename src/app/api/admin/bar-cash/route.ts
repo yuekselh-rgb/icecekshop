@@ -1,4 +1,5 @@
 import { getAdminWithPermissions } from "@/lib/admin-auth";
+import { getRequestLanguage } from "@/lib/request-language";
 import { prisma } from "@/lib/prisma";
 import { withTenant } from "@/lib/tenant";
 import { NextRequest, NextResponse } from "next/server";
@@ -38,12 +39,16 @@ function serializeMovement(movement: any) {
 }
 
 export const GET = withTenant(async () => {
+  const language = await getRequestLanguage();
   const admin = await getAdminWithPermissions();
 
   if (!admin || (!admin.isSuperAdmin && !admin.permissions.viewBarCash)) {
     return NextResponse.json(
       {
-        error: "Gerçek kasayı görüntüleme yetkiniz yok.",
+        error:
+          language === "de"
+            ? "Sie sind nicht berechtigt, die Kasse einzusehen."
+            : "Gerçek kasayı görüntüleme yetkiniz yok.",
       },
       {
         status: 403,
@@ -142,7 +147,10 @@ export const GET = withTenant(async () => {
 
     return NextResponse.json(
       {
-        error: "Gerçek kasa yüklenemedi.",
+        error:
+          language === "de"
+            ? "Kasse konnte nicht geladen werden."
+            : "Gerçek kasa yüklenemedi.",
       },
       {
         status: 500,
@@ -152,12 +160,13 @@ export const GET = withTenant(async () => {
 });
 
 export const POST = withTenant(async (request: NextRequest, _context, tenant) => {
+  const language = await getRequestLanguage();
   const admin = await getAdminWithPermissions();
 
   if (!admin) {
     return NextResponse.json(
       {
-        error: "Yetkisiz erişim.",
+        error: language === "de" ? "Unbefugter Zugriff." : "Yetkisiz erişim.",
       },
       {
         status: 403,
@@ -191,7 +200,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
 
         if (existingMovement) {
           return NextResponse.json({
-            message: "Kasa hareketi kaydedildi.",
+            message:
+              language === "de"
+                ? "Kassenbewegung wurde gespeichert."
+                : "Kasa hareketi kaydedildi.",
             movement: serializeMovement(existingMovement),
           });
         }
@@ -211,7 +223,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     if (direction !== "IN" && direction !== "OUT") {
       return NextResponse.json(
         {
-          error: "Geçersiz kasa hareketi.",
+          error:
+            language === "de"
+              ? "Ungültige Kassenbewegung."
+              : "Geçersiz kasa hareketi.",
         },
         {
           status: 400,
@@ -222,7 +237,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     if (!allowedCategories.includes(category)) {
       return NextResponse.json(
         {
-          error: "Geçersiz kasa kategorisi.",
+          error:
+            language === "de"
+              ? "Ungültige Kassenkategorie."
+              : "Geçersiz kasa kategorisi.",
         },
         {
           status: 400,
@@ -237,7 +255,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     ) {
       return NextResponse.json(
         {
-          error: "Kasaya para girişi yapma yetkiniz yok.",
+          error:
+            language === "de"
+              ? "Sie sind nicht berechtigt, Geldeingänge in der Kasse zu erfassen."
+              : "Kasaya para girişi yapma yetkiniz yok.",
         },
         {
           status: 403,
@@ -252,7 +273,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     ) {
       return NextResponse.json(
         {
-          error: "Kasadan para çıkışı yapma yetkiniz yok.",
+          error:
+            language === "de"
+              ? "Sie sind nicht berechtigt, Geldausgänge aus der Kasse zu erfassen."
+              : "Kasadan para çıkışı yapma yetkiniz yok.",
         },
         {
           status: 403,
@@ -273,7 +297,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
       if (direction !== "OUT") {
         return NextResponse.json(
           {
-            error: "Mal alımı yalnızca para çıkışı olarak kaydedilebilir.",
+            error:
+              language === "de"
+                ? "Ein Wareneinkauf kann nur als Geldausgang gebucht werden."
+                : "Mal alımı yalnızca para çıkışı olarak kaydedilebilir.",
           },
           {
             status: 400,
@@ -284,7 +311,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
       if (!supplierId) {
         return NextResponse.json(
           {
-            error: "Mal alımında kayıtlı bir firma seçilmelidir.",
+            error:
+              language === "de"
+                ? "Für einen Wareneinkauf muss ein hinterlegter Lieferant ausgewählt werden."
+                : "Mal alımında kayıtlı bir firma seçilmelidir.",
           },
           {
             status: 400,
@@ -307,7 +337,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
       if (!supplier) {
         return NextResponse.json(
           {
-            error: "Seçilen firma bulunamadı veya aktif değil.",
+            error:
+              language === "de"
+                ? "Der ausgewählte Lieferant wurde nicht gefunden oder ist nicht aktiv."
+                : "Seçilen firma bulunamadı veya aktif değil.",
           },
           {
             status: 400,
@@ -322,7 +355,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
       if (rawItems.length === 0) {
         return NextResponse.json(
           {
-            error: "En az bir ürün ekleyin.",
+            error:
+              language === "de"
+                ? "Fügen Sie mindestens ein Produkt hinzu."
+                : "En az bir ürün ekleyin.",
           },
           {
             status: 400,
@@ -380,7 +416,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
         if (!productId) {
           return NextResponse.json(
             {
-              error: "Mal alımı kalemlerinden birinde ürün seçilmedi.",
+              error:
+                language === "de"
+                  ? "Bei einer der Wareneinkaufspositionen wurde kein Produkt ausgewählt."
+                  : "Mal alımı kalemlerinden birinde ürün seçilmedi.",
             },
             {
               status: 400,
@@ -391,7 +430,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
         if (seenProductIds.has(productId)) {
           return NextResponse.json(
             {
-              error: "Aynı ürün mal alımına iki kez eklenemez.",
+              error:
+                language === "de"
+                  ? "Dasselbe Produkt kann nicht zweimal in einen Wareneinkauf aufgenommen werden."
+                  : "Aynı ürün mal alımına iki kez eklenemez.",
             },
             {
               status: 400,
@@ -402,7 +444,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
         if (!Number.isInteger(packageCount) || packageCount <= 0) {
           return NextResponse.json(
             {
-              error: "Alınan ambalaj miktarı pozitif tam sayı olmalıdır.",
+              error:
+                language === "de"
+                  ? "Die eingekaufte Verpackungsmenge muss eine positive ganze Zahl sein."
+                  : "Alınan ambalaj miktarı pozitif tam sayı olmalıdır.",
             },
             {
               status: 400,
@@ -413,7 +458,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
         if (!Number.isInteger(unitsPerPackage) || unitsPerPackage <= 0) {
           return NextResponse.json(
             {
-              error: "Ambalaj içeriği pozitif tam sayı olmalıdır.",
+              error:
+                language === "de"
+                  ? "Der Verpackungsinhalt muss eine positive ganze Zahl sein."
+                  : "Ambalaj içeriği pozitif tam sayı olmalıdır.",
             },
             {
               status: 400,
@@ -424,7 +472,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
         if (!validStockUnitCodes.has(purchaseUnit)) {
           return NextResponse.json(
             {
-              error: "Geçersiz alış ambalajı.",
+              error:
+                language === "de"
+                  ? "Ungültige Einkaufsverpackung."
+                  : "Geçersiz alış ambalajı.",
             },
             {
               status: 400,
@@ -435,7 +486,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
         if (!validStockUnitCodes.has(stockUnit)) {
           return NextResponse.json(
             {
-              error: "Geçersiz satış birimi.",
+              error:
+                language === "de"
+                  ? "Ungültige Verkaufseinheit."
+                  : "Geçersiz satış birimi.",
             },
             {
               status: 400,
@@ -446,7 +500,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
         if (!Number.isFinite(packagePrice) || packagePrice <= 0) {
           return NextResponse.json(
             {
-              error: "Ambalaj alış fiyatı sıfırdan büyük olmalıdır.",
+              error:
+                language === "de"
+                  ? "Der Einkaufspreis der Verpackung muss größer als null sein."
+                  : "Ambalaj alış fiyatı sıfırdan büyük olmalıdır.",
             },
             {
               status: 400,
@@ -457,7 +514,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
         if (!Number.isFinite(salePrice) || salePrice < 0) {
           return NextResponse.json(
             {
-              error: "Ürün satış fiyatı geçersiz.",
+              error:
+                language === "de"
+                  ? "Der Verkaufspreis des Produkts ist ungültig."
+                  : "Ürün satış fiyatı geçersiz.",
             },
             {
               status: 400,
@@ -468,7 +528,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
         if (!Number.isFinite(pfandAmount) || pfandAmount < 0) {
           return NextResponse.json(
             {
-              error: "Pfand tutarı geçersiz.",
+              error:
+                language === "de"
+                  ? "Der Pfandbetrag ist ungültig."
+                  : "Pfand tutarı geçersiz.",
             },
             {
               status: 400,
@@ -509,7 +572,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
       if (products.length !== requestedItems.length) {
         return NextResponse.json(
           {
-            error: "Seçilen ürünlerden biri bulunamadı veya aktif değil.",
+            error:
+              language === "de"
+                ? "Eines der ausgewählten Produkte wurde nicht gefunden oder ist nicht aktiv."
+                : "Seçilen ürünlerden biri bulunamadı veya aktif değil.",
           },
           {
             status: 400,
@@ -569,7 +635,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
       if (amount <= 0) {
         return NextResponse.json(
           {
-            error: "Mal alımı toplam tutarı sıfırdan büyük olmalıdır.",
+            error:
+              language === "de"
+                ? "Der Gesamtbetrag des Wareneinkaufs muss größer als null sein."
+                : "Mal alımı toplam tutarı sıfırdan büyük olmalıdır.",
           },
           {
             status: 400,
@@ -590,7 +659,11 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
 
             companyName: supplier.name,
 
-            description: description || `Mal alımı: ${supplier.name}`,
+            description:
+              description ||
+              (language === "de"
+                ? `Wareneinkauf: ${supplier.name}`
+                : `Mal alımı: ${supplier.name}`),
 
             createdById: admin.user.id,
 
@@ -680,9 +753,13 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
       return NextResponse.json(
         {
           message:
-            `Mal alımı kaydedildi. ` +
-            `${preparedItems.reduce((total, item) => total + item.packageCount, 0)} kasa stoğa eklendi ve ` +
-            `${amount.toFixed(2)} € kasadan düşüldü.`,
+            language === "de"
+              ? `Wareneinkauf gespeichert. ` +
+                `${preparedItems.reduce((total, item) => total + item.packageCount, 0)} Kiste(n) wurden dem Lager hinzugefügt und ` +
+                `${amount.toFixed(2)} € aus der Kasse abgebucht.`
+              : `Mal alımı kaydedildi. ` +
+                `${preparedItems.reduce((total, item) => total + item.packageCount, 0)} kasa stoğa eklendi ve ` +
+                `${amount.toFixed(2)} € kasadan düşüldü.`,
 
           movement: serializeMovement(movement),
         },
@@ -697,7 +774,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     if (!Number.isFinite(amount) || amount <= 0) {
       return NextResponse.json(
         {
-          error: "Geçerli bir tutar girin.",
+          error:
+            language === "de"
+              ? "Geben Sie einen gültigen Betrag ein."
+              : "Geçerli bir tutar girin.",
         },
         {
           status: 400,
@@ -746,8 +826,12 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
       {
         message:
           direction === "IN"
-            ? "Gerçek kasaya para girişi kaydedildi."
-            : "Gerçek kasadan para çıkışı kaydedildi.",
+            ? language === "de"
+              ? "Geldeingang in der Kasse wurde gespeichert."
+              : "Gerçek kasaya para girişi kaydedildi."
+            : language === "de"
+              ? "Geldausgang aus der Kasse wurde gespeichert."
+              : "Gerçek kasadan para çıkışı kaydedildi.",
 
         movement: serializeMovement(movement),
       },
@@ -801,6 +885,8 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
 });
 
 export const DELETE = withTenant(async (request: NextRequest) => {
+  const language = await getRequestLanguage();
+
   const admin = await getAdminWithPermissions();
 
   if (
@@ -809,7 +895,10 @@ export const DELETE = withTenant(async (request: NextRequest) => {
   ) {
     return NextResponse.json(
       {
-        error: "Kasa hareketini silme yetkiniz yok.",
+        error:
+          language === "de"
+            ? "Sie sind nicht berechtigt, Kassenbewegungen zu löschen."
+            : "Kasa hareketini silme yetkiniz yok.",
       },
       {
         status: 403,
@@ -847,7 +936,10 @@ export const DELETE = withTenant(async (request: NextRequest) => {
     if (!existing) {
       return NextResponse.json(
         {
-          error: "Kasa hareketi bulunamadı.",
+          error:
+            language === "de"
+              ? "Kassenbewegung nicht gefunden."
+              : "Kasa hareketi bulunamadı.",
         },
         {
           status: 404,
@@ -858,7 +950,10 @@ export const DELETE = withTenant(async (request: NextRequest) => {
     if (existing.category === "BAR_SALE") {
       return NextResponse.json(
         {
-          error: "Otomatik oluşturulan bar satışı hareketi silinemez.",
+          error:
+            language === "de"
+              ? "Automatisch erstellte Bar-Verkaufsbuchungen können nicht gelöscht werden."
+              : "Otomatik oluşturulan bar satışı hareketi silinemez.",
         },
         {
           status: 409,

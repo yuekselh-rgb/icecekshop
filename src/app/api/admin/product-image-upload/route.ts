@@ -1,5 +1,6 @@
 import { getAdminWithPermissions } from "@/lib/admin-auth";
 import { withTenant } from "@/lib/tenant";
+import { getRequestLanguage } from "@/lib/request-language";
 import { put } from "@vercel/blob";
 import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
@@ -18,6 +19,8 @@ const allowedTypes: Record<string, string> = {
 export const POST = withTenant(async (request: NextRequest) => {
   const admin = await getAdminWithPermissions();
 
+  const language = await getRequestLanguage();
+
   if (
     !admin ||
     (!admin.isSuperAdmin &&
@@ -26,7 +29,10 @@ export const POST = withTenant(async (request: NextRequest) => {
   ) {
     return NextResponse.json(
       {
-        error: "Ürün resmi yükleme yetkiniz yok.",
+        error:
+          language === "de"
+            ? "Sie sind nicht berechtigt, Produktbilder hochzuladen."
+            : "Ürün resmi yükleme yetkiniz yok.",
       },
       {
         status: 403,
@@ -42,7 +48,10 @@ export const POST = withTenant(async (request: NextRequest) => {
     if (!(file instanceof File)) {
       return NextResponse.json(
         {
-          error: "Bir resim dosyası seçin.",
+          error:
+            language === "de"
+              ? "Wählen Sie eine Bilddatei aus."
+              : "Bir resim dosyası seçin.",
         },
         {
           status: 400,
@@ -55,7 +64,10 @@ export const POST = withTenant(async (request: NextRequest) => {
     if (!extension) {
       return NextResponse.json(
         {
-          error: "Yalnızca JPG, PNG, WEBP veya GIF yükleyebilirsiniz.",
+          error:
+            language === "de"
+              ? "Sie können nur JPG, PNG, WEBP oder GIF hochladen."
+              : "Yalnızca JPG, PNG, WEBP veya GIF yükleyebilirsiniz.",
         },
         {
           status: 400,
@@ -66,7 +78,10 @@ export const POST = withTenant(async (request: NextRequest) => {
     if (file.size <= 0 || file.size > MAX_FILE_SIZE) {
       return NextResponse.json(
         {
-          error: "Resim en fazla 5 MB olabilir.",
+          error:
+            language === "de"
+              ? "Das Bild darf höchstens 5 MB groß sein."
+              : "Resim en fazla 5 MB olabilir.",
         },
         {
           status: 400,
@@ -83,7 +98,10 @@ export const POST = withTenant(async (request: NextRequest) => {
 
     return NextResponse.json(
       {
-        message: "Ürün resmi başarıyla yüklendi.",
+        message:
+          language === "de"
+            ? "Produktbild erfolgreich hochgeladen."
+            : "Ürün resmi başarıyla yüklendi.",
 
         imageUrl: blob.url,
       },
@@ -96,7 +114,10 @@ export const POST = withTenant(async (request: NextRequest) => {
 
     return NextResponse.json(
       {
-        error: "Ürün resmi yüklenirken hata oluştu.",
+        error:
+          language === "de"
+            ? "Beim Hochladen des Produktbilds ist ein Fehler aufgetreten."
+            : "Ürün resmi yüklenirken hata oluştu.",
       },
       {
         status: 500,

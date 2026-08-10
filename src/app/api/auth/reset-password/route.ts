@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getRequestLanguage } from "@/lib/request-language";
 import { withTenant } from "@/lib/tenant";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
@@ -7,6 +8,8 @@ import { NextRequest, NextResponse } from "next/server";
 const MAX_ATTEMPTS = 5;
 
 export const POST = withTenant(async (request: NextRequest) => {
+  const language = await getRequestLanguage();
+
   try {
     const { email, code, password } = await request.json();
 
@@ -16,14 +19,24 @@ export const POST = withTenant(async (request: NextRequest) => {
 
     if (!normalizedEmail || !code || !password) {
       return NextResponse.json(
-        { error: "Eksik bilgi gönderildi." },
+        {
+          error:
+            language === "de"
+              ? "Es wurden unvollständige Angaben gesendet."
+              : "Eksik bilgi gönderildi.",
+        },
         { status: 400 },
       );
     }
 
     if (String(password).length < 8) {
       return NextResponse.json(
-        { error: "Şifre en az 8 karakter olmalıdır." },
+        {
+          error:
+            language === "de"
+              ? "Das Passwort muss mindestens 8 Zeichen lang sein."
+              : "Şifre en az 8 karakter olmalıdır.",
+        },
         { status: 400 },
       );
     }
@@ -36,7 +49,12 @@ export const POST = withTenant(async (request: NextRequest) => {
 
     if (!user) {
       return NextResponse.json(
-        { error: "Kullanıcı bulunamadı." },
+        {
+          error:
+            language === "de"
+              ? "Benutzer nicht gefunden."
+              : "Kullanıcı bulunamadı.",
+        },
         { status: 404 },
       );
     }
@@ -58,21 +76,31 @@ export const POST = withTenant(async (request: NextRequest) => {
 
     if (!verification) {
       return NextResponse.json(
-        { error: "Kod hatalı." },
+        { error: language === "de" ? "Falscher Code." : "Kod hatalı." },
         { status: 400 },
       );
     }
 
     if (verification.expiresAt < new Date()) {
       return NextResponse.json(
-        { error: "Kodun süresi dolmuş." },
+        {
+          error:
+            language === "de"
+              ? "Der Code ist abgelaufen."
+              : "Kodun süresi dolmuş.",
+        },
         { status: 400 },
       );
     }
 
     if (verification.attempts >= MAX_ATTEMPTS) {
       return NextResponse.json(
-        { error: "Çok fazla hatalı deneme. Lütfen yeni bir kod isteyin." },
+        {
+          error:
+            language === "de"
+              ? "Zu viele fehlgeschlagene Versuche. Bitte fordern Sie einen neuen Code an."
+              : "Çok fazla hatalı deneme. Lütfen yeni bir kod isteyin.",
+        },
         { status: 429 },
       );
     }
@@ -90,7 +118,7 @@ export const POST = withTenant(async (request: NextRequest) => {
       });
 
       return NextResponse.json(
-        { error: "Kod hatalı." },
+        { error: language === "de" ? "Falscher Code." : "Kod hatalı." },
         { status: 400 },
       );
     }
@@ -114,14 +142,20 @@ export const POST = withTenant(async (request: NextRequest) => {
     });
 
     return NextResponse.json({
-      message: "Şifre başarıyla değiştirildi.",
+      message:
+        language === "de"
+          ? "Das Passwort wurde erfolgreich geändert."
+          : "Şifre başarıyla değiştirildi.",
     });
   } catch (error) {
     console.error(error);
 
     return NextResponse.json(
       {
-        error: "Şifre değiştirilemedi.",
+        error:
+          language === "de"
+            ? "Das Passwort konnte nicht geändert werden."
+            : "Şifre değiştirilemedi.",
       },
       {
         status: 500,

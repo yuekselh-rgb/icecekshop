@@ -1,15 +1,19 @@
 import { prisma } from "@/lib/prisma";
+import { getRequestLanguage } from "@/lib/request-language";
 import { getSession } from "@/lib/session";
 import { withTenant } from "@/lib/tenant";
 import { NextResponse } from "next/server";
 
 export const GET = withTenant(async () => {
+  const language = await getRequestLanguage();
+
   const session = await getSession();
 
   if (!session) {
     return NextResponse.json(
       {
-        error: "Lütfen giriş yapın.",
+        error:
+          language === "de" ? "Bitte melden Sie sich an." : "Lütfen giriş yapın.",
       },
       {
         status: 401,
@@ -135,7 +139,10 @@ export const GET = withTenant(async () => {
 
     return NextResponse.json(
       {
-        error: "Siparişler yüklenirken hata oluştu.",
+        error:
+          language === "de"
+            ? "Fehler beim Laden der Bestellungen."
+            : "Siparişler yüklenirken hata oluştu.",
       },
       {
         status: 500,

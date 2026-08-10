@@ -1,9 +1,31 @@
 import { prisma } from "@/lib/prisma";
+import { getRequestLanguage } from "@/lib/request-language";
 import { getSession } from "@/lib/session";
 import { getCurrentTenant } from "@/lib/tenant";
 import CloseDayButton from "./CloseDayButton";
 
 export default async function GunSonuPage() {
+  const language = await getRequestLanguage();
+
+  const t =
+    language === "de"
+      ? {
+          title: "Tagesabschluss",
+          totalSales: "Gesamtumsatz",
+          cash: "Bar",
+          card: "Karte",
+          openAccount: "Offene Rechnung",
+          pfand: "Pfand",
+        }
+      : {
+          title: "Gün Sonu",
+          totalSales: "Toplam Satış",
+          cash: "Nakit",
+          card: "Kart",
+          openAccount: "Açık Hesap",
+          pfand: "Pfand",
+        };
+
   const session = await getSession();
 
   if (!session) {
@@ -80,14 +102,14 @@ export default async function GunSonuPage() {
   return (
     <main className="min-h-screen bg-slate-100 p-6">
       <div className="mx-auto max-w-6xl">
-        <h1 className="mb-6 text-4xl font-black">Gün Sonu</h1>
+        <h1 className="mb-6 text-4xl font-black">{t.title}</h1>
 
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-          <Card title="Toplam Satış" value={totalSales} />
-          <Card title="Nakit" value={cash} />
-          <Card title="Kart" value={card} />
-          {open > 0 && <Card title="Açık Hesap" value={open} />}
-          <Card title="Pfand" value={pfand} />
+          <Card title={t.totalSales} value={totalSales} />
+          <Card title={t.cash} value={cash} />
+          <Card title={t.card} value={card} />
+          {open > 0 && <Card title={t.openAccount} value={open} />}
+          <Card title={t.pfand} value={pfand} />
         </div>
 
         <CloseDayButton />

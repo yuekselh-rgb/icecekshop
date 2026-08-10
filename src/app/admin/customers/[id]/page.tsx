@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getAdminWithPermissions } from "@/lib/admin-auth";
+import { getRequestLanguage } from "@/lib/request-language";
 import { getCurrentTenant } from "@/lib/tenant";
 import { redirect } from "next/navigation";
 
@@ -9,6 +10,57 @@ export default async function CustomerDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const language = await getRequestLanguage();
+
+  const t =
+    language === "de"
+      ? {
+          noPermission: "Sie sind nicht berechtigt, diese Seite anzusehen.",
+          notFound: "Kunde nicht gefunden.",
+          customerCard: "Kunden-Kontokarte",
+          backToCustomers: "← Zurück zu Kunden",
+          totalPurchase: "Gesamteinkauf",
+          openDebt: "Offene Schuld",
+          totalOrders: "Gesamtbestellungen",
+          orderHistory: "Bestellverlauf",
+          noOrdersYet: "Für diesen Kunden gibt es noch keine Bestellungen.",
+          orderNumber: "Bestellnr.",
+          date: "Datum",
+          status: "Status",
+          payment: "Zahlung",
+          product: "Produkt",
+          amount: "Betrag",
+          paid: "Bezahlt",
+          open: "Offen",
+          pfandReturns: "Pfand-Rückgaben",
+          noPfandReturnsYet: "Für diesen Kunden gibt es noch keine Pfand-Rückgaben.",
+          requested: "Angefragt",
+          approved: "Genehmigt",
+        }
+      : {
+          noPermission: "Bu sayfayı görüntüleme yetkiniz yok.",
+          notFound: "Müşteri bulunamadı.",
+          customerCard: "Müşteri Cari Kartı",
+          backToCustomers: "← Müşterilere Dön",
+          totalPurchase: "Toplam Alış",
+          openDebt: "Cari Borç",
+          totalOrders: "Toplam Sipariş",
+          orderHistory: "Sipariş Geçmişi",
+          noOrdersYet: "Bu müşteriye ait henüz sipariş bulunmuyor.",
+          orderNumber: "Sipariş No",
+          date: "Tarih",
+          status: "Durum",
+          payment: "Ödeme",
+          product: "Ürün",
+          amount: "Tutar",
+          paid: "Ödendi",
+          open: "Açık",
+          pfandReturns: "Pfand İadeleri",
+          noPfandReturnsYet: "Bu müşteriye ait henüz Pfand iadesi bulunmuyor.",
+          requested: "Talep Edilen",
+          approved: "Onaylanan",
+        };
+
   const admin = await getAdminWithPermissions();
 
   if (!admin) {
@@ -18,7 +70,7 @@ export default async function CustomerDetailPage({
   if (!admin.permissions.viewCustomers) {
     return (
       <main className="p-10">
-        <h1 className="text-2xl font-black">Bu sayfayı görüntüleme yetkiniz yok.</h1>
+        <h1 className="text-2xl font-black">{t.noPermission}</h1>
       </main>
     );
   }
@@ -57,7 +109,7 @@ export default async function CustomerDetailPage({
     return (
       <main className="p-10">
         <h1 className="text-2xl font-black">
-          Müşteri bulunamadı.
+          {t.notFound}
         </h1>
       </main>
     );
@@ -89,7 +141,7 @@ export default async function CustomerDetailPage({
 
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-black">
-            Müşteri Cari Kartı
+            {t.customerCard}
           </h1>
 
           <div className="flex gap-3">
@@ -98,7 +150,7 @@ export default async function CustomerDetailPage({
               href="/admin/customers"
               className="rounded-xl bg-slate-900 px-5 py-3 font-bold text-white"
             >
-              ← Müşterilere Dön
+              {t.backToCustomers}
             </Link>
 
           </div>
@@ -107,19 +159,19 @@ export default async function CustomerDetailPage({
         <div className="grid gap-4 md:grid-cols-4">
 
           <div className="rounded-2xl bg-white p-6 shadow">
-            <p className="text-slate-500">Toplam Alış</p>
+            <p className="text-slate-500">{t.totalPurchase}</p>
             <h2 className="mt-2 text-3xl font-black">{totalPurchase.toFixed(2)} €</h2>
           </div>
 
           <div className="rounded-2xl bg-white p-6 shadow">
-            <p className="text-slate-500">Cari Borç</p>
+            <p className="text-slate-500">{t.openDebt}</p>
             <h2 className="mt-2 text-3xl font-black text-red-600">
               {openDebt.toFixed(2)} €
             </h2>
           </div>
 
           <div className="rounded-2xl bg-white p-6 shadow">
-            <p className="text-slate-500">Toplam Sipariş</p>
+            <p className="text-slate-500">{t.totalOrders}</p>
             <h2 className="mt-2 text-3xl font-black">{totalOrders}</h2>
           </div>
 
@@ -132,24 +184,24 @@ export default async function CustomerDetailPage({
 
         <div className="rounded-2xl bg-white p-6 shadow">
           <h2 className="mb-4 text-2xl font-black">
-            Sipariş Geçmişi
+            {t.orderHistory}
           </h2>
 
           {customer.orders.length === 0 ? (
             <p className="text-slate-500">
-              Bu müşteriye ait henüz sipariş bulunmuyor.
+              {t.noOrdersYet}
             </p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead>
                   <tr className="border-b border-slate-200 text-xs font-bold uppercase text-slate-400">
-                    <th className="py-2 pr-4">Sipariş No</th>
-                    <th className="py-2 pr-4">Tarih</th>
-                    <th className="py-2 pr-4">Durum</th>
-                    <th className="py-2 pr-4">Ödeme</th>
-                    <th className="py-2 pr-4">Ürün</th>
-                    <th className="py-2 text-right">Tutar</th>
+                    <th className="py-2 pr-4">{t.orderNumber}</th>
+                    <th className="py-2 pr-4">{t.date}</th>
+                    <th className="py-2 pr-4">{t.status}</th>
+                    <th className="py-2 pr-4">{t.payment}</th>
+                    <th className="py-2 pr-4">{t.product}</th>
+                    <th className="py-2 text-right">{t.amount}</th>
                   </tr>
                 </thead>
 
@@ -182,8 +234,8 @@ export default async function CustomerDetailPage({
                           }`}
                         >
                           {order.paymentStatus === "PAID"
-                            ? "Ödendi"
-                            : "Açık"}
+                            ? t.paid
+                            : t.open}
                         </span>
                       </td>
 
@@ -204,22 +256,22 @@ export default async function CustomerDetailPage({
 
         <div className="rounded-2xl bg-white p-6 shadow">
           <h2 className="mb-4 text-2xl font-black">
-            Pfand İadeleri
+            {t.pfandReturns}
           </h2>
 
           {customer.pfandReturns.length === 0 ? (
             <p className="text-slate-500">
-              Bu müşteriye ait henüz Pfand iadesi bulunmuyor.
+              {t.noPfandReturnsYet}
             </p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead>
                   <tr className="border-b border-slate-200 text-xs font-bold uppercase text-slate-400">
-                    <th className="py-2 pr-4">Tarih</th>
-                    <th className="py-2 pr-4">Durum</th>
-                    <th className="py-2 pr-4">Talep Edilen</th>
-                    <th className="py-2 text-right">Onaylanan</th>
+                    <th className="py-2 pr-4">{t.date}</th>
+                    <th className="py-2 pr-4">{t.status}</th>
+                    <th className="py-2 pr-4">{t.requested}</th>
+                    <th className="py-2 text-right">{t.approved}</th>
                   </tr>
                 </thead>
 

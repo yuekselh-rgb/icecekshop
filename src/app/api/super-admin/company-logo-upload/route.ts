@@ -1,4 +1,5 @@
 import { getAdminWithPermissions } from "@/lib/admin-auth";
+import { getRequestLanguage } from "@/lib/request-language";
 import { withTenant } from "@/lib/tenant";
 import { put } from "@vercel/blob";
 import { randomUUID } from "crypto";
@@ -16,12 +17,17 @@ const allowedTypes: Record<string, string> = {
 };
 
 export const POST = withTenant(async (request: NextRequest) => {
+  const language = await getRequestLanguage();
+
   const admin = await getAdminWithPermissions();
 
   if (!admin || !admin.isSuperAdmin) {
     return NextResponse.json(
       {
-        error: "Logo yükleme yetkiniz yok.",
+        error:
+          language === "de"
+            ? "Sie sind nicht berechtigt, ein Logo hochzuladen."
+            : "Logo yükleme yetkiniz yok.",
       },
       {
         status: 403,
@@ -37,7 +43,10 @@ export const POST = withTenant(async (request: NextRequest) => {
     if (!(file instanceof File)) {
       return NextResponse.json(
         {
-          error: "Bir logo dosyası seçin.",
+          error:
+            language === "de"
+              ? "Bitte wählen Sie eine Logo-Datei aus."
+              : "Bir logo dosyası seçin.",
         },
         {
           status: 400,
@@ -50,7 +59,10 @@ export const POST = withTenant(async (request: NextRequest) => {
     if (!extension) {
       return NextResponse.json(
         {
-          error: "Yalnızca JPG, PNG, WEBP veya GIF yükleyebilirsiniz.",
+          error:
+            language === "de"
+              ? "Sie können nur JPG, PNG, WEBP oder GIF hochladen."
+              : "Yalnızca JPG, PNG, WEBP veya GIF yükleyebilirsiniz.",
         },
         {
           status: 400,
@@ -61,7 +73,10 @@ export const POST = withTenant(async (request: NextRequest) => {
     if (file.size <= 0 || file.size > MAX_FILE_SIZE) {
       return NextResponse.json(
         {
-          error: "Logo en fazla 5 MB olabilir.",
+          error:
+            language === "de"
+              ? "Das Logo darf höchstens 5 MB groß sein."
+              : "Logo en fazla 5 MB olabilir.",
         },
         {
           status: 400,
@@ -78,7 +93,10 @@ export const POST = withTenant(async (request: NextRequest) => {
 
     return NextResponse.json(
       {
-        message: "Logo başarıyla yüklendi.",
+        message:
+          language === "de"
+            ? "Logo wurde erfolgreich hochgeladen."
+            : "Logo başarıyla yüklendi.",
         logoUrl: blob.url,
       },
       {
@@ -90,7 +108,10 @@ export const POST = withTenant(async (request: NextRequest) => {
 
     return NextResponse.json(
       {
-        error: "Logo yüklenirken hata oluştu.",
+        error:
+          language === "de"
+            ? "Beim Hochladen des Logos ist ein Fehler aufgetreten."
+            : "Logo yüklenirken hata oluştu.",
       },
       {
         status: 500,

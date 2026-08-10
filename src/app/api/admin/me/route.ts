@@ -1,15 +1,19 @@
 import { getAdminWithPermissions } from "@/lib/admin-auth";
+import { getRequestLanguage } from "@/lib/request-language";
 import { withTenant } from "@/lib/tenant";
 import { NextResponse } from "next/server";
 
 export const GET = withTenant(async () => {
+  const language = await getRequestLanguage();
+
   const admin =
     await getAdminWithPermissions();
 
   if (!admin) {
     return NextResponse.json(
       {
-        error: "Yetkisiz erişim.",
+        error:
+          language === "de" ? "Unbefugter Zugriff." : "Yetkisiz erişim.",
       },
       {
         status: 403,

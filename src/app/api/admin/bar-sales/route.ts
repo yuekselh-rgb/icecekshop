@@ -1,5 +1,6 @@
 import { getAdminWithPermissions } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
+import { getRequestLanguage } from "@/lib/request-language";
 import { withTenant } from "@/lib/tenant";
 import bcrypt from "bcryptjs";
 import { NextRequest, NextResponse } from "next/server";
@@ -125,12 +126,17 @@ function normalizeItems(value: unknown): RequestedItem[] {
 }
 
 export const POST = withTenant(async (request: NextRequest, _context, tenant) => {
+  const language = await getRequestLanguage();
+
   const admin = await getAdminWithPermissions();
 
   if (!admin || !admin.permissions.makeBarSale) {
     return NextResponse.json(
       {
-        error: "Bar satışı yapma yetkiniz yok.",
+        error:
+          language === "de"
+            ? "Sie sind nicht berechtigt, Bar-Verkäufe zu tätigen."
+            : "Bar satışı yapma yetkiniz yok.",
       },
       {
         status: 403,
@@ -161,7 +167,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
 
         if (existingOrder) {
           return NextResponse.json({
-            message: "Bar satışı başarıyla kaydedildi.",
+            message:
+              language === "de"
+                ? "Bar-Verkauf wurde erfolgreich gespeichert."
+                : "Bar satışı başarıyla kaydedildi.",
             order: {
               id: existingOrder.id,
               orderNumber: existingOrder.orderNumber,
@@ -183,7 +192,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     if (!["CASH", "CARD", "OPEN"].includes(paymentMethod)) {
       return NextResponse.json(
         {
-          error: "Geçerli bir ödeme türü seçin.",
+          error:
+            language === "de"
+              ? "Wählen Sie eine gültige Zahlungsart."
+              : "Geçerli bir ödeme türü seçin.",
         },
         {
           status: 400,
@@ -194,7 +206,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     if (items.length === 0) {
       return NextResponse.json(
         {
-          error: "Satış sepeti boş.",
+          error:
+            language === "de"
+              ? "Der Verkaufswarenkorb ist leer."
+              : "Satış sepeti boş.",
         },
         {
           status: 400,
@@ -205,7 +220,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     if (paymentMethod === "OPEN" && !customerId) {
       return NextResponse.json(
         {
-          error: "Açık hesap satışı için müşteri seçin.",
+          error:
+            language === "de"
+              ? "Wählen Sie für einen Verkauf auf Rechnung einen Kunden aus."
+              : "Açık hesap satışı için müşteri seçin.",
         },
         {
           status: 400,
@@ -240,7 +258,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     if (paymentMethod === "OPEN" && !selectedCustomer) {
       return NextResponse.json(
         {
-          error: "Seçilen müşteri bulunamadı veya aktif değil.",
+          error:
+            language === "de"
+              ? "Der ausgewählte Kunde wurde nicht gefunden oder ist nicht aktiv."
+              : "Seçilen müşteri bulunamadı veya aktif değil.",
         },
         {
           status: 404,
@@ -269,7 +290,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     if (products.length !== items.length) {
       return NextResponse.json(
         {
-          error: "Sepette bulunamayan veya satışta olmayan ürün var.",
+          error:
+            language === "de"
+              ? "Der Warenkorb enthält ein nicht gefundenes oder nicht verkäufliches Produkt."
+              : "Sepette bulunamayan veya satışta olmayan ürün var.",
         },
         {
           status: 409,
@@ -606,7 +630,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
 
     return NextResponse.json(
       {
-        message: "Bar satışı başarıyla kaydedildi.",
+        message:
+              language === "de"
+                ? "Bar-Verkauf wurde erfolgreich gespeichert."
+                : "Bar satışı başarıyla kaydedildi.",
         order: {
           id: order.id,
           orderNumber: order.orderNumber,
@@ -657,7 +684,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
 
       if (existingOrder) {
         return NextResponse.json({
-          message: "Bar satışı başarıyla kaydedildi.",
+          message:
+              language === "de"
+                ? "Bar-Verkauf wurde erfolgreich gespeichert."
+                : "Bar satışı başarıyla kaydedildi.",
           order: {
             id: existingOrder.id,
             orderNumber: existingOrder.orderNumber,
@@ -674,7 +704,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
 
       return NextResponse.json(
         {
-          error: `${productName} için yeterli stok yok. Mevcut stok: ${stock}`,
+          error:
+            language === "de"
+              ? `Nicht genügend Bestand für ${productName}. Verfügbar: ${stock}`
+              : `${productName} için yeterli stok yok. Mevcut stok: ${stock}`,
         },
         {
           status: 409,
@@ -685,7 +718,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     if (message.startsWith("STOCK_CHANGED:")) {
       return NextResponse.json(
         {
-          error: "Stok bilgisi değişti. Sayfayı yenileyip tekrar deneyin.",
+          error:
+            language === "de"
+              ? "Der Lagerbestand hat sich geändert. Bitte laden Sie die Seite neu und versuchen Sie es erneut."
+              : "Stok bilgisi değişti. Sayfayı yenileyip tekrar deneyin.",
         },
         {
           status: 409,
@@ -695,7 +731,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
 
     return NextResponse.json(
       {
-        error: "Bar satışı kaydedilirken hata oluştu.",
+        error:
+          language === "de"
+            ? "Fehler beim Speichern des Bar-Verkaufs."
+            : "Bar satışı kaydedilirken hata oluştu.",
       },
       {
         status: 500,

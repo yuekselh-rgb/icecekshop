@@ -7,6 +7,7 @@ import {
   serializeAdminOrder,
 } from "@/lib/admin-order-serializer";
 import { prisma } from "@/lib/prisma";
+import { getRequestLanguage } from "@/lib/request-language";
 import { withTenant } from "@/lib/tenant";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -30,12 +31,17 @@ export const GET = withTenant(async (
     }>;
   },
 ) => {
+  const language = await getRequestLanguage();
+
   const admin = await requireAdminPermission("viewOrders");
 
   if (!admin) {
     return NextResponse.json(
       {
-        error: "Siparişleri görüntüleme yetkiniz yok.",
+        error:
+          language === "de"
+            ? "Sie sind nicht berechtigt, Bestellungen einzusehen."
+            : "Siparişleri görüntüleme yetkiniz yok.",
       },
       {
         status: 403,
@@ -58,7 +64,8 @@ export const GET = withTenant(async (
     if (!order) {
       return NextResponse.json(
         {
-          error: "Sipariş bulunamadı.",
+          error:
+            language === "de" ? "Bestellung nicht gefunden." : "Sipariş bulunamadı.",
         },
         {
           status: 404,
@@ -74,7 +81,10 @@ export const GET = withTenant(async (
 
     return NextResponse.json(
       {
-        error: "Sipariş yüklenirken hata oluştu.",
+        error:
+          language === "de"
+            ? "Fehler beim Laden der Bestellung."
+            : "Sipariş yüklenirken hata oluştu.",
       },
       {
         status: 500,
@@ -92,12 +102,15 @@ export const PATCH = withTenant(async (
   },
   tenant,
 ) => {
+  const language = await getRequestLanguage();
+
   const admin = await getAdminWithPermissions();
 
   if (!admin) {
     return NextResponse.json(
       {
-        error: "Yetkisiz erişim.",
+        error:
+          language === "de" ? "Unbefugter Zugriff." : "Yetkisiz erişim.",
       },
       {
         status: 403,
@@ -135,7 +148,10 @@ export const PATCH = withTenant(async (
     ) {
       return NextResponse.json(
         {
-          error: "Geçersiz ödeme durumu.",
+          error:
+            language === "de"
+              ? "Ungültiger Zahlungsstatus."
+              : "Geçersiz ödeme durumu.",
         },
         {
           status: 400,
@@ -155,7 +171,10 @@ export const PATCH = withTenant(async (
     ) {
       return NextResponse.json(
         {
-          error: "Sipariş bilgilerini değiştirme yetkiniz yok.",
+          error:
+            language === "de"
+              ? "Sie sind nicht berechtigt, Bestelldaten zu ändern."
+              : "Sipariş bilgilerini değiştirme yetkiniz yok.",
         },
         {
           status: 403,
@@ -171,7 +190,10 @@ export const PATCH = withTenant(async (
     ) {
       return NextResponse.json(
         {
-          error: "Müşteri tahsilatını onaylama yetkiniz yok.",
+          error:
+            language === "de"
+              ? "Sie sind nicht berechtigt, Kundenzahlungen zu bestätigen."
+              : "Müşteri tahsilatını onaylama yetkiniz yok.",
         },
         {
           status: 403,
@@ -182,7 +204,10 @@ export const PATCH = withTenant(async (
     if (requestedStatus && !allowedStatuses.includes(requestedStatus)) {
       return NextResponse.json(
         {
-          error: "Geçersiz sipariş durumu.",
+          error:
+            language === "de"
+              ? "Ungültiger Bestellstatus."
+              : "Geçersiz sipariş durumu.",
         },
         {
           status: 400,
@@ -193,7 +218,10 @@ export const PATCH = withTenant(async (
     if (!requestedStatus && !hasDriverId && !hasPaymentStatus) {
       return NextResponse.json(
         {
-          error: "Güncellenecek bir alan gönderilmedi.",
+          error:
+            language === "de"
+              ? "Es wurde kein zu aktualisierendes Feld übermittelt."
+              : "Güncellenecek bir alan gönderilmedi.",
         },
         {
           status: 400,
@@ -216,7 +244,10 @@ export const PATCH = withTenant(async (
       if (!driver) {
         return NextResponse.json(
           {
-            error: "Seçilen şoför bulunamadı.",
+            error:
+              language === "de"
+                ? "Der ausgewählte Fahrer wurde nicht gefunden."
+                : "Seçilen şoför bulunamadı.",
           },
           {
             status: 404,
@@ -253,7 +284,8 @@ export const PATCH = withTenant(async (
     if (!existingOrder) {
       return NextResponse.json(
         {
-          error: "Sipariş bulunamadı.",
+          error:
+            language === "de" ? "Bestellung nicht gefunden." : "Sipariş bulunamadı.",
         },
         {
           status: 404,
@@ -274,7 +306,9 @@ export const PATCH = withTenant(async (
       return NextResponse.json(
         {
           error:
-            "Admin tarafından onaylanan ödeme tekrar açılamaz. Kasa hareketi kesinleşmiştir.",
+            language === "de"
+              ? "Eine vom Admin bestätigte Zahlung kann nicht erneut geöffnet werden. Die Kassenbuchung ist bereits abgeschlossen."
+              : "Admin tarafından onaylanan ödeme tekrar açılamaz. Kasa hareketi kesinleşmiştir.",
         },
         {
           status: 409,
@@ -296,7 +330,9 @@ export const PATCH = withTenant(async (
       return NextResponse.json(
         {
           error:
-            "Teslim edilmiş siparişin Lieferfahrer bilgisi yalnızca Super Admin tarafından değiştirilebilir.",
+            language === "de"
+              ? "Der Lieferfahrer einer bereits zugestellten Bestellung kann nur vom Super-Admin geändert werden."
+              : "Teslim edilmiş siparişin Lieferfahrer bilgisi yalnızca Super Admin tarafından değiştirilebilir.",
         },
         {
           status: 403,
@@ -318,7 +354,10 @@ export const PATCH = withTenant(async (
 
     if (!statusChanged && !driverChanged && !paymentChanged) {
       return NextResponse.json({
-        message: "Siparişte değişiklik yapılmadı.",
+        message:
+          language === "de"
+            ? "An der Bestellung wurden keine Änderungen vorgenommen."
+            : "Siparişte değişiklik yapılmadı.",
         order: existingOrder,
       });
     }
@@ -649,19 +688,35 @@ export const PATCH = withTenant(async (
       message:
         driverChanged && !statusChanged
           ? requestedDriverId
-            ? "Lieferfahrer siparişe atandı."
-            : "Lieferfahrer ataması kaldırıldı."
+            ? language === "de"
+              ? "Lieferfahrer wurde der Bestellung zugewiesen."
+              : "Lieferfahrer siparişe atandı."
+            : language === "de"
+              ? "Zuweisung des Lieferfahrers wurde entfernt."
+              : "Lieferfahrer ataması kaldırıldı."
           : requestedStatus === "CANCELLED"
-            ? "Sipariş iptal edildi ve stoklar geri eklendi."
+            ? language === "de"
+              ? "Bestellung wurde storniert und der Lagerbestand wurde zurückgebucht."
+              : "Sipariş iptal edildi ve stoklar geri eklendi."
             : wasCancelled && statusChanged
-              ? "Sipariş yeniden açıldı ve stoklar tekrar düşüldü."
+              ? language === "de"
+                ? "Bestellung wurde wieder geöffnet und der Lagerbestand wurde erneut abgebucht."
+                : "Sipariş yeniden açıldı ve stoklar tekrar düşüldü."
               : driverChanged
-                ? "Sipariş ve Lieferfahrer bilgisi güncellendi."
+                ? language === "de"
+                  ? "Bestellung und Lieferfahrer wurden aktualisiert."
+                  : "Sipariş ve Lieferfahrer bilgisi güncellendi."
                 : requestedPaymentStatus === "PAID"
                   ? updatedOrder.paymentStatus === "PAID"
-                    ? "Tahsilat onaylandı. Sipariş hesabı tamamen kapandı."
-                    : "Kısmi tahsilat onaylandı. Kalan tutar açık hesapta bırakıldı."
-                  : "Sipariş durumu güncellendi.",
+                    ? language === "de"
+                      ? "Zahlung bestätigt. Die Bestellung ist vollständig beglichen."
+                      : "Tahsilat onaylandı. Sipariş hesabı tamamen kapandı."
+                    : language === "de"
+                      ? "Teilzahlung bestätigt. Der Restbetrag bleibt offen."
+                      : "Kısmi tahsilat onaylandı. Kalan tutar açık hesapta bırakıldı."
+                  : language === "de"
+                    ? "Bestellstatus wurde aktualisiert."
+                    : "Sipariş durumu güncellendi.",
 
       order: {
         ...updatedOrder,
@@ -695,7 +750,9 @@ export const PATCH = withTenant(async (
       return NextResponse.json(
         {
           error:
-            "Onay bekleyen bir tahsilat bildirimi bulunamadı. Şoför önce müşteriden aldığı tutarı bildirmelidir.",
+            language === "de"
+              ? "Es wurde keine offene Zahlungsmeldung gefunden. Der Fahrer muss zuerst den vom Kunden erhaltenen Betrag melden."
+              : "Onay bekleyen bir tahsilat bildirimi bulunamadı. Şoför önce müşteriden aldığı tutarı bildirmelidir.",
         },
         {
           status: 409,
@@ -706,7 +763,10 @@ export const PATCH = withTenant(async (
     if (message === "INVALID_PENDING_PAYMENT_AMOUNT") {
       return NextResponse.json(
         {
-          error: "Onay bekleyen tahsilat tutarı geçersiz.",
+          error:
+            language === "de"
+              ? "Der Betrag der offenen Zahlungsmeldung ist ungültig."
+              : "Onay bekleyen tahsilat tutarı geçersiz.",
         },
         {
           status: 409,
@@ -718,7 +778,9 @@ export const PATCH = withTenant(async (
       return NextResponse.json(
         {
           error:
-            "Onaylanmak istenen tahsilat, siparişin kalan açık tutarından büyüktür.",
+            language === "de"
+              ? "Der zu bestätigende Betrag ist höher als der offene Restbetrag der Bestellung."
+              : "Onaylanmak istenen tahsilat, siparişin kalan açık tutarından büyüktür.",
         },
         {
           status: 409,
@@ -731,7 +793,10 @@ export const PATCH = withTenant(async (
 
       return NextResponse.json(
         {
-          error: `${productName} için yeterli stok bulunmadığından sipariş yeniden açılamadı.`,
+          error:
+            language === "de"
+              ? `Die Bestellung konnte nicht wieder geöffnet werden, da für ${productName} nicht genügend Lagerbestand vorhanden ist.`
+              : `${productName} için yeterli stok bulunmadığından sipariş yeniden açılamadı.`,
         },
         {
           status: 409,
@@ -741,7 +806,10 @@ export const PATCH = withTenant(async (
 
     return NextResponse.json(
       {
-        error: "Sipariş güncellenirken hata oluştu.",
+        error:
+          language === "de"
+            ? "Beim Aktualisieren der Bestellung ist ein Fehler aufgetreten."
+            : "Sipariş güncellenirken hata oluştu.",
       },
       {
         status: 500,
@@ -758,12 +826,17 @@ export const DELETE = withTenant(async (
     }>;
   },
 ) => {
+  const language = await getRequestLanguage();
+
   const admin = await requireAdminPermission("deleteOrder");
 
   if (!admin) {
     return NextResponse.json(
       {
-        error: "Sipariş silme yetkiniz yok.",
+        error:
+          language === "de"
+            ? "Sie sind nicht berechtigt, Bestellungen zu löschen."
+            : "Sipariş silme yetkiniz yok.",
       },
       {
         status: 403,
@@ -784,7 +857,8 @@ export const DELETE = withTenant(async (
     if (!order) {
       return NextResponse.json(
         {
-          error: "Sipariş bulunamadı.",
+          error:
+            language === "de" ? "Bestellung nicht gefunden." : "Sipariş bulunamadı.",
         },
         {
           status: 404,
@@ -803,14 +877,20 @@ export const DELETE = withTenant(async (
     });
 
     return NextResponse.json({
-      message: "Sipariş geçmiş listeden kaldırıldı.",
+      message:
+        language === "de"
+          ? "Bestellung wurde aus der Liste entfernt."
+          : "Sipariş geçmiş listeden kaldırıldı.",
     });
   } catch (error) {
     console.error("DELETE_ORDER_ERROR", error);
 
     return NextResponse.json(
       {
-        error: "Sipariş silinemedi.",
+        error:
+          language === "de"
+            ? "Bestellung konnte nicht gelöscht werden."
+            : "Sipariş silinemedi.",
       },
       {
         status: 500,

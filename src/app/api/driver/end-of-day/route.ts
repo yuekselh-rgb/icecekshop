@@ -1,5 +1,6 @@
 import { verifySessionToken } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getRequestLanguage } from "@/lib/request-language";
 import { withTenant } from "@/lib/tenant";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
@@ -23,6 +24,8 @@ async function getDriverSession() {
 }
 
 export const POST = withTenant(async () => {
+  const language = await getRequestLanguage();
+
   const session = await getDriverSession();
 
   if (!session) {
@@ -97,6 +100,9 @@ export const POST = withTenant(async () => {
     open,
     pfand,
     orderCount: orders.length,
-    message: "Gün sonu özeti hazırlandı.",
+    message:
+      language === "de"
+        ? "Tagesabschluss wurde erstellt."
+        : "Gün sonu özeti hazırlandı.",
   });
 });

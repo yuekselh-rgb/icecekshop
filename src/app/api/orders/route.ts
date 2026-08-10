@@ -576,7 +576,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
 
     return NextResponse.json(
       {
-        message: "Siparişiniz başarıyla oluşturuldu.",
+        message:
+          language === "de"
+            ? "Ihre Bestellung wurde erfolgreich aufgegeben."
+            : "Siparişiniz başarıyla oluşturuldu.",
         order: {
           id: order.id,
           orderNumber: order.orderNumber,

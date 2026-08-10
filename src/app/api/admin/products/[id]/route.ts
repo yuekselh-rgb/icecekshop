@@ -1,6 +1,7 @@
 import { requireAdminPermission } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
 import { withTenant } from "@/lib/tenant";
+import { getRequestLanguage } from "@/lib/request-language";
 import { NextRequest, NextResponse } from "next/server";
 
 export const PATCH = withTenant(async (
@@ -13,12 +14,17 @@ export const PATCH = withTenant(async (
 ) => {
   const { id } = await context.params;
 
+  const language = await getRequestLanguage();
+
   const baseline = await requireAdminPermission("viewProducts");
 
   if (!baseline) {
     return NextResponse.json(
       {
-        error: "Bu işlem için yetkiniz yok.",
+        error:
+          language === "de"
+            ? "Sie sind für diese Aktion nicht berechtigt."
+            : "Bu işlem için yetkiniz yok.",
       },
       {
         status: 403,
@@ -33,7 +39,10 @@ export const PATCH = withTenant(async (
   } catch {
     return NextResponse.json(
       {
-        error: "Geçersiz istek gönderildi.",
+        error:
+          language === "de"
+            ? "Ungültige Anfrage gesendet."
+            : "Geçersiz istek gönderildi.",
       },
       {
         status: 400,
@@ -54,7 +63,10 @@ export const PATCH = withTenant(async (
     if (!existing) {
       return NextResponse.json(
         {
-          error: "Ürün bulunamadı.",
+          error:
+            language === "de"
+              ? "Produkt nicht gefunden."
+              : "Ürün bulunamadı.",
         },
         {
           status: 404,
@@ -90,7 +102,10 @@ export const PATCH = withTenant(async (
     if (!Number.isInteger(requestedStock) || requestedStock < 0) {
       return NextResponse.json(
         {
-          error: "Stok sıfır veya pozitif tam sayı olmalıdır.",
+          error:
+            language === "de"
+              ? "Der Lagerbestand muss null oder eine positive ganze Zahl sein."
+              : "Stok sıfır veya pozitif tam sayı olmalıdır.",
         },
         {
           status: 400,
@@ -109,7 +124,10 @@ export const PATCH = withTenant(async (
     if (!Number.isFinite(requestedPrice) || requestedPrice < 0) {
       return NextResponse.json(
         {
-          error: "Geçerli bir fiyat girin.",
+          error:
+            language === "de"
+              ? "Geben Sie einen gültigen Preis ein."
+              : "Geçerli bir fiyat girin.",
         },
         {
           status: 400,
@@ -146,7 +164,10 @@ export const PATCH = withTenant(async (
     if (requestedOldPrice !== null && !Number.isFinite(requestedOldPrice)) {
       return NextResponse.json(
         {
-          error: "Geçerli bir kampanya öncesi fiyat girin.",
+          error:
+            language === "de"
+              ? "Geben Sie einen gültigen Preis vor dem Angebot ein."
+              : "Geçerli bir kampanya öncesi fiyat girin.",
         },
         {
           status: 400,
@@ -197,7 +218,10 @@ export const PATCH = withTenant(async (
       if (!permission) {
         return NextResponse.json(
           {
-            error: "Ürün bilgilerini düzenleme yetkiniz yok.",
+            error:
+              language === "de"
+                ? "Sie sind nicht berechtigt, Produktinformationen zu bearbeiten."
+                : "Ürün bilgilerini düzenleme yetkiniz yok.",
           },
           {
             status: 403,
@@ -212,7 +236,10 @@ export const PATCH = withTenant(async (
       if (!permission) {
         return NextResponse.json(
           {
-            error: "Fiyat değiştirme yetkiniz yok.",
+            error:
+              language === "de"
+                ? "Sie sind nicht berechtigt, den Preis zu ändern."
+                : "Fiyat değiştirme yetkiniz yok.",
           },
           {
             status: 403,
@@ -227,7 +254,10 @@ export const PATCH = withTenant(async (
       if (!permission) {
         return NextResponse.json(
           {
-            error: "Kampanyalı ürünleri yönetme yetkiniz yok.",
+            error:
+              language === "de"
+                ? "Sie sind nicht berechtigt, Angebotsprodukte zu verwalten."
+                : "Kampanyalı ürünleri yönetme yetkiniz yok.",
           },
           {
             status: 403,
@@ -242,7 +272,10 @@ export const PATCH = withTenant(async (
       if (!permission) {
         return NextResponse.json(
           {
-            error: "Stok ekleme yetkiniz yok.",
+            error:
+              language === "de"
+                ? "Sie sind nicht berechtigt, Lagerbestand hinzuzufügen."
+                : "Stok ekleme yetkiniz yok.",
           },
           {
             status: 403,
@@ -257,7 +290,10 @@ export const PATCH = withTenant(async (
       if (!permission) {
         return NextResponse.json(
           {
-            error: "Stok azaltma yetkiniz yok.",
+            error:
+              language === "de"
+                ? "Sie sind nicht berechtigt, Lagerbestand zu reduzieren."
+                : "Stok azaltma yetkiniz yok.",
           },
           {
             status: 403,
@@ -274,7 +310,10 @@ export const PATCH = withTenant(async (
       !stockReduced
     ) {
       return NextResponse.json({
-        message: "Üründe değişiklik yapılmadı.",
+        message:
+          language === "de"
+            ? "Am Produkt wurde nichts geändert."
+            : "Üründe değişiklik yapılmadı.",
         product: existing,
       });
     }
@@ -292,7 +331,10 @@ export const PATCH = withTenant(async (
     if (!category) {
       return NextResponse.json(
         {
-          error: "Seçilen kategori bulunamadı.",
+          error:
+            language === "de"
+              ? "Die ausgewählte Kategorie wurde nicht gefunden."
+              : "Seçilen kategori bulunamadı.",
         },
         {
           status: 404,
@@ -307,7 +349,10 @@ export const PATCH = withTenant(async (
     if (!packageInfo) {
       return NextResponse.json(
         {
-          error: "Paket bilgisi zorunludur.",
+          error:
+            language === "de"
+              ? "Verpackungsinformation ist erforderlich."
+              : "Paket bilgisi zorunludur.",
         },
         {
           status: 400,
@@ -473,7 +518,8 @@ export const PATCH = withTenant(async (
     });
 
     return NextResponse.json({
-      message: "Ürün güncellendi.",
+      message:
+        language === "de" ? "Produkt aktualisiert." : "Ürün güncellendi.",
       product,
     });
   } catch (error) {
@@ -481,7 +527,10 @@ export const PATCH = withTenant(async (
 
     return NextResponse.json(
       {
-        error: "Ürün güncellenirken hata oluştu.",
+        error:
+          language === "de"
+            ? "Beim Aktualisieren des Produkts ist ein Fehler aufgetreten."
+            : "Ürün güncellenirken hata oluştu.",
       },
       {
         status: 500,
@@ -500,10 +549,15 @@ export const DELETE = withTenant(async (
 ) => {
   const admin = await requireAdminPermission("deleteProduct");
 
+  const language = await getRequestLanguage();
+
   if (!admin) {
     return NextResponse.json(
       {
-        error: "Ürün silme yetkiniz yok.",
+        error:
+          language === "de"
+            ? "Sie sind nicht berechtigt, Produkte zu löschen."
+            : "Ürün silme yetkiniz yok.",
       },
       {
         status: 403,
@@ -521,14 +575,17 @@ export const DELETE = withTenant(async (
     });
 
     return NextResponse.json({
-      message: "Ürün silindi.",
+      message: language === "de" ? "Produkt gelöscht." : "Ürün silindi.",
     });
   } catch (error) {
     console.error("DELETE_PRODUCT_ERROR", error);
 
     return NextResponse.json(
       {
-        error: "Ürün silinemedi.",
+        error:
+          language === "de"
+            ? "Produkt konnte nicht gelöscht werden."
+            : "Ürün silinemedi.",
       },
       {
         status: 500,

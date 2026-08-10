@@ -222,7 +222,8 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
           303,
         )
       : NextResponse.json({
-          message: "Giriş başarılı.",
+          message:
+            language === "de" ? "Anmeldung erfolgreich." : "Giriş başarılı.",
           user: {
             id: user.id,
             email: user.email,

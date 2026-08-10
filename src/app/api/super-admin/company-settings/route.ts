@@ -1,5 +1,6 @@
 import { getAdminWithPermissions } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
+import { getRequestLanguage } from "@/lib/request-language";
 import { withTenant } from "@/lib/tenant";
 import { NextResponse } from "next/server";
 
@@ -14,12 +15,14 @@ async function requireSuperAdmin() {
 }
 
 export const GET = withTenant(async (_request, _context, tenant) => {
+  const language = await getRequestLanguage();
+
   const admin = await requireSuperAdmin();
 
   if (!admin) {
     return NextResponse.json(
       {
-        error: "Yetkisiz erişim.",
+        error: language === "de" ? "Unbefugter Zugriff." : "Yetkisiz erişim.",
       },
       {
         status: 403,
@@ -49,7 +52,10 @@ export const GET = withTenant(async (_request, _context, tenant) => {
 
     return NextResponse.json(
       {
-        error: "Firma ayarları yüklenemedi.",
+        error:
+          language === "de"
+            ? "Firmeneinstellungen konnten nicht geladen werden."
+            : "Firma ayarları yüklenemedi.",
       },
       {
         status: 500,
@@ -59,12 +65,14 @@ export const GET = withTenant(async (_request, _context, tenant) => {
 });
 
 export const PATCH = withTenant(async (request: Request, _context, tenant) => {
+  const language = await getRequestLanguage();
+
   const admin = await requireSuperAdmin();
 
   if (!admin) {
     return NextResponse.json(
       {
-        error: "Yetkisiz erişim.",
+        error: language === "de" ? "Unbefugter Zugriff." : "Yetkisiz erişim.",
       },
       {
         status: 403,
@@ -141,7 +149,10 @@ export const PATCH = withTenant(async (request: Request, _context, tenant) => {
     if (!companyName) {
       return NextResponse.json(
         {
-          error: "Firma adı zorunludur.",
+          error:
+            language === "de"
+              ? "Firmenname ist erforderlich."
+              : "Firma adı zorunludur.",
         },
         {
           status: 400,
@@ -152,7 +163,10 @@ export const PATCH = withTenant(async (request: Request, _context, tenant) => {
     if (companyName.length > 100) {
       return NextResponse.json(
         {
-          error: "Firma adı en fazla 100 karakter olabilir.",
+          error:
+            language === "de"
+              ? "Der Firmenname darf höchstens 100 Zeichen lang sein."
+              : "Firma adı en fazla 100 karakter olabilir.",
         },
         {
           status: 400,
@@ -163,7 +177,10 @@ export const PATCH = withTenant(async (request: Request, _context, tenant) => {
     if (companySubtitle.length > 160) {
       return NextResponse.json(
         {
-          error: "Alt başlık en fazla 160 karakter olabilir.",
+          error:
+            language === "de"
+              ? "Der Untertitel darf höchstens 160 Zeichen lang sein."
+              : "Alt başlık en fazla 160 karakter olabilir.",
         },
         {
           status: 400,
@@ -265,7 +282,10 @@ export const PATCH = withTenant(async (request: Request, _context, tenant) => {
     });
 
     return NextResponse.json({
-      message: "Firma ayarları kaydedildi.",
+      message:
+        language === "de"
+          ? "Firmeneinstellungen wurden gespeichert."
+          : "Firma ayarları kaydedildi.",
       settings,
     });
   } catch (error) {
@@ -273,7 +293,12 @@ export const PATCH = withTenant(async (request: Request, _context, tenant) => {
 
     return NextResponse.json(
       {
-        error: error instanceof Error ? error.message : "Bilinmeyen hata",
+        error:
+          error instanceof Error
+            ? error.message
+            : language === "de"
+              ? "Unbekannter Fehler"
+              : "Bilinmeyen hata",
       },
       {
         status: 500,

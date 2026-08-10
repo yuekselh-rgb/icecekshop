@@ -274,6 +274,62 @@ export default function AdminDriverStockPage() {
           loading: "Wird geladen...",
           loadProducts: "Produkte zum Fahrer laden",
           saveCounts: "Bestände speichern",
+
+          loadingFull: "Fahrerbestände werden geladen...",
+          adminPanel: "Adminbereich",
+          intro:
+            "Laden Sie Produkte vom Hauptlager auf den Fahrzeugbestand des Fahrers. Geladene Produkte werden automatisch vom Hauptlager abgezogen, und alle Bewegungen werden protokolliert.",
+          driverSelectLabel: "Fahrerauswahl",
+          outboundTotal: "Ausgehende Produkte gesamt",
+          loadedToDriverLabel: "an den Fahrer geladene Produkte",
+          inboundTotal: "Eingehende Produkte gesamt",
+          returnedToWarehouseLabel: "ins Lager zurückgenommene Produkte",
+          cashToCollectToday: "Heute abzuliefernde Barsumme",
+          cashToCollectDesc:
+            "Bargeld, das der Fahrer heute an die Kasse abliefern muss",
+          soldGoodsTotal: "Verkaufte Ware gesamt",
+          productsSoldSuffix: "Produkte verkauft",
+          tripSalesHeading: "In dieser Tour getätigte Kundenverkäufe",
+          tripSalesDesc:
+            "Verkäufe, die der Fahrer seit der letzten Fahrzeugbeladung direkt aus dem Fahrzeug an Kunden getätigt hat.",
+          salesCountSuffix: "Verkäufe",
+          noTripSales:
+            "In dieser Fahrzeugtour wurden noch keine Kundenverkäufe getätigt.",
+          paymentLabel: "Zahlung",
+          differentProductsSuffix: "unterschiedliche Produkte",
+          netSale: "Nettoverkauf",
+          paymentStatus: "Zahlungsstatus",
+          approving: "Wird bestätigt...",
+          paymentApprovalLabel: "Zahlungsfreigabe",
+          noApprovalPermission: "Sie haben keine Freigabeberechtigung",
+          grossSale: "Bruttoverkauf",
+          pfandFromCustomer: "Vom Kunden erhaltenes Pfand",
+          netCollection: "Nettoeinnahme",
+          loadToDriverAction: "Fahrer beladen",
+          returnFromDriverBtn: "Rückgabe vom Fahrer",
+          transferDesc:
+            "Produkte aus dem Hauptlager auf den Fahrzeugbestand übertragen.",
+          noProductsFound: "Keine passenden Produkte gefunden.",
+          productsSuffix: "Produkte",
+          toLoadLabel: "Zu laden",
+          mainStockInsufficientShort: "Hauptlager unzureichend",
+          loadNoteLabel: "Ladehinweis",
+          productsSelectedSuffix: "Produkte ausgewählt",
+          viewOnlyNotice:
+            "Sie können die Fahrzeugbestände einsehen, haben aber keine Berechtigung, Produkte zu laden oder zurückzunehmen.",
+          returnFromDriverHeading: "Rückgabe vom Fahrer erfassen",
+          noDriverStockProducts:
+            "Der Fahrzeugbestand des Fahrers enthält keine Produkte.",
+          outboundSmallLabel: "Ausgang",
+          remainingSuffix: "übrig",
+          missingPrefix: "Fehlend",
+          noneMissing: "Kein Fehlbestand",
+          expectedInVehicleLabel: "Im Fahrzeug erwartet",
+          returnNoteLabel: "Rückgabehinweis",
+          countsEnteredSuffix: "Zählungen erfasst",
+          savingEllipsis: "Wird gespeichert...",
+          selectDriverPrompt:
+            "Wählen Sie einen Fahrer aus, um Bestandsinformationen zu sehen oder Produkte zu laden.",
         }
       : {
           title: "Şoför Stokları",
@@ -287,6 +343,58 @@ export default function AdminDriverStockPage() {
           loading: "Yükleniyor...",
           loadProducts: "Ürünleri Şoföre Yükle",
           saveCounts: "Girilen Sayımları Toplu Kaydet",
+
+          loadingFull: "Şoför stokları yükleniyor...",
+          adminPanel: "Admin Paneli",
+          intro:
+            "Ana depodan şoförün araç stokuna ürün yükleyin. Yüklenen ürünler ana stoktan otomatik düşülür ve bütün hareketler kayıt altına alınır.",
+          driverSelectLabel: "Şoför seçimi",
+          outboundTotal: "Giden Ürün Toplamı",
+          loadedToDriverLabel: "şoföre yüklenen ürün",
+          inboundTotal: "Gelen Ürün Toplamı",
+          returnedToWarehouseLabel: "depoya geri alınan ürün",
+          cashToCollectToday: "Bugün Teslim Edilecek Nakit",
+          cashToCollectDesc: "Şoförün bugün kasaya teslim etmesi gereken nakit",
+          soldGoodsTotal: "Satılan Mal Toplamı",
+          productsSoldSuffix: "ürün satıldı",
+          tripSalesHeading: "Bu Tur Yapılan Müşteri Satışları",
+          tripSalesDesc:
+            "Şoförün son araç yüklemesinden sonra müşterilere araçtan yaptığı satışlar.",
+          salesCountSuffix: "satış",
+          noTripSales: "Bu araç turunda henüz müşteriye satış yapılmadı.",
+          paymentLabel: "Ödeme",
+          differentProductsSuffix: "farklı ürün",
+          netSale: "Net satış",
+          paymentStatus: "Ödeme durumu",
+          approving: "Onaylanıyor...",
+          paymentApprovalLabel: "Ödeme onayı",
+          noApprovalPermission: "Onay yetkiniz bulunmuyor",
+          grossSale: "Brüt satış",
+          pfandFromCustomer: "Müşteriden alınan Pfand",
+          netCollection: "Net tahsilat",
+          loadToDriverAction: "Şoföre Mal Yükle",
+          returnFromDriverBtn: "Şoförden İade Al",
+          transferDesc: "Ana depodan araç stokuna ürün aktarın.",
+          noProductsFound: "Aramanıza uygun ürün bulunamadı.",
+          productsSuffix: "ürün",
+          toLoadLabel: "Yüklenecek",
+          mainStockInsufficientShort: "Ana stok yetersiz",
+          loadNoteLabel: "Yükleme notu",
+          productsSelectedSuffix: "ürün seçildi",
+          viewOnlyNotice:
+            "Şoför stoklarını görüntüleyebilirsiniz, ancak ürün yükleme veya iade alma yetkiniz bulunmuyor.",
+          returnFromDriverHeading: "Şoförden Mal İade Al",
+          noDriverStockProducts: "Şoförün araç stokunda ürün bulunmuyor.",
+          outboundSmallLabel: "Giden",
+          remainingSuffix: "kaldı",
+          missingPrefix: "Eksik",
+          noneMissing: "Eksik yok",
+          expectedInVehicleLabel: "Araçta beklenen",
+          returnNoteLabel: "İade notu",
+          countsEnteredSuffix: "ürün sayımı girildi",
+          savingEllipsis: "Kaydediliyor...",
+          selectDriverPrompt:
+            "Stok bilgilerini görmek veya ürün yüklemek için bir şoför seçin.",
         };
 
 
@@ -380,7 +488,12 @@ export default function AdminDriverStockPage() {
       const data: DriverStockResponse = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Şoför stokları yüklenemedi.");
+        setError(
+          data.error ||
+            (language === "de"
+              ? "Fahrerbestände konnten nicht geladen werden."
+              : "Şoför stokları yüklenemedi."),
+        );
         return;
       }
 
@@ -405,7 +518,11 @@ export default function AdminDriverStockPage() {
       setCanManage(Boolean(data.canManage));
       setCanApproveCustomerPayment(Boolean(data.canApproveCustomerPayment));
     } catch {
-      setError("Şoför stokları yüklenirken hata oluştu.");
+      setError(
+        language === "de"
+          ? "Beim Laden der Fahrerbestände ist ein Fehler aufgetreten."
+          : "Şoför stokları yüklenirken hata oluştu.",
+      );
     } finally {
       if (!silent) {
         setLoading(false);
@@ -460,7 +577,9 @@ export default function AdminDriverStockPage() {
     const groups = new Map<string, Product[]>();
 
     for (const product of filteredProducts) {
-      const categoryName = product.categoryName?.trim() || "Diğer Ürünler";
+      const categoryName =
+        product.categoryName?.trim() ||
+        (language === "de" ? "Sonstige Produkte" : "Diğer Ürünler");
 
       const currentProducts = groups.get(categoryName) || [];
       currentProducts.push(product);
@@ -502,22 +621,34 @@ export default function AdminDriverStockPage() {
 
     if (sale.driverPaymentReportedAmount === null) {
       setError(
-        "Bu satış için şoför tarafından alınmış bir nakit ödeme bildirimi bulunmuyor.",
+        language === "de"
+          ? "Für diesen Verkauf liegt keine vom Fahrer gemeldete Barzahlung vor."
+          : "Bu satış için şoför tarafından alınmış bir nakit ödeme bildirimi bulunmuyor.",
       );
       return;
     }
 
     if (!canApproveCustomerPayment) {
-      setError("Müşteri tahsilatını onaylama yetkiniz bulunmuyor.");
+      setError(
+        language === "de"
+          ? "Sie haben keine Berechtigung, Kundenzahlungen freizugeben."
+          : "Müşteri tahsilatını onaylama yetkiniz bulunmuyor.",
+      );
       return;
     }
 
+    const formattedAmount = sale.driverPaymentReportedAmount.toLocaleString(
+      "de-DE",
+      {
+        style: "currency",
+        currency: "EUR",
+      },
+    );
+
     const confirmed = window.confirm(
-      `${sale.customer.name} müşterisinden alınan ` +
-        `${sale.driverPaymentReportedAmount.toLocaleString("de-DE", {
-          style: "currency",
-          currency: "EUR",
-        })} tutarındaki ödeme onaylanıp Gerçek Kasa'ya alınsın mı?`,
+      language === "de"
+        ? `Soll die von ${sale.customer.name} erhaltene Zahlung über ${formattedAmount} bestätigt und in die Ist-Kasse übernommen werden?`
+        : `${sale.customer.name} müşterisinden alınan ${formattedAmount} tutarındaki ödeme onaylanıp Gerçek Kasa'ya alınsın mı?`,
     );
 
     if (!confirmed) {
@@ -553,13 +684,20 @@ export default function AdminDriverStockPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Şoförün getirdiği para onaylanamadı.");
+        setError(
+          data.error ||
+            (language === "de"
+              ? "Die vom Fahrer gebrachte Zahlung konnte nicht bestätigt werden."
+              : "Şoförün getirdiği para onaylanamadı."),
+        );
         return;
       }
 
       setSuccess(
         data.message ||
-          `${sale.customer.name} müşterisinin ödemesi onaylandı ve Gerçek Kasa'ya alındı.`,
+          (language === "de"
+            ? `Die Zahlung von ${sale.customer.name} wurde bestätigt und in die Ist-Kasse übernommen.`
+            : `${sale.customer.name} müşterisinin ödemesi onaylandı ve Gerçek Kasa'ya alındı.`),
       );
 
       /*
@@ -568,7 +706,11 @@ export default function AdminDriverStockPage() {
        */
       await loadData(selectedDriverId, true);
     } catch {
-      setError("Ödeme onaylanırken bağlantı hatası oluştu.");
+      setError(
+        language === "de"
+          ? "Beim Bestätigen der Zahlung ist ein Verbindungsfehler aufgetreten."
+          : "Ödeme onaylanırken bağlantı hatası oluştu.",
+      );
     } finally {
       setApprovingSalePaymentId(null);
     }
@@ -618,12 +760,20 @@ export default function AdminDriverStockPage() {
 
   async function submitLoad() {
     if (!selectedDriverId) {
-      setError("Önce şoför seçin.");
+      setError(
+        language === "de"
+          ? "Bitte zuerst einen Fahrer auswählen."
+          : "Önce şoför seçin.",
+      );
       return;
     }
 
     if (selectedItems.length === 0) {
-      setError("Yüklenecek en az bir ürün miktarı girin.");
+      setError(
+        language === "de"
+          ? "Geben Sie mindestens eine zu ladende Produktmenge ein."
+          : "Yüklenecek en az bir ürün miktarı girin.",
+      );
       return;
     }
 
@@ -632,7 +782,11 @@ export default function AdminDriverStockPage() {
     );
 
     if (stockError) {
-      setError(`${stockError.product.displayName} için ana stok yetersiz.`);
+      setError(
+        language === "de"
+          ? `Hauptlagerbestand für ${stockError.product.displayName} reicht nicht aus.`
+          : `${stockError.product.displayName} için ana stok yetersiz.`,
+      );
       return;
     }
 
@@ -662,17 +816,31 @@ export default function AdminDriverStockPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Şoför stok yüklemesi başarısız.");
+        setError(
+          data.error ||
+            (language === "de"
+              ? "Die Beladung des Fahrers ist fehlgeschlagen."
+              : "Şoför stok yüklemesi başarısız."),
+        );
         return;
       }
 
       clearForm();
 
-      setSuccess(data.message || "Ürünler şoför stokuna yüklendi.");
+      setSuccess(
+        data.message ||
+          (language === "de"
+            ? "Produkte wurden auf den Fahrzeugbestand geladen."
+            : "Ürünler şoför stokuna yüklendi."),
+      );
 
       await loadData(selectedDriverId, true);
     } catch {
-      setError("Şoför stok yüklemesi sırasında hata oluştu.");
+      setError(
+        language === "de"
+          ? "Beim Beladen des Fahrers ist ein Fehler aufgetreten."
+          : "Şoför stok yüklemesi sırasında hata oluştu.",
+      );
     } finally {
       setSaving(false);
     }
@@ -721,7 +889,11 @@ export default function AdminDriverStockPage() {
 
   async function submitReturn(productId?: string) {
     if (!selectedDriverId) {
-      setError("Önce şoför seçin.");
+      setError(
+        language === "de"
+          ? "Bitte zuerst einen Fahrer auswählen."
+          : "Önce şoför seçin.",
+      );
       return;
     }
 
@@ -730,7 +902,11 @@ export default function AdminDriverStockPage() {
       : selectedReturnItems;
 
     if (itemsToSave.length === 0) {
-      setError("Kaydedilecek en az bir araç sayımı girin.");
+      setError(
+        language === "de"
+          ? "Geben Sie mindestens eine Fahrzeugzählung zum Speichern ein."
+          : "Kaydedilecek en az bir araç sayımı girin.",
+      );
       return;
     }
 
@@ -740,7 +916,9 @@ export default function AdminDriverStockPage() {
 
     if (quantityError) {
       setError(
-        `${quantityError.stock.product.displayName} için geri gelen miktar araç stokundan fazla.`,
+        language === "de"
+          ? `Die zurückgemeldete Menge für ${quantityError.stock.product.displayName} übersteigt den Fahrzeugbestand.`
+          : `${quantityError.stock.product.displayName} için geri gelen miktar araç stokundan fazla.`,
       );
       return;
     }
@@ -773,7 +951,12 @@ export default function AdminDriverStockPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Araç sayımı kaydedilemedi.");
+        setError(
+          data.error ||
+            (language === "de"
+              ? "Die Fahrzeugzählung konnte nicht gespeichert werden."
+              : "Araç sayımı kaydedilemedi."),
+        );
         return;
       }
 
@@ -791,11 +974,20 @@ export default function AdminDriverStockPage() {
         setReturnNote("");
       }
 
-      setSuccess(data.message || "Araç sayımı başarıyla kaydedildi.");
+      setSuccess(
+        data.message ||
+          (language === "de"
+            ? "Die Fahrzeugzählung wurde erfolgreich gespeichert."
+            : "Araç sayımı başarıyla kaydedildi."),
+      );
 
       await loadData(selectedDriverId, true);
     } catch {
-      setError("Araç sayımı kaydedilirken hata oluştu.");
+      setError(
+        language === "de"
+          ? "Beim Speichern der Fahrzeugzählung ist ein Fehler aufgetreten."
+          : "Araç sayımı kaydedilirken hata oluştu.",
+      );
     } finally {
       setReturning(false);
       setSavingReturnProductId(null);
@@ -807,7 +999,7 @@ export default function AdminDriverStockPage() {
       <main className="flex min-h-screen items-center justify-center bg-slate-100">
         <div className="flex items-center gap-3 font-bold text-slate-600">
           <Loader2 className="animate-spin" />
-          Şoför stokları yükleniyor...
+          {t.loadingFull}
         </div>
       </main>
     );
@@ -821,7 +1013,7 @@ export default function AdminDriverStockPage() {
           className="inline-flex items-center gap-2 font-bold text-slate-600 transition hover:text-orange-500"
         >
           <ArrowLeft size={18} />
-          Admin Paneli
+          {t.adminPanel}
         </Link>
 
         <section className="mt-6 rounded-[32px] bg-slate-950 p-7 text-white sm:p-10">
@@ -829,10 +1021,7 @@ export default function AdminDriverStockPage() {
 
           <h1 className="mt-4 text-4xl font-black">{t.title}</h1>
 
-          <p className="mt-3 max-w-3xl text-slate-400">
-            Ana depodan şoförün araç stokuna ürün yükleyin. Yüklenen ürünler ana
-            stoktan otomatik düşülür ve bütün hareketler kayıt altına alınır.
-          </p>
+          <p className="mt-3 max-w-3xl text-slate-400">{t.intro}</p>
         </section>
 
         {error ? (
@@ -850,7 +1039,7 @@ export default function AdminDriverStockPage() {
         <section className="mt-6 rounded-3xl bg-white p-6 shadow-sm">
           <label className="block">
             <span className="text-sm font-black text-slate-700">
-              Şoför seçimi
+              {t.driverSelectLabel}
             </span>
 
             <select
@@ -874,7 +1063,7 @@ export default function AdminDriverStockPage() {
             <section className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               <article className="rounded-3xl border border-orange-200 bg-orange-50 p-6 shadow-sm">
                 <p className="text-sm font-black uppercase tracking-wide text-orange-700">
-                  Giden Ürün Toplamı
+                  {t.outboundTotal}
                 </p>
 
                 <p className="mt-3 text-4xl font-black text-orange-950">
@@ -882,13 +1071,13 @@ export default function AdminDriverStockPage() {
                 </p>
 
                 <p className="mt-1 text-sm font-bold text-orange-700">
-                  şoföre yüklenen ürün
+                  {t.loadedToDriverLabel}
                 </p>
               </article>
 
               <article className="rounded-3xl border border-green-200 bg-green-50 p-6 shadow-sm">
                 <p className="text-sm font-black uppercase tracking-wide text-green-700">
-                  Gelen Ürün Toplamı
+                  {t.inboundTotal}
                 </p>
 
                 <p className="mt-3 text-4xl font-black text-green-950">
@@ -896,13 +1085,13 @@ export default function AdminDriverStockPage() {
                 </p>
 
                 <p className="mt-1 text-sm font-bold text-green-700">
-                  depoya geri alınan ürün
+                  {t.returnedToWarehouseLabel}
                 </p>
               </article>
 
               <article className="rounded-3xl border border-orange-200 bg-orange-50 p-5 shadow-sm">
                 <p className="text-xs font-black uppercase tracking-wide text-orange-700">
-                  Bugün Teslim Edilecek Nakit
+                  {t.cashToCollectToday}
                 </p>
 
                 <p className="mt-2 text-3xl font-black text-orange-950">
@@ -913,12 +1102,12 @@ export default function AdminDriverStockPage() {
                 </p>
 
                 <p className="mt-1 text-xs font-bold text-orange-700">
-                  Şoförün bugün kasaya teslim etmesi gereken nakit
+                  {t.cashToCollectDesc}
                 </p>
               </article>
               <article className="rounded-3xl border border-blue-200 bg-blue-50 p-6 shadow-sm">
                 <p className="text-sm font-black uppercase tracking-wide text-blue-700">
-                  Satılan Mal Toplamı
+                  {t.soldGoodsTotal}
                 </p>
 
                 <p className="mt-3 text-4xl font-black text-blue-950">
@@ -929,8 +1118,8 @@ export default function AdminDriverStockPage() {
                 </p>
 
                 <p className="mt-1 text-sm font-bold text-blue-700">
-                  {summary.totalSoldQuantity.toLocaleString("de-DE")} ürün
-                  satıldı
+                  {summary.totalSoldQuantity.toLocaleString("de-DE")}{" "}
+                  {t.productsSoldSuffix}
                 </p>
               </article>
             </section>
@@ -939,23 +1128,22 @@ export default function AdminDriverStockPage() {
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <h2 className="text-2xl font-black text-slate-950">
-                    Bu Tur Yapılan Müşteri Satışları
+                    {t.tripSalesHeading}
                   </h2>
 
                   <p className="mt-1 text-sm text-slate-500">
-                    Şoförün son araç yüklemesinden sonra müşterilere araçtan
-                    yaptığı satışlar.
+                    {t.tripSalesDesc}
                   </p>
                 </div>
 
                 <div className="rounded-xl bg-blue-50 px-4 py-2 font-black text-blue-700">
-                  {currentTripSales.length} satış
+                  {currentTripSales.length} {t.salesCountSuffix}
                 </div>
               </div>
 
               {currentTripSales.length === 0 ? (
                 <div className="mt-5 rounded-2xl bg-slate-50 p-6 text-center text-sm font-bold text-slate-500">
-                  Bu araç turunda henüz müşteriye satış yapılmadı.
+                  {t.noTripSales}
                 </div>
               ) : (
                 <div className="mt-5 space-y-4">
@@ -1005,16 +1193,21 @@ export default function AdminDriverStockPage() {
                                 <span>Telefon: {sale.customer.phone}</span>
                               ) : null}
 
-                              <span>Ödeme: {paymentMethodLabel}</span>
+                              <span>
+                                {t.paymentLabel}: {paymentMethodLabel}
+                              </span>
 
-                              <span>{sale.items.length} farklı ürün</span>
+                              <span>
+                                {sale.items.length}{" "}
+                                {t.differentProductsSuffix}
+                              </span>
                             </div>
                           </div>
 
                           <div className="flex flex-col gap-2 sm:flex-row sm:items-stretch">
                             <div className="rounded-xl bg-white px-4 py-2 text-right shadow-sm">
                               <p className="text-[10px] font-black uppercase text-slate-400">
-                                Net satış
+                                {t.netSale}
                               </p>
 
                               <p className="text-lg font-black text-slate-950">
@@ -1039,7 +1232,7 @@ export default function AdminDriverStockPage() {
                                     : "text-amber-700"
                                 }`}
                               >
-                                Ödeme durumu
+                                {t.paymentStatus}
                               </p>
 
                               <p
@@ -1069,17 +1262,17 @@ export default function AdminDriverStockPage() {
                                   className="inline-flex min-h-11 items-center justify-center rounded-xl bg-green-600 px-4 py-2 text-sm font-black text-white shadow-sm transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
                                 >
                                   {approvingSalePaymentId === sale.id
-                                    ? "Onaylanıyor..."
+                                    ? t.approving
                                     : language === "de" ? "Als bezahlt markieren und in die Kasse übernehmen" : "Ödendi Yap ve Kasaya Al"}
                                 </button>
                               ) : (
                                 <div className="rounded-xl bg-slate-100 px-4 py-2 text-center">
                                   <p className="text-[10px] font-black uppercase text-slate-500">
-                                    Ödeme onayı
+                                    {t.paymentApprovalLabel}
                                   </p>
 
                                   <p className="text-xs font-bold text-slate-600">
-                                    Onay yetkiniz bulunmuyor
+                                    {t.noApprovalPermission}
                                   </p>
                                 </div>
                               )
@@ -1170,7 +1363,7 @@ export default function AdminDriverStockPage() {
                             <div className="mt-4 grid gap-3 sm:grid-cols-3">
                               <div className="rounded-xl bg-slate-50 p-4">
                                 <p className="text-xs font-black uppercase text-slate-500">
-                                  Brüt satış
+                                  {t.grossSale}
                                 </p>
 
                                 <p className="mt-1 text-xl font-black text-slate-950">
@@ -1183,7 +1376,7 @@ export default function AdminDriverStockPage() {
 
                               <div className="rounded-xl bg-amber-50 p-4">
                                 <p className="text-xs font-black uppercase text-amber-700">
-                                  Müşteriden alınan Pfand
+                                  {t.pfandFromCustomer}
                                 </p>
 
                                 <p className="mt-1 text-xl font-black text-amber-900">
@@ -1200,7 +1393,7 @@ export default function AdminDriverStockPage() {
 
                               <div className="rounded-xl bg-green-50 p-4">
                                 <p className="text-xs font-black uppercase text-green-700">
-                                  Net tahsilat
+                                  {t.netCollection}
                                 </p>
 
                                 <p className="mt-1 text-xl font-black text-green-900">
@@ -1237,7 +1430,7 @@ export default function AdminDriverStockPage() {
                     }`}
                   >
                     <PackagePlus size={20} />
-                    Şoföre Mal Yükle
+                    {t.loadToDriverAction}
                   </button>
 
                   <button
@@ -1254,7 +1447,7 @@ export default function AdminDriverStockPage() {
                     }`}
                   >
                     <RotateCcw size={20} />
-                    Şoförden İade Al
+                    {t.returnFromDriverBtn}
                   </button>
                 </div>
               </section>
@@ -1265,11 +1458,11 @@ export default function AdminDriverStockPage() {
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <h2 className="text-xl font-black text-slate-950">
-                      Şoföre Mal Yükle
+                      {t.loadToDriverAction}
                     </h2>
 
                     <p className="mt-1 text-sm text-slate-500">
-                      Ana depodan araç stokuna ürün aktarın.
+                      {t.transferDesc}
                     </p>
                   </div>
 
@@ -1291,7 +1484,7 @@ export default function AdminDriverStockPage() {
                 <div className="mt-6 space-y-6">
                   {groupedFilteredProducts.length === 0 ? (
                     <div className="rounded-2xl bg-slate-50 p-6 text-center font-bold text-slate-500">
-                      Aramanıza uygun ürün bulunamadı.
+                      {t.noProductsFound}
                     </div>
                   ) : (
                     groupedFilteredProducts.map((group) => (
@@ -1316,7 +1509,7 @@ export default function AdminDriverStockPage() {
                             </h3>
 
                             <p className="mt-0.5 text-xs font-bold text-slate-500">
-                              {group.products.length} ürün
+                              {group.products.length} {t.productsSuffix}
                             </p>
                           </div>
 
@@ -1361,14 +1554,14 @@ export default function AdminDriverStockPage() {
                                   </p>
 
                                   <p className="mt-1 text-orange-600">
-                                    Şoförde: {driverQuantity}{" "}
+                                    {t.driverStock}: {driverQuantity}{" "}
                                     {getUnitLabel(product.stockUnit)}
                                   </p>
                                 </div>
 
                                 <div>
                                   <p className="mb-2 text-center text-xs font-black uppercase tracking-wide text-slate-500">
-                                    Yüklenecek
+                                    {t.toLoadLabel}
                                   </p>
 
                                   <input
@@ -1391,7 +1584,7 @@ export default function AdminDriverStockPage() {
 
                                   {exceedsStock ? (
                                     <p className="mt-1 text-center text-xs font-bold text-red-600">
-                                      Ana stok yetersiz
+                                      {t.mainStockInsufficientShort}
                                     </p>
                                   ) : null}
                                 </div>
@@ -1406,7 +1599,7 @@ export default function AdminDriverStockPage() {
 
                 <label className="mt-6 block">
                   <span className="text-sm font-black text-slate-700">
-                    Yükleme notu
+                    {t.loadNoteLabel}
                   </span>
 
                   <textarea
@@ -1421,7 +1614,7 @@ export default function AdminDriverStockPage() {
 
                 <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="text-sm font-bold text-slate-500">
-                    {selectedItems.length} ürün seçildi
+                    {selectedItems.length} {t.productsSelectedSuffix}
                   </div>
 
                   <button
@@ -1450,8 +1643,7 @@ export default function AdminDriverStockPage() {
 
             {!canManage ? (
               <div className="mt-8 rounded-3xl bg-amber-50 p-6 font-bold text-amber-700">
-                Şoför stoklarını görüntüleyebilirsiniz, ancak ürün yükleme veya
-                iade alma yetkiniz bulunmuyor.
+                {t.viewOnlyNotice}
               </div>
             ) : null}
 
@@ -1462,7 +1654,7 @@ export default function AdminDriverStockPage() {
 
                   <div>
                     <h2 className="text-2xl font-black text-slate-950">
-                      Şoförden Mal İade Al
+                      {t.returnFromDriverHeading}
                     </h2>
 
                     <p className="text-sm text-slate-500">
@@ -1473,7 +1665,7 @@ export default function AdminDriverStockPage() {
 
                 {driverStocks.length === 0 ? (
                   <div className="mt-5 rounded-2xl bg-slate-50 p-5 text-slate-500">
-                    Şoförün araç stokunda ürün bulunmuyor.
+                    {t.noDriverStockProducts}
                   </div>
                 ) : (
                   <>
@@ -1548,7 +1740,7 @@ export default function AdminDriverStockPage() {
                                   </p>
 
                                   <p className="mt-1 text-[9px] font-bold text-orange-600">
-                                    Giden
+                                    {t.outboundSmallLabel}
                                   </p>
                                 </div>
 
@@ -1575,7 +1767,7 @@ export default function AdminDriverStockPage() {
                                   <p className="mt-1 text-[9px] font-bold text-green-600">
                                     {stock.currentQuantity}{" "}
                                     {getUnitLabel(stock.product.stockUnit)}{" "}
-                                    kaldı
+                                    {t.remainingSuffix}
                                   </p>
                                 </div>
 
@@ -1614,7 +1806,11 @@ export default function AdminDriverStockPage() {
                                       }
                                       className="rounded-xl bg-red-600 px-3 py-2 text-xs font-black text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-40"
                                     >
-                                      {isSaving ? "..." : (language === "de" ? "Speichern" : "Kaydet")}
+                                      {isSaving
+                                        ? "..."
+                                        : language === "de"
+                                          ? "Speichern"
+                                          : "Kaydet"}
                                     </button>
                                   </div>
 
@@ -1631,14 +1827,15 @@ export default function AdminDriverStockPage() {
                                       }`}
                                     >
                                       {missingQuantity > 0
-                                        ? `Eksik: ${missingQuantity} ${getUnitLabel(
+                                        ? `${t.missingPrefix}: ${missingQuantity} ${getUnitLabel(
                                             stock.product.stockUnit,
                                           )}`
-                                        : "Eksik yok"}
+                                        : t.noneMissing}
                                     </p>
                                   ) : (
                                     <p className="mt-1 text-center text-[10px] font-bold text-slate-400">
-                                      Araçta beklenen: {stock.currentQuantity}{" "}
+                                      {t.expectedInVehicleLabel}:{" "}
+                                      {stock.currentQuantity}{" "}
                                       {getUnitLabel(stock.product.stockUnit)}
                                     </p>
                                   )}
@@ -1652,7 +1849,7 @@ export default function AdminDriverStockPage() {
 
                     <label className="mt-6 block">
                       <span className="text-sm font-black text-slate-700">
-                        İade notu
+                        {t.returnNoteLabel}
                       </span>
 
                       <textarea
@@ -1667,7 +1864,7 @@ export default function AdminDriverStockPage() {
 
                     <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <p className="text-sm font-bold text-slate-500">
-                        {selectedReturnItems.length} ürün sayımı girildi
+                        {selectedReturnItems.length} {t.countsEnteredSuffix}
                       </p>
 
                       <button
@@ -1690,7 +1887,7 @@ export default function AdminDriverStockPage() {
                         )}
 
                         {returning
-                          ? "Kaydediliyor..."
+                          ? t.savingEllipsis
                           : t.saveCounts}
                       </button>
                     </div>
@@ -1701,7 +1898,7 @@ export default function AdminDriverStockPage() {
           </>
         ) : (
           <div className="mt-6 rounded-3xl bg-white p-8 text-center text-slate-500">
-            Stok bilgilerini görmek veya ürün yüklemek için bir şoför seçin.
+            {t.selectDriverPrompt}
           </div>
         )}
       </div>

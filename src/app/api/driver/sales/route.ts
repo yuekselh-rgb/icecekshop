@@ -1,6 +1,7 @@
 import { verifySessionToken } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { withTenant } from "@/lib/tenant";
+import { getRequestLanguage } from "@/lib/request-language";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -122,12 +123,13 @@ function normalizeItems(value: unknown): RequestedItem[] {
 }
 
 export const POST = withTenant(async (request: NextRequest, _context, tenant) => {
+  const language = await getRequestLanguage();
   const session = await getDriverSession();
 
   if (!session) {
     return NextResponse.json(
       {
-        error: "Yetkisiz erişim.",
+        error: language === "de" ? "Unbefugter Zugriff." : "Yetkisiz erişim.",
       },
       {
         status: 403,
@@ -158,7 +160,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     if (!customerId) {
       return NextResponse.json(
         {
-          error: "Satış yapılacak müşteriyi seçin.",
+          error:
+            language === "de"
+              ? "Wählen Sie den Kunden für den Verkauf aus."
+              : "Satış yapılacak müşteriyi seçin.",
         },
         {
           status: 400,
@@ -169,7 +174,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     if (items.length === 0) {
       return NextResponse.json(
         {
-          error: "Satılacak en az bir ürün ve miktar girin.",
+          error:
+            language === "de"
+              ? "Geben Sie mindestens ein Produkt und eine Menge zum Verkauf ein."
+              : "Satılacak en az bir ürün ve miktar girin.",
         },
         {
           status: 400,
@@ -260,7 +268,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     if (!driver) {
       return NextResponse.json(
         {
-          error: "Aktif şoför hesabı bulunamadı.",
+          error:
+            language === "de"
+              ? "Kein aktives Fahrerkonto gefunden."
+              : "Aktif şoför hesabı bulunamadı.",
         },
         {
           status: 404,
@@ -271,7 +282,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     if (!customer) {
       return NextResponse.json(
         {
-          error: "Seçilen müşteri bulunamadı.",
+          error:
+            language === "de"
+              ? "Der ausgewählte Kunde wurde nicht gefunden."
+              : "Seçilen müşteri bulunamadı.",
         },
         {
           status: 404,
@@ -283,7 +297,9 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
       return NextResponse.json(
         {
           error:
-            "Seçilen ürünlerden biri araç stokunda bulunmuyor. Araç stoklarını yenileyin.",
+            language === "de"
+              ? "Eines der ausgewählten Produkte ist nicht im Fahrzeugbestand vorhanden. Aktualisieren Sie den Fahrzeugbestand."
+              : "Seçilen ürünlerden biri araç stokunda bulunmuyor. Araç stoklarını yenileyin.",
         },
         {
           status: 409,
@@ -355,7 +371,9 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
       return NextResponse.json(
         {
           error:
-            "Müşteriden alınan Pfand tutarı satış toplamından yüksek olamaz.",
+            language === "de"
+              ? "Der vom Kunden erhaltene Pfandbetrag darf nicht höher als die Verkaufssumme sein."
+              : "Müşteriden alınan Pfand tutarı satış toplamından yüksek olamaz.",
         },
         {
           status: 400,
@@ -660,17 +678,29 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     return NextResponse.json(
       {
         message:
-          `${customerName} için satış başarıyla kaydedildi. ` +
-          (returnedPfandAmount > 0
-            ? `Pfand: -${returnedPfandAmount.toLocaleString("de-DE", {
+          language === "de"
+            ? `Verkauf für ${customerName} wurde erfolgreich gespeichert. ` +
+              (returnedPfandAmount > 0
+                ? `Pfand: -${returnedPfandAmount.toLocaleString("de-DE", {
+                    style: "currency",
+                    currency: "EUR",
+                  })}. `
+                : "") +
+              `Vom Kunden zu erhalten: ${payableAmount.toLocaleString("de-DE", {
                 style: "currency",
                 currency: "EUR",
-              })}. `
-            : "") +
-          `Müşteriden alınacak: ${payableAmount.toLocaleString("de-DE", {
-            style: "currency",
-            currency: "EUR",
-          })}.`,
+              })}.`
+            : `${customerName} için satış başarıyla kaydedildi. ` +
+              (returnedPfandAmount > 0
+                ? `Pfand: -${returnedPfandAmount.toLocaleString("de-DE", {
+                    style: "currency",
+                    currency: "EUR",
+                  })}. `
+                : "") +
+              `Müşteriden alınacak: ${payableAmount.toLocaleString("de-DE", {
+                style: "currency",
+                currency: "EUR",
+              })}.`,
 
         order: {
           id: order.id,
@@ -695,8 +725,11 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
       return NextResponse.json(
         {
           error:
-            `${productName} için araç stoğu yetersiz. ` +
-            `Araçta bulunan: ${stock}.`,
+            language === "de"
+              ? `Fahrzeugbestand für ${productName} reicht nicht aus. ` +
+                `Im Fahrzeug vorhanden: ${stock}.`
+              : `${productName} için araç stoğu yetersiz. ` +
+                `Araçta bulunan: ${stock}.`,
         },
         {
           status: 409,
@@ -710,8 +743,11 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
       return NextResponse.json(
         {
           error:
-            `${productName} araç stoğu değişti. ` +
-            `Araç stoklarını yenileyip tekrar deneyin.`,
+            language === "de"
+              ? `Der Fahrzeugbestand von ${productName} hat sich geändert. ` +
+                `Aktualisieren Sie den Fahrzeugbestand und versuchen Sie es erneut.`
+              : `${productName} araç stoğu değişti. ` +
+                `Araç stoklarını yenileyip tekrar deneyin.`,
         },
         {
           status: 409,
@@ -722,7 +758,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     if (message.startsWith("PRODUCT_NOT_FOUND:")) {
       return NextResponse.json(
         {
-          error: "Satılacak ürün bulunamadı.",
+          error:
+            language === "de"
+              ? "Das zu verkaufende Produkt wurde nicht gefunden."
+              : "Satılacak ürün bulunamadı.",
         },
         {
           status: 404,
@@ -732,7 +771,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
 
     return NextResponse.json(
       {
-        error: "Şoför satışı kaydedilirken hata oluştu.",
+        error:
+          language === "de"
+            ? "Beim Speichern des Fahrerverkaufs ist ein Fehler aufgetreten."
+            : "Şoför satışı kaydedilirken hata oluştu.",
       },
       {
         status: 500,

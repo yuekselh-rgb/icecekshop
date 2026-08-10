@@ -17,7 +17,7 @@ export async function GET() {
   const session = await requirePlatformOwner();
 
   if (!session) {
-    return NextResponse.json({ error: "Yetkisiz erişim." }, { status: 403 });
+    return NextResponse.json({ error: "Nicht autorisiert." }, { status: 403 });
   }
 
   try {
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
   const session = await requirePlatformOwner();
 
   if (!session) {
-    return NextResponse.json({ error: "Yetkisiz erişim." }, { status: 403 });
+    return NextResponse.json({ error: "Nicht autorisiert." }, { status: 403 });
   }
 
   try {

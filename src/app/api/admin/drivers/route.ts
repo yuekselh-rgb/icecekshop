@@ -2,10 +2,13 @@ import {
   requireAdminPermission,
 } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
+import { getRequestLanguage } from "@/lib/request-language";
 import { withTenant } from "@/lib/tenant";
 import { NextResponse } from "next/server";
 
 export const GET = withTenant(async () => {
+  const language = await getRequestLanguage();
+
   const admin =
     await requireAdminPermission(
       "viewOrders"
@@ -15,7 +18,9 @@ export const GET = withTenant(async () => {
     return NextResponse.json(
       {
         error:
-          "Şoförleri görüntüleme yetkiniz yok.",
+          language === "de"
+            ? "Sie sind nicht berechtigt, die Fahrer einzusehen."
+            : "Şoförleri görüntüleme yetkiniz yok.",
       },
       {
         status: 403,
@@ -60,7 +65,9 @@ export const GET = withTenant(async () => {
     return NextResponse.json(
       {
         error:
-          "Şoförler yüklenirken hata oluştu.",
+          language === "de"
+            ? "Beim Laden der Fahrer ist ein Fehler aufgetreten."
+            : "Şoförler yüklenirken hata oluştu.",
       },
       {
         status: 500,

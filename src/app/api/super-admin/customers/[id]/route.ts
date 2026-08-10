@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { getAdminSession } from "@/lib/admin-auth";
+import { getRequestLanguage } from "@/lib/request-language";
 import { withTenant } from "@/lib/tenant";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -7,11 +8,18 @@ export const DELETE = withTenant(async (
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) => {
+  const language = await getRequestLanguage();
+
   const session = await getAdminSession();
 
   if (!session || session.role !== "SUPER_ADMIN") {
     return NextResponse.json(
-      { error: "Bu işlem için yetkiniz yok." },
+      {
+        error:
+          language === "de"
+            ? "Sie sind für diesen Vorgang nicht berechtigt."
+            : "Bu işlem için yetkiniz yok.",
+      },
       { status: 403 },
     );
   }
@@ -33,7 +41,10 @@ export const DELETE = withTenant(async (
 
     return NextResponse.json(
       {
-        error: "Müşteri silinemedi.",
+        error:
+          language === "de"
+            ? "Kunde konnte nicht gelöscht werden."
+            : "Müşteri silinemedi.",
       },
       {
         status: 500,

@@ -2,6 +2,7 @@ import {
   verifySessionToken,
 } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getRequestLanguage } from "@/lib/request-language";
 import { withTenant } from "@/lib/tenant";
 import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
@@ -31,13 +32,15 @@ async function getSuperAdminSession() {
 }
 
 export const GET = withTenant(async () => {
+  const language = await getRequestLanguage();
+
   const session =
     await getSuperAdminSession();
 
   if (!session) {
     return NextResponse.json(
       {
-        error: "Yetkisiz erişim.",
+        error: language === "de" ? "Unbefugter Zugriff." : "Yetkisiz erişim.",
       },
       {
         status: 403,
@@ -84,7 +87,9 @@ export const GET = withTenant(async () => {
     return NextResponse.json(
       {
         error:
-          "Şoförler yüklenirken hata oluştu.",
+          language === "de"
+            ? "Beim Laden der Fahrer ist ein Fehler aufgetreten."
+            : "Şoförler yüklenirken hata oluştu.",
       },
       {
         status: 500,
@@ -98,13 +103,15 @@ export const POST = withTenant(async (
   _context,
   tenant,
 ) => {
+  const language = await getRequestLanguage();
+
   const session =
     await getSuperAdminSession();
 
   if (!session) {
     return NextResponse.json(
       {
-        error: "Yetkisiz erişim.",
+        error: language === "de" ? "Unbefugter Zugriff." : "Yetkisiz erişim.",
       },
       {
         status: 403,
@@ -152,7 +159,9 @@ export const POST = withTenant(async (
       return NextResponse.json(
         {
           error:
-            "Ad, soyad, e-posta ve şifre zorunludur.",
+            language === "de"
+              ? "Vorname, Nachname, E-Mail und Passwort sind erforderlich."
+              : "Ad, soyad, e-posta ve şifre zorunludur.",
         },
         {
           status: 400,
@@ -164,7 +173,9 @@ export const POST = withTenant(async (
       return NextResponse.json(
         {
           error:
-            "Şifre en az 8 karakter olmalıdır.",
+            language === "de"
+              ? "Das Passwort muss mindestens 8 Zeichen lang sein."
+              : "Şifre en az 8 karakter olmalıdır.",
         },
         {
           status: 400,
@@ -183,7 +194,9 @@ export const POST = withTenant(async (
       return NextResponse.json(
         {
           error:
-            "Bu e-posta adresi zaten kullanılıyor.",
+            language === "de"
+              ? "Diese E-Mail-Adresse wird bereits verwendet."
+              : "Bu e-posta adresi zaten kullanılıyor.",
         },
         {
           status: 409,
@@ -225,7 +238,9 @@ export const POST = withTenant(async (
     return NextResponse.json(
       {
         message:
-          "Şoför hesabı başarıyla oluşturuldu.",
+          language === "de"
+            ? "Fahrer-Konto wurde erfolgreich erstellt."
+            : "Şoför hesabı başarıyla oluşturuldu.",
         driver,
       },
       {
@@ -241,7 +256,9 @@ export const POST = withTenant(async (
     return NextResponse.json(
       {
         error:
-          "Şoför oluşturulurken hata oluştu.",
+          language === "de"
+            ? "Beim Erstellen des Fahrers ist ein Fehler aufgetreten."
+            : "Şoför oluşturulurken hata oluştu.",
       },
       {
         status: 500,

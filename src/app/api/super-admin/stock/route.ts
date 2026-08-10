@@ -2,6 +2,7 @@ import {
   verifySessionToken,
 } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getRequestLanguage } from "@/lib/request-language";
 import { withTenant } from "@/lib/tenant";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
@@ -55,14 +56,15 @@ async function getSuperAdminSession() {
 }
 
 export const GET = withTenant(async () => {
+  const language = await getRequestLanguage();
+
   const session =
     await getSuperAdminSession();
 
   if (!session) {
     return NextResponse.json(
       {
-        error:
-          "Yetkisiz erişim.",
+        error: language === "de" ? "Unbefugter Zugriff." : "Yetkisiz erişim.",
       },
       {
         status: 403,
@@ -553,7 +555,9 @@ export const GET = withTenant(async () => {
     return NextResponse.json(
       {
         error:
-          "Stok bilgileri yüklenemedi.",
+          language === "de"
+            ? "Bestandsdaten konnten nicht geladen werden."
+            : "Stok bilgileri yüklenemedi.",
       },
       {
         status: 500,
@@ -567,14 +571,15 @@ export const PATCH = withTenant(async (
   _context,
   tenant,
 ) => {
+  const language = await getRequestLanguage();
+
   const session =
     await getSuperAdminSession();
 
   if (!session) {
     return NextResponse.json(
       {
-        error:
-          "Yetkisiz erişim.",
+        error: language === "de" ? "Unbefugter Zugriff." : "Yetkisiz erişim.",
       },
       {
         status: 403,
@@ -623,7 +628,9 @@ export const PATCH = withTenant(async (
       return NextResponse.json(
         {
           error:
-            "Ürün seçilmedi.",
+            language === "de"
+              ? "Kein Produkt ausgewählt."
+              : "Ürün seçilmedi.",
         },
         {
           status: 400,
@@ -639,7 +646,9 @@ export const PATCH = withTenant(async (
       return NextResponse.json(
         {
           error:
-            "Geçersiz stok işlemi.",
+            language === "de"
+              ? "Ungültiger Bestandsvorgang."
+              : "Geçersiz stok işlemi.",
         },
         {
           status: 400,
@@ -664,7 +673,9 @@ export const PATCH = withTenant(async (
         return NextResponse.json(
           {
             error:
-              "Geçerli bir alış fiyatı girin.",
+              language === "de"
+                ? "Geben Sie einen gültigen Einkaufspreis ein."
+                : "Geçerli bir alış fiyatı girin.",
           },
           {
             status: 400,
@@ -692,7 +703,9 @@ export const PATCH = withTenant(async (
 
       return NextResponse.json({
         message:
-          `Alış fiyatı ${purchasePrice.toFixed(2)} € olarak güncellendi.`,
+          language === "de"
+            ? `Einkaufspreis wurde auf ${purchasePrice.toFixed(2)} € aktualisiert.`
+            : `Alış fiyatı ${purchasePrice.toFixed(2)} € olarak güncellendi.`,
 
         product: {
           id:
@@ -719,7 +732,9 @@ export const PATCH = withTenant(async (
       return NextResponse.json(
         {
           error:
-            "Miktar pozitif tam sayı olmalıdır.",
+            language === "de"
+              ? "Die Menge muss eine positive ganze Zahl sein."
+              : "Miktar pozitif tam sayı olmalıdır.",
         },
         {
           status: 400,
@@ -749,19 +764,34 @@ export const PATCH = withTenant(async (
           "UPDATE_PURCHASE_PRICE"
         >,
         string
-      > = {
-      STOCK_ADD:
-        "Super Admin stok artırdı",
+      > =
+      language === "de"
+        ? {
+            STOCK_ADD:
+              "Bestand von Super Admin erhöht",
 
-      RETURN:
-        "Tedarikçiye iade edilen ürün stoktan düşüldü",
+            RETURN:
+              "An Lieferant zurückgegebenes Produkt vom Bestand abgezogen",
 
-      BROKEN:
-        "Kırılan ürün stoktan düşüldü",
+            BROKEN:
+              "Beschädigtes Produkt vom Bestand abgezogen",
 
-      EXPIRED:
-        "Tarihi geçen ürün stoktan düşüldü",
-    };
+            EXPIRED:
+              "Abgelaufenes Produkt vom Bestand abgezogen",
+          }
+        : {
+            STOCK_ADD:
+              "Super Admin stok artırdı",
+
+            RETURN:
+              "Tedarikçiye iade edilen ürün stoktan düşüldü",
+
+            BROKEN:
+              "Kırılan ürün stoktan düşüldü",
+
+            EXPIRED:
+              "Tarihi geçen ürün stoktan düşüldü",
+          };
 
     const result =
       await prisma.$transaction(
@@ -845,9 +875,13 @@ export const PATCH = withTenant(async (
           });
 
           const productName =
-            product.nameTr ||
-            product.nameDe ||
-            product.name;
+            language === "de"
+              ? product.nameDe ||
+                product.nameTr ||
+                product.name
+              : product.nameTr ||
+                product.nameDe ||
+                product.name;
 
           const movement =
             await tx.stockMovement.create({
@@ -893,19 +927,34 @@ export const PATCH = withTenant(async (
           "UPDATE_PURCHASE_PRICE"
         >,
         string
-      > = {
-      STOCK_ADD:
-        `${quantity} adet stok eklendi.`,
+      > =
+      language === "de"
+        ? {
+            STOCK_ADD:
+              `${quantity} Stück wurden dem Bestand hinzugefügt.`,
 
-      RETURN:
-        `${quantity} adet ürün tedarikçiye iade edildi ve stoktan düşüldü.`,
+            RETURN:
+              `${quantity} Stück wurden an den Lieferanten zurückgegeben und vom Bestand abgezogen.`,
 
-      BROKEN:
-        `${quantity} adet kırık ürün stoktan düşüldü.`,
+            BROKEN:
+              `${quantity} Stück beschädigte Ware wurden vom Bestand abgezogen.`,
 
-      EXPIRED:
-        `${quantity} adet tarihi geçmiş ürün stoktan düşüldü.`,
-    };
+            EXPIRED:
+              `${quantity} Stück abgelaufene Ware wurden vom Bestand abgezogen.`,
+          }
+        : {
+            STOCK_ADD:
+              `${quantity} adet stok eklendi.`,
+
+            RETURN:
+              `${quantity} adet ürün tedarikçiye iade edildi ve stoktan düşüldü.`,
+
+            BROKEN:
+              `${quantity} adet kırık ürün stoktan düşüldü.`,
+
+            EXPIRED:
+              `${quantity} adet tarihi geçmiş ürün stoktan düşüldü.`,
+          };
 
     return NextResponse.json({
       message:
@@ -954,7 +1003,9 @@ export const PATCH = withTenant(async (
       return NextResponse.json(
         {
           error:
-            "Ürün bulunamadı.",
+            language === "de"
+              ? "Produkt nicht gefunden."
+              : "Ürün bulunamadı.",
         },
         {
           status: 404,
@@ -969,7 +1020,9 @@ export const PATCH = withTenant(async (
       return NextResponse.json(
         {
           error:
-            "Mevcut stok bu işlem için yeterli değil.",
+            language === "de"
+              ? "Der aktuelle Bestand reicht für diesen Vorgang nicht aus."
+              : "Mevcut stok bu işlem için yeterli değil.",
         },
         {
           status: 409,
@@ -980,7 +1033,9 @@ export const PATCH = withTenant(async (
     return NextResponse.json(
       {
         error:
-          "Stok işlemi gerçekleştirilemedi.",
+          language === "de"
+            ? "Bestandsvorgang konnte nicht durchgeführt werden."
+            : "Stok işlemi gerçekleştirilemedi.",
       },
       {
         status: 500,
@@ -988,4 +1043,3 @@ export const PATCH = withTenant(async (
     );
   }
 });
-

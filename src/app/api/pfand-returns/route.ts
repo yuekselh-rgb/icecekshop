@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getRequestLanguage } from "@/lib/request-language";
 import { getSession } from "@/lib/session";
 import { withTenant } from "@/lib/tenant";
 import { NextRequest, NextResponse } from "next/server";
@@ -77,6 +78,9 @@ function normalizeItems(
 }
 
 export const GET = withTenant(async () => {
+  const language =
+    await getRequestLanguage();
+
   const session =
     await getSession();
 
@@ -87,7 +91,9 @@ export const GET = withTenant(async () => {
     return NextResponse.json(
       {
         error:
-          "Pfand iadelerini görmek için müşteri hesabıyla giriş yapmalısınız.",
+          language === "de"
+            ? "Um Ihre Pfand-Rückgaben einzusehen, müssen Sie sich mit einem Kundenkonto anmelden."
+            : "Pfand iadelerini görmek için müşteri hesabıyla giriş yapmalısınız.",
       },
       {
         status: 401,
@@ -162,7 +168,9 @@ export const GET = withTenant(async () => {
     return NextResponse.json(
       {
         error:
-          "Pfand iadeleri yüklenemedi.",
+          language === "de"
+            ? "Pfand-Rückgaben konnten nicht geladen werden."
+            : "Pfand iadeleri yüklenemedi.",
       },
       {
         status: 500,
@@ -176,6 +184,9 @@ export const POST = withTenant(async (
   _context,
   tenant
 ) => {
+  const language =
+    await getRequestLanguage();
+
   const session =
     await getSession();
 
@@ -186,7 +197,9 @@ export const POST = withTenant(async (
     return NextResponse.json(
       {
         error:
-          "Pfand iadesi oluşturmak için müşteri hesabıyla giriş yapmalısınız.",
+          language === "de"
+            ? "Um eine Pfand-Rückgabe zu erstellen, müssen Sie sich mit einem Kundenkonto anmelden."
+            : "Pfand iadesi oluşturmak için müşteri hesabıyla giriş yapmalısınız.",
       },
       {
         status: 401,
@@ -221,7 +234,9 @@ export const POST = withTenant(async (
       return NextResponse.json(
         {
           error:
-            "En az bir geçerli Pfand kalemi eklemelisiniz.",
+            language === "de"
+              ? "Sie müssen mindestens eine gültige Pfand-Position hinzufügen."
+              : "En az bir geçerli Pfand kalemi eklemelisiniz.",
         },
         {
           status: 400,
@@ -254,7 +269,9 @@ export const POST = withTenant(async (
         return NextResponse.json(
           {
             error:
-              "Seçilen sipariş bulunamadı.",
+              language === "de"
+                ? "Die ausgewählte Bestellung wurde nicht gefunden."
+                : "Seçilen sipariş bulunamadı.",
           },
           {
             status: 404,
@@ -347,7 +364,9 @@ export const POST = withTenant(async (
     return NextResponse.json(
       {
         message:
-          "Pfand iade talebiniz oluşturuldu.",
+          language === "de"
+            ? "Ihre Pfand-Rückgabeanfrage wurde erstellt."
+            : "Pfand iade talebiniz oluşturuldu.",
 
         pfandReturn: {
           ...pfandReturn,
@@ -388,7 +407,9 @@ export const POST = withTenant(async (
     return NextResponse.json(
       {
         error:
-          "Pfand iade talebi oluşturulurken hata oluştu.",
+          language === "de"
+            ? "Beim Erstellen der Pfand-Rückgabeanfrage ist ein Fehler aufgetreten."
+            : "Pfand iade talebi oluşturulurken hata oluştu.",
       },
       {
         status: 500,

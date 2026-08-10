@@ -4,6 +4,7 @@ import {
 } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
 import { withTenant } from "@/lib/tenant";
+import { getRequestLanguage } from "@/lib/request-language";
 import bcrypt from "bcryptjs";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -14,12 +15,16 @@ function nullableText(value: unknown) {
 }
 
 export const GET = withTenant(async () => {
+  const language = await getRequestLanguage();
   const admin = await requireAdminPermission("viewDealers");
 
   if (!admin) {
     return NextResponse.json(
       {
-        error: "Bayileri görüntüleme yetkiniz yok.",
+        error:
+          language === "de"
+            ? "Sie haben keine Berechtigung, Händler anzuzeigen."
+            : "Bayileri görüntüleme yetkiniz yok.",
       },
       {
         status: 403,
@@ -93,7 +98,10 @@ export const GET = withTenant(async () => {
 
     return NextResponse.json(
       {
-        error: "Bayiler yüklenemedi.",
+        error:
+          language === "de"
+            ? "Händler konnten nicht geladen werden."
+            : "Bayiler yüklenemedi.",
       },
       {
         status: 500,
@@ -103,12 +111,16 @@ export const GET = withTenant(async () => {
 });
 
 export const POST = withTenant(async (request: NextRequest, _context, tenant) => {
+  const language = await getRequestLanguage();
   const admin = await getAdminWithPermissions();
 
   if (!admin || (!admin.isSuperAdmin && !admin.permissions.createDealer)) {
     return NextResponse.json(
       {
-        error: "Yeni bayi oluşturma yetkiniz yok.",
+        error:
+          language === "de"
+            ? "Sie haben keine Berechtigung, neue Händler anzulegen."
+            : "Yeni bayi oluşturma yetkiniz yok.",
       },
       {
         status: 403,
@@ -148,7 +160,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     if (!dealerNumber) {
       return NextResponse.json(
         {
-          error: "Bayi numarası zorunludur.",
+          error:
+            language === "de"
+              ? "Händlernummer ist erforderlich."
+              : "Bayi numarası zorunludur.",
         },
         {
           status: 400,
@@ -159,7 +174,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     if (!companyName) {
       return NextResponse.json(
         {
-          error: "Firma adı zorunludur.",
+          error:
+            language === "de"
+              ? "Firmenname ist erforderlich."
+              : "Firma adı zorunludur.",
         },
         {
           status: 400,
@@ -170,7 +188,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     if (!email) {
       return NextResponse.json(
         {
-          error: "E-posta adresi zorunludur.",
+          error:
+            language === "de"
+              ? "E-Mail-Adresse ist erforderlich."
+              : "E-posta adresi zorunludur.",
         },
         {
           status: 400,
@@ -181,7 +202,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     if (password.length < 8) {
       return NextResponse.json(
         {
-          error: "Geçici şifre en az 8 karakter olmalıdır.",
+          error:
+            language === "de"
+              ? "Das vorläufige Passwort muss mindestens 8 Zeichen lang sein."
+              : "Geçici şifre en az 8 karakter olmalıdır.",
         },
         {
           status: 400,
@@ -192,7 +216,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     if (!Number.isFinite(creditLimit) || creditLimit < 0) {
       return NextResponse.json(
         {
-          error: "Geçerli bir kredi limiti girin.",
+          error:
+            language === "de"
+              ? "Bitte geben Sie ein gültiges Kreditlimit ein."
+              : "Geçerli bir kredi limiti girin.",
         },
         {
           status: 400,
@@ -225,7 +252,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     if (existingEmail) {
       return NextResponse.json(
         {
-          error: "Bu e-posta adresi zaten kullanılıyor.",
+          error:
+            language === "de"
+              ? "Diese E-Mail-Adresse wird bereits verwendet."
+              : "Bu e-posta adresi zaten kullanılıyor.",
         },
         {
           status: 409,
@@ -236,7 +266,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     if (existingDealerNumber) {
       return NextResponse.json(
         {
-          error: "Bu bayi numarası zaten kullanılıyor.",
+          error:
+            language === "de"
+              ? "Diese Händlernummer wird bereits verwendet."
+              : "Bu bayi numarası zaten kullanılıyor.",
         },
         {
           status: 409,
@@ -312,7 +345,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
 
     return NextResponse.json(
       {
-        message: "Bayi hesabı başarıyla oluşturuldu.",
+        message:
+          language === "de"
+            ? "Händlerkonto erfolgreich erstellt."
+            : "Bayi hesabı başarıyla oluşturuldu.",
 
         dealer: {
           ...dealer,
@@ -335,7 +371,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
 
     return NextResponse.json(
       {
-        error: "Bayi oluşturulurken hata oluştu.",
+        error:
+          language === "de"
+            ? "Beim Erstellen des Händlers ist ein Fehler aufgetreten."
+            : "Bayi oluşturulurken hata oluştu.",
       },
       {
         status: 500,

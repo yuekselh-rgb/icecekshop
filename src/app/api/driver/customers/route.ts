@@ -1,6 +1,7 @@
 import { verifySessionToken } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { withTenant } from "@/lib/tenant";
+import { getRequestLanguage } from "@/lib/request-language";
 import bcrypt from "bcryptjs";
 import { randomUUID } from "crypto";
 import { cookies } from "next/headers";
@@ -104,12 +105,13 @@ function serializeCustomer(customer: {
 }
 
 export const GET = withTenant(async () => {
+  const language = await getRequestLanguage();
   const session = await requireDriver();
 
   if (!session) {
     return NextResponse.json(
       {
-        error: "Yetkisiz erişim.",
+        error: language === "de" ? "Unbefugter Zugriff." : "Yetkisiz erişim.",
       },
       {
         status: 403,
@@ -174,7 +176,10 @@ export const GET = withTenant(async () => {
 
     return NextResponse.json(
       {
-        error: "Müşteriler yüklenemedi.",
+        error:
+          language === "de"
+            ? "Kunden konnten nicht geladen werden."
+            : "Müşteriler yüklenemedi.",
       },
       {
         status: 500,
@@ -184,12 +189,13 @@ export const GET = withTenant(async () => {
 });
 
 export const POST = withTenant(async (request: NextRequest, _context, tenant) => {
+  const language = await getRequestLanguage();
   const session = await requireDriver();
 
   if (!session) {
     return NextResponse.json(
       {
-        error: "Yetkisiz erişim.",
+        error: language === "de" ? "Unbefugter Zugriff." : "Yetkisiz erişim.",
       },
       {
         status: 403,
@@ -221,7 +227,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     if (customerType !== "PRIVATE" && customerType !== "BUSINESS") {
       return NextResponse.json(
         {
-          error: "Geçersiz müşteri türü.",
+          error:
+            language === "de"
+              ? "Ungültiger Kundentyp."
+              : "Geçersiz müşteri türü.",
         },
         {
           status: 400,
@@ -232,7 +241,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     if (customerType === "BUSINESS" && !companyName) {
       return NextResponse.json(
         {
-          error: "Firma müşterisi için firma adı zorunludur.",
+          error:
+            language === "de"
+              ? "Für Firmenkunden ist ein Firmenname erforderlich."
+              : "Firma müşterisi için firma adı zorunludur.",
         },
         {
           status: 400,
@@ -243,7 +255,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     if (customerType === "PRIVATE" && !firstName && !lastName) {
       return NextResponse.json(
         {
-          error: "Özel müşteri için ad veya soyad girin.",
+          error:
+            language === "de"
+              ? "Geben Sie für Privatkunden Vor- oder Nachname ein."
+              : "Özel müşteri için ad veya soyad girin.",
         },
         {
           status: 400,
@@ -254,7 +269,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     if (!phone) {
       return NextResponse.json(
         {
-          error: "Telefon numarası zorunludur.",
+          error:
+            language === "de"
+              ? "Telefonnummer ist erforderlich."
+              : "Telefon numarası zorunludur.",
         },
         {
           status: 400,
@@ -265,7 +283,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     if (postalCode && !/^\d{5}$/.test(postalCode)) {
       return NextResponse.json(
         {
-          error: "Posta kodu 5 rakam olmalıdır.",
+          error:
+            language === "de"
+              ? "Die Postleitzahl muss aus 5 Ziffern bestehen."
+              : "Posta kodu 5 rakam olmalıdır.",
         },
         {
           status: 400,
@@ -284,7 +305,9 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
       return NextResponse.json(
         {
           error:
-            "Adres girilecekse sokak, kapı numarası, posta kodu ve şehir birlikte doldurulmalıdır.",
+            language === "de"
+              ? "Wenn eine Adresse eingegeben wird, müssen Straße, Hausnummer, Postleitzahl und Stadt zusammen ausgefüllt werden."
+              : "Adres girilecekse sokak, kapı numarası, posta kodu ve şehir birlikte doldurulmalıdır.",
         },
         {
           status: 400,
@@ -315,11 +338,14 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
           .filter(Boolean)
           .join(" ")
           .trim() ||
-        "Kayıtlı müşteri";
+        (language === "de" ? "Registrierter Kunde" : "Kayıtlı müşteri");
 
       return NextResponse.json(
         {
-          error: `Bu telefon numarası ${existingName} adına zaten kayıtlı.`,
+          error:
+            language === "de"
+              ? `Diese Telefonnummer ist bereits auf ${existingName} registriert.`
+              : `Bu telefon numarası ${existingName} adına zaten kayıtlı.`,
         },
         {
           status: 409,
@@ -341,7 +367,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
       if (existingEmail) {
         return NextResponse.json(
           {
-            error: "Bu e-posta adresiyle kayıtlı bir kullanıcı zaten var.",
+            error:
+              language === "de"
+                ? "Es existiert bereits ein Benutzer mit dieser E-Mail-Adresse."
+                : "Bu e-posta adresiyle kayıtlı bir kullanıcı zaten var.",
           },
           {
             status: 409,
@@ -415,7 +444,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
 
     return NextResponse.json(
       {
-        message: "Müşteri başarıyla oluşturuldu.",
+        message:
+          language === "de"
+            ? "Kunde wurde erfolgreich angelegt."
+            : "Müşteri başarıyla oluşturuldu.",
         customer: serializeCustomer(customer),
         createdByDriverId: session.userId,
       },
@@ -428,7 +460,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
 
     return NextResponse.json(
       {
-        error: "Müşteri oluşturulurken hata oluştu.",
+        error:
+          language === "de"
+            ? "Beim Anlegen des Kunden ist ein Fehler aufgetreten."
+            : "Müşteri oluşturulurken hata oluştu.",
       },
       {
         status: 500,

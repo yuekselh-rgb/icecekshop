@@ -61,7 +61,7 @@ type Settings = {
 };
 
 const emptySettings: Settings = {
-  companyName: "Firma Adı",
+  companyName: "",
   companySubtitle: "",
   logoUrl: "",
   logoWidth: 260,

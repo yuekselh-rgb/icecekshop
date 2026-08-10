@@ -2,6 +2,7 @@ import {
   verifySessionToken,
 } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getRequestLanguage } from "@/lib/request-language";
 import { withTenant } from "@/lib/tenant";
 import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
@@ -47,14 +48,15 @@ export const DELETE = withTenant(async (
     }>;
   }
 ) => {
+  const language = await getRequestLanguage();
+
   const session =
     await getSuperAdminSession();
 
   if (!session) {
     return NextResponse.json(
       {
-        error:
-          "Yetkisiz erişim.",
+        error: language === "de" ? "Unbefugter Zugriff." : "Yetkisiz erişim.",
       },
       {
         status: 403,
@@ -78,7 +80,9 @@ export const DELETE = withTenant(async (
       return NextResponse.json(
         {
           error:
-            "Sipariş bulunamadı.",
+            language === "de"
+              ? "Bestellung nicht gefunden."
+              : "Sipariş bulunamadı.",
         },
         {
           status: 404,
@@ -99,7 +103,9 @@ export const DELETE = withTenant(async (
 
     return NextResponse.json({
       message:
-        "Sipariş çöp kutusuna taşındı.",
+        language === "de"
+          ? "Bestellung wurde in den Papierkorb verschoben."
+          : "Sipariş çöp kutusuna taşındı.",
     });
   } catch (error) {
     console.error(
@@ -110,7 +116,9 @@ export const DELETE = withTenant(async (
     return NextResponse.json(
       {
         error:
-          "Sipariş çöp kutusuna taşınırken hata oluştu.",
+          language === "de"
+            ? "Beim Verschieben der Bestellung in den Papierkorb ist ein Fehler aufgetreten."
+            : "Sipariş çöp kutusuna taşınırken hata oluştu.",
       },
       {
         status: 500,
@@ -130,14 +138,15 @@ export const PATCH = withTenant(async (
     }>;
   }
 ) => {
+  const language = await getRequestLanguage();
+
   const session =
     await getSuperAdminSession();
 
   if (!session) {
     return NextResponse.json(
       {
-        error:
-          "Yetkisiz erişim.",
+        error: language === "de" ? "Unbefugter Zugriff." : "Yetkisiz erişim.",
       },
       {
         status: 403,
@@ -164,7 +173,9 @@ export const PATCH = withTenant(async (
       return NextResponse.json(
         {
           error:
-            "Çöp kutusunda bu sipariş bulunamadı.",
+            language === "de"
+              ? "Diese Bestellung wurde im Papierkorb nicht gefunden."
+              : "Çöp kutusunda bu sipariş bulunamadı.",
         },
         {
           status: 404,
@@ -185,7 +196,9 @@ export const PATCH = withTenant(async (
 
     return NextResponse.json({
       message:
-        "Sipariş başarıyla geri getirildi.",
+        language === "de"
+          ? "Bestellung wurde erfolgreich wiederhergestellt."
+          : "Sipariş başarıyla geri getirildi.",
     });
   } catch (error) {
     console.error(
@@ -196,7 +209,9 @@ export const PATCH = withTenant(async (
     return NextResponse.json(
       {
         error:
-          "Sipariş geri getirilirken hata oluştu.",
+          language === "de"
+            ? "Beim Wiederherstellen der Bestellung ist ein Fehler aufgetreten."
+            : "Sipariş geri getirilirken hata oluştu.",
       },
       {
         status: 500,
@@ -217,14 +232,15 @@ export const POST = withTenant(async (
     }>;
   }
 ) => {
+  const language = await getRequestLanguage();
+
   const session =
     await getSuperAdminSession();
 
   if (!session) {
     return NextResponse.json(
       {
-        error:
-          "Yetkisiz erişim.",
+        error: language === "de" ? "Unbefugter Zugriff." : "Yetkisiz erişim.",
       },
       {
         status: 403,
@@ -248,7 +264,9 @@ export const POST = withTenant(async (
       return NextResponse.json(
         {
           error:
-            "Super Admin şifresi zorunludur.",
+            language === "de"
+              ? "Super-Admin-Passwort ist erforderlich."
+              : "Super Admin şifresi zorunludur.",
         },
         {
           status: 400,
@@ -278,7 +296,9 @@ export const POST = withTenant(async (
       return NextResponse.json(
         {
           error:
-            "Super Admin hesabı bulunamadı.",
+            language === "de"
+              ? "Super-Admin-Konto nicht gefunden."
+              : "Super Admin hesabı bulunamadı.",
         },
         {
           status: 403,
@@ -296,7 +316,9 @@ export const POST = withTenant(async (
       return NextResponse.json(
         {
           error:
-            "Super Admin şifresi yanlış.",
+            language === "de"
+              ? "Super-Admin-Passwort ist falsch."
+              : "Super Admin şifresi yanlış.",
         },
         {
           status: 401,
@@ -324,7 +346,9 @@ export const POST = withTenant(async (
       return NextResponse.json(
         {
           error:
-            "Sipariş çöp kutusunda bulunamadı.",
+            language === "de"
+              ? "Bestellung im Papierkorb nicht gefunden."
+              : "Sipariş çöp kutusunda bulunamadı.",
         },
         {
           status: 404,
@@ -373,7 +397,9 @@ export const POST = withTenant(async (
 
     return NextResponse.json({
       message:
-        `${order.orderNumber} kalıcı olarak silindi.`,
+        language === "de"
+          ? `${order.orderNumber} wurde endgültig gelöscht.`
+          : `${order.orderNumber} kalıcı olarak silindi.`,
     });
   } catch (error) {
     console.error(
@@ -384,7 +410,9 @@ export const POST = withTenant(async (
     return NextResponse.json(
       {
         error:
-          "Sipariş kalıcı olarak silinirken hata oluştu.",
+          language === "de"
+            ? "Beim endgültigen Löschen der Bestellung ist ein Fehler aufgetreten."
+            : "Sipariş kalıcı olarak silinirken hata oluştu.",
       },
       {
         status: 500,

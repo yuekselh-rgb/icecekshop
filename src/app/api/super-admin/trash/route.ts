@@ -2,6 +2,7 @@ import {
   verifySessionToken,
 } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getRequestLanguage } from "@/lib/request-language";
 import { withTenant } from "@/lib/tenant";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
@@ -35,14 +36,15 @@ async function getSuperAdminSession() {
 }
 
 export const GET = withTenant(async () => {
+  const language = await getRequestLanguage();
+
   const session =
     await getSuperAdminSession();
 
   if (!session) {
     return NextResponse.json(
       {
-        error:
-          "Yetkisiz erişim.",
+        error: language === "de" ? "Unbefugter Zugriff." : "Yetkisiz erişim.",
       },
       {
         status: 403,
@@ -120,7 +122,9 @@ export const GET = withTenant(async () => {
     return NextResponse.json(
       {
         error:
-          "Çöp kutusu yüklenirken hata oluştu.",
+          language === "de"
+            ? "Beim Laden des Papierkorbs ist ein Fehler aufgetreten."
+            : "Çöp kutusu yüklenirken hata oluştu.",
       },
       {
         status: 500,
