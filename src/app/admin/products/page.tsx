@@ -998,9 +998,10 @@ export default function AdminProductsPage() {
       }
 
       setSuccess(
-        language === "de"
-          ? "Produkt erfolgreich gelöscht."
-          : "Ürün başarıyla silindi.",
+        data.message ||
+          (language === "de"
+            ? "Produkt erfolgreich gelöscht."
+            : "Ürün başarıyla silindi."),
       );
 
       await loadData();

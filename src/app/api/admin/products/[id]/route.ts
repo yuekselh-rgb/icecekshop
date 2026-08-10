@@ -2,6 +2,7 @@ import { requireAdminPermission } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
 import { withTenant } from "@/lib/tenant";
 import { getRequestLanguage } from "@/lib/request-language";
+import { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
 export const PATCH = withTenant(async (
@@ -578,6 +579,36 @@ export const DELETE = withTenant(async (
       message: language === "de" ? "Produkt gelöscht." : "Ürün silindi.",
     });
   } catch (error) {
+    /*
+     * Sipariş, kasa alımı veya şoför stok geçmişi bulunan ürünler
+     * foreign key kısıtı nedeniyle kalıcı olarak silinemez. Bu
+     * durumda geçmiş kayıtları bozmadan ürünü pasife alıyoruz.
+     */
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2003"
+    ) {
+      try {
+        await prisma.product.update({
+          where: {
+            id,
+          },
+          data: {
+            active: false,
+          },
+        });
+
+        return NextResponse.json({
+          message:
+            language === "de"
+              ? "Dieses Produkt hat bereits Bestell-, Kassen- oder Fahrerbestandshistorie und kann daher nicht endgültig gelöscht werden. Es wurde stattdessen deaktiviert und ist im Shop nicht mehr sichtbar."
+              : "Bu ürünün sipariş, kasa veya şoför stok geçmişi olduğu için kalıcı olarak silinemiyor. Bunun yerine pasife alındı ve mağazada artık görünmeyecek.",
+        });
+      } catch (deactivateError) {
+        console.error("DEACTIVATE_PRODUCT_ERROR", deactivateError);
+      }
+    }
+
     console.error("DELETE_PRODUCT_ERROR", error);
 
     return NextResponse.json(
