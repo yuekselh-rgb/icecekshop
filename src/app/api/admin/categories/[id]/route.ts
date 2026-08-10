@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdminPermission } from "@/lib/admin-auth";
 import { getRequestLanguage } from "@/lib/request-language";
@@ -113,6 +114,72 @@ export const PUT = withTenant(async (
       {
         status: 500,
       },
+    );
+  }
+});
+
+export const DELETE = withTenant(async (
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) => {
+  const language = await getRequestLanguage();
+
+  const admin = await requireAdminPermission("deleteCategory");
+
+  if (!admin) {
+    return NextResponse.json(
+      {
+        error:
+          language === "de"
+            ? "Sie sind nicht berechtigt, Kategorien zu löschen."
+            : "Kategori silme yetkiniz yok.",
+      },
+      { status: 403 },
+    );
+  }
+
+  try {
+    const { id } = await params;
+
+    await prisma.category.delete({
+      where: {
+        id,
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message:
+        language === "de"
+          ? "Kategorie wurde erfolgreich gelöscht."
+          : "Kategori başarıyla silindi.",
+    });
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2003"
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            language === "de"
+              ? "Diese Kategorie kann nicht gelöscht werden, da ihr noch Produkte zugeordnet sind. Bitte verschieben Sie zuerst alle Produkte in eine andere Kategorie."
+              : "Bu kategoriye bağlı ürünler olduğu için silinemiyor. Lütfen önce tüm ürünleri başka bir kategoriye taşıyın.",
+        },
+        { status: 409 },
+      );
+    }
+
+    console.error("DELETE_CATEGORY_ERROR", error);
+
+    return NextResponse.json(
+      {
+        error:
+          language === "de"
+            ? "Beim Löschen der Kategorie ist ein Fehler aufgetreten."
+            : "Kategori silinirken bir hata oluştu.",
+      },
+      { status: 500 },
     );
   }
 });

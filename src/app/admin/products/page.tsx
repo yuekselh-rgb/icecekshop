@@ -1014,6 +1014,59 @@ export default function AdminProductsPage() {
     }
   }
 
+  async function deleteCategory(category: Category) {
+    const categoryName =
+      language === "de"
+        ? category.nameDe || category.name
+        : category.nameTr || category.name;
+
+    const confirmed = window.confirm(
+      language === "de"
+        ? `Soll die Kategorie „${categoryName}" gelöscht werden?`
+        : `${categoryName} kategorisi silinsin mi?`,
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setError("");
+    setSuccess("");
+
+    try {
+      const response = await fetch(`/api/admin/categories/${category.id}`, {
+        method: "DELETE",
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(
+          data.error ||
+            (language === "de"
+              ? "Kategorie konnte nicht gelöscht werden."
+              : "Kategori silinemedi."),
+        );
+        return;
+      }
+
+      setSuccess(
+        data.message ||
+          (language === "de"
+            ? "Kategorie erfolgreich gelöscht."
+            : "Kategori başarıyla silindi."),
+      );
+
+      await loadData();
+    } catch {
+      setError(
+        language === "de"
+          ? "Kategorie konnte nicht gelöscht werden."
+          : "Kategori silinemedi.",
+      );
+    }
+  }
+
   if (loading) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-slate-100">
@@ -2034,6 +2087,16 @@ export default function AdminProductsPage() {
                       >
                         <Pencil size={18}/>
                       </button>
+                      {permissions?.deleteCategory && (
+                        <button
+                          type="button"
+                          onClick={() => deleteCategory(group.category)}
+                          className="rounded-lg bg-red-50 p-2 text-red-500 hover:bg-red-100"
+                          title={language === "de" ? "Kategorie löschen" : "Kategori Sil"}
+                        >
+                          <Trash2 size={18}/>
+                        </button>
+                      )}
                       <button
                         type="button"
                         onClick={() => moveCategory(index,-1)}
