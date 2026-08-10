@@ -75,13 +75,20 @@ type PfandOption = {
   quantity: number;
 };
 
-function getStockUnitLabel(unit: Product["stockUnit"]) {
-  return {
-    KASA: "kasa",
-    KARTON: "karton",
-    PAKET: "paket",
-    ADET: "Stück",
-  }[unit];
+function getStockUnitLabel(unit: Product["stockUnit"], language: "de" | "tr") {
+  return language === "de"
+    ? {
+        KASA: "Kiste",
+        KARTON: "Karton",
+        PAKET: "Paket",
+        ADET: "Stück",
+      }[unit]
+    : {
+        KASA: "kasa",
+        KARTON: "karton",
+        PAKET: "paket",
+        ADET: "adet",
+      }[unit];
 }
 
 const initialPfandOptions: PfandOption[] = [
@@ -644,12 +651,15 @@ const adminName =
     setSuccess("");
 
     if (product.stock <= 0) {
+      const productLabel =
+        language === "de"
+          ? product.nameDe || product.name
+          : product.nameTr || product.name;
+
       setError(
-        `${language === "de"
-  ? (product.nameDe || product.name)
-  : (product.nameTr || product.name)} stokta yok. Birim: ${getStockUnitLabel(
-          product.stockUnit,
-        )}`,
+        language === "de"
+          ? `${productLabel} ist nicht auf Lager. Einheit: ${getStockUnitLabel(product.stockUnit, language)}`
+          : `${productLabel} stokta yok. Birim: ${getStockUnitLabel(product.stockUnit, language)}`,
       );
       return;
     }
@@ -1268,7 +1278,7 @@ const adminName =
                           </div>
 
                           <span className="shrink-0 rounded-lg bg-slate-100 px-2 py-1 text-[9px] font-black text-slate-500">
-                            {getStockUnitLabel(product.stockUnit)}
+                            {getStockUnitLabel(product.stockUnit, language)}
                           </span>
                         </div>
 
@@ -1399,7 +1409,7 @@ const adminName =
                         </p>
 
                         <div className="mt-1 space-y-0.5 text-xs text-slate-500">
-                          <p>Produkt: {Number(item.product.price).toFixed(2)} €</p>
+                          <p>{t.product}: {Number(item.product.price).toFixed(2)} €</p>
 
                           {Number(item.product.pfandAmount || 0) > 0 ? (
                             <p>
@@ -1409,7 +1419,7 @@ const adminName =
                           ) : null}
 
                           <p className="font-black text-slate-700">
-                            Birim toplam:{" "}
+                            {language === "de" ? "Einheit gesamt" : "Birim toplam"}:{" "}
                             {(
                               Number(item.product.price) +
                               Number(item.product.pfandAmount)

@@ -1464,9 +1464,13 @@ const categoryLabels: Record<string, string> =
                                           key={category.id}
                                           value={category.id}
                                         >
-                                          {category.nameTr ||
-                                            category.nameDe ||
-                                            category.name}
+                                          {language === "de"
+                                            ? category.nameDe ||
+                                              category.nameTr ||
+                                              category.name
+                                            : category.nameTr ||
+                                              category.nameDe ||
+                                              category.name}
                                         </option>
                                       ))}
                                     </select>
@@ -1584,9 +1588,13 @@ const categoryLabels: Record<string, string> =
                                         key={product.id}
                                         value={product.id}
                                       >
-                                        {product.nameTr ||
-                                          product.nameDe ||
-                                          product.name}{" "}
+                                        {language === "de"
+                                          ? product.nameDe ||
+                                            product.nameTr ||
+                                            product.name
+                                          : product.nameTr ||
+                                            product.nameDe ||
+                                            product.name}{" "}
                                         · {t.stock}: {product.stock}{" "}
                                         {getStockUnitLabel(
                                           product.stockUnit,

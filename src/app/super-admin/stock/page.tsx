@@ -1265,17 +1265,28 @@ export default function SuperAdminStockPage() {
                       index
                     ) => {
                       const productName =
-                        product.nameTr ||
-                        product.nameDe ||
-                        product.name;
+                        language === "de"
+                          ? product.nameDe ||
+                            product.nameTr ||
+                            product.name
+                          : product.nameTr ||
+                            product.nameDe ||
+                            product.name;
 
                       const categoryName =
-                        product.category
-                          .nameTr ||
-                        product.category
-                          .nameDe ||
-                        product.category
-                          .name;
+                        language === "de"
+                          ? product.category
+                              .nameDe ||
+                            product.category
+                              .nameTr ||
+                            product.category
+                              .name
+                          : product.category
+                              .nameTr ||
+                            product.category
+                              .nameDe ||
+                            product.category
+                              .name;
 
                       const previousProduct =
                         index > 0
@@ -1730,9 +1741,13 @@ export default function SuperAdminStockPage() {
                   </p>
 
                   <h2 className="mt-1 text-xl font-black text-slate-950">
-                    {actionDialog.product.nameTr ||
-                      actionDialog.product.nameDe ||
-                      actionDialog.product.name}
+                    {language === "de"
+                      ? actionDialog.product.nameDe ||
+                        actionDialog.product.nameTr ||
+                        actionDialog.product.name
+                      : actionDialog.product.nameTr ||
+                        actionDialog.product.nameDe ||
+                        actionDialog.product.name}
                   </h2>
 
                   <p className="mt-1 text-sm text-slate-500">

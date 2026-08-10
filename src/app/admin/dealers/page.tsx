@@ -1291,8 +1291,11 @@ export default function DealerManagementPage() {
                                           : parsedCustomPrice - product.price;
 
                                       const categoryName =
-                                        product.category.nameTr ||
-                                        product.category.nameDe ||
+                                        (language === "de"
+                                          ? product.category.nameDe ||
+                                            product.category.nameTr
+                                          : product.category.nameTr ||
+                                            product.category.nameDe) ||
                                         product.category.name ||
                                         (language === "de"
                                           ? "Sonstiges"
@@ -1346,9 +1349,13 @@ export default function DealerManagementPage() {
                                           <div className="grid gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm md:grid-cols-[minmax(220px,1fr)_190px_220px] xl:grid-cols-[minmax(280px,1fr)_220px_260px]">
                                             <div className="min-w-0">
                                               <p className="font-black text-slate-950">
-                                                {product.nameTr ||
-                                                  product.nameDe ||
-                                                  product.name}
+                                                {language === "de"
+                                                  ? product.nameDe ||
+                                                    product.nameTr ||
+                                                    product.name
+                                                  : product.nameTr ||
+                                                    product.nameDe ||
+                                                    product.name}
                                               </p>
 
                                               <div className="mt-2 flex flex-wrap items-center gap-2">
