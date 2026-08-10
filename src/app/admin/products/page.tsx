@@ -3,6 +3,7 @@
 import {
   ArrowLeft,
   FolderPlus,
+  GripVertical,
   ImageIcon,
   Loader2,
   PackageCheck,
@@ -182,6 +183,10 @@ export default function AdminProductsPage() {
 
   const [categories, setCategories] = useState<Category[]>([]);
 
+  const [draggedCategoryId, setDraggedCategoryId] = useState<string | null>(null);
+
+  const [dragOverCategoryId, setDragOverCategoryId] = useState<string | null>(null);
+
   const [permissions, setPermissions] = useState<Permissions | null>(null);
 
   const [loading, setLoading] = useState(true);
@@ -330,21 +335,8 @@ export default function AdminProductsPage() {
   }, [categories, products]);
 
 
-  async function moveCategory(index: number, direction: -1 | 1) {
-    const target = index + direction;
-
-    if (target < 0 || target >= categories.length) {
-      return;
-    }
-
+  async function persistCategoryOrder(updated: Category[]) {
     const previous = categories;
-
-    const updated = [...categories];
-
-    [updated[index], updated[target]] = [
-      updated[target],
-      updated[index],
-    ];
 
     const reordered = updated.map((category, i) => ({
       ...category,
@@ -386,6 +378,49 @@ export default function AdminProductsPage() {
           : "Kategori sıralaması kaydedilemedi.",
       );
     }
+  }
+
+  async function moveCategory(categoryId: string, direction: -1 | 1) {
+    const index = categories.findIndex((c) => c.id === categoryId);
+    const target = index + direction;
+
+    if (index === -1 || target < 0 || target >= categories.length) {
+      return;
+    }
+
+    const updated = [...categories];
+
+    [updated[index], updated[target]] = [
+      updated[target],
+      updated[index],
+    ];
+
+    await persistCategoryOrder(updated);
+  }
+
+  function handleCategoryDrop(targetCategoryId: string) {
+    const draggedId = draggedCategoryId;
+
+    setDraggedCategoryId(null);
+    setDragOverCategoryId(null);
+
+    if (!draggedId || draggedId === targetCategoryId) {
+      return;
+    }
+
+    const updated = [...categories];
+
+    const fromIndex = updated.findIndex((c) => c.id === draggedId);
+    const toIndex = updated.findIndex((c) => c.id === targetCategoryId);
+
+    if (fromIndex === -1 || toIndex === -1) {
+      return;
+    }
+
+    const [moved] = updated.splice(fromIndex, 1);
+    updated.splice(toIndex, 0, moved);
+
+    persistCategoryOrder(updated);
   }
 
 
@@ -2038,13 +2073,31 @@ export default function AdminProductsPage() {
         ) : null}
 
         <div className="mt-8 space-y-7">
-          {groupedProducts.map((group, index) => {
+          {groupedProducts.map((group) => {
             const categoryTheme = getCategoryTheme(group.category.id);
+            const isDragOver = dragOverCategoryId === group.category.id;
 
             return (
               <section
                 key={group.category.id}
-                className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm"
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  if (draggedCategoryId && draggedCategoryId !== group.category.id) {
+                    setDragOverCategoryId(group.category.id);
+                  }
+                }}
+                onDragLeave={() => {
+                  setDragOverCategoryId((current) =>
+                    current === group.category.id ? null : current,
+                  );
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  handleCategoryDrop(group.category.id);
+                }}
+                className={`overflow-hidden rounded-[28px] border bg-white shadow-sm transition-colors ${
+                  isDragOver ? "border-slate-900" : "border-slate-200"
+                }`}
               >
                 <div
                   className="mb-5 border-b px-6 pb-4 pt-5"
@@ -2066,16 +2119,31 @@ export default function AdminProductsPage() {
                   </p>
 
                   <div className="mt-1 flex items-center justify-between">
-                    <h2
-                      className="text-xl font-black"
-                      style={{
-                        color: categoryTheme.text,
-                      }}
-                    >
-                      {language === "de"
-                        ? (group.category.nameDe || group.category.name)
-                        : (group.category.nameTr || group.category.name)}
-                    </h2>
+                    <div className="flex items-center gap-2">
+                      <span
+                        draggable
+                        onDragStart={() => setDraggedCategoryId(group.category.id)}
+                        onDragEnd={() => {
+                          setDraggedCategoryId(null);
+                          setDragOverCategoryId(null);
+                        }}
+                        className="cursor-grab rounded-lg p-2 text-slate-400 hover:bg-white hover:text-slate-600 active:cursor-grabbing"
+                        title={language === "de" ? "Zum Verschieben ziehen" : "Taşımak için sürükleyin"}
+                      >
+                        <GripVertical size={18}/>
+                      </span>
+
+                      <h2
+                        className="text-xl font-black"
+                        style={{
+                          color: categoryTheme.text,
+                        }}
+                      >
+                        {language === "de"
+                          ? (group.category.nameDe || group.category.name)
+                          : (group.category.nameTr || group.category.name)}
+                      </h2>
+                    </div>
 
                     <div className="flex gap-2">
 
@@ -2099,7 +2167,7 @@ export default function AdminProductsPage() {
                       )}
                       <button
                         type="button"
-                        onClick={() => moveCategory(index,-1)}
+                        onClick={() => moveCategory(group.category.id, -1)}
                         className="rounded-lg bg-white p-2 hover:bg-slate-100"
                       >
                         <ChevronUp size={18}/>
@@ -2107,7 +2175,7 @@ export default function AdminProductsPage() {
 
                       <button
                         type="button"
-                        onClick={() => moveCategory(index,1)}
+                        onClick={() => moveCategory(group.category.id, 1)}
                         className="rounded-lg bg-white p-2 hover:bg-slate-100"
                       >
                         <ChevronDown size={18}/>
