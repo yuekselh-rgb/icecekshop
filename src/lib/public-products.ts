@@ -26,6 +26,16 @@ export async function getPublicProducts() {
         },
       },
       {
+        category: {
+          type: "asc",
+        },
+      },
+      {
+        category: {
+          name: "asc",
+        },
+      },
+      {
         sortOrder: "asc",
       },
       {
