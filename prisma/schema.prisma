@@ -480,6 +480,7 @@ model PfandWarehouseMovement {
   createdById   String
   note          String?
   totalAmount   Decimal           @db.Decimal(10, 2)
+  paidAt        DateTime?
   createdAt     DateTime          @default(now())
 
   tenant      Tenant                       @relation(fields: [tenantId], references: [id], onDelete: Cascade)

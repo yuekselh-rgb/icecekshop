@@ -88,6 +88,35 @@ type PfandReturn = {
   }>;
 };
 
+type OutgoingMovement = {
+  id: string;
+  partyType: string;
+  partyName: string | null;
+  note: string | null;
+  totalAmount: number;
+  paidAt: string | null;
+  createdAt: string;
+  createdByName: string;
+
+  items: Array<{
+    id: string;
+    name: string;
+    quantity: number;
+    unitAmount: number;
+    totalAmount: number;
+  }>;
+};
+
+const partyTypeOptions = [
+  "SUPPLIER",
+  "WHOLESALER",
+  "METRO",
+  "TRINKGUT",
+  "OTHER_COMPANY",
+  "OWN_BRANCH",
+  "OTHER",
+];
+
 type WarehouseSummary = {
   totalQuantity: number;
   totalValue: number;
@@ -129,6 +158,37 @@ export default function AdminPfandPage() {
           paidCash: "Bar bezahlt",
           deductedFromOrder: "Von Bestellung abgezogen",
           cancelled: "Storniert",
+          loadingReturns: "Pfand-Rückgaben werden geladen...",
+          includedMovements: "Berücksichtigte Lagerbewegungen:",
+          noReturnsYet: "Es liegen noch keine Pfand-Rückgabeanfragen vor.",
+          outgoingTitle: "Pfand-Ausgang",
+          outgoingSubtitle: "Erfassen Sie, wer Pfand aus dem Lager mitgenommen hat und ob die Zahlung erhalten wurde.",
+          newOutgoing: "+ Neuer Pfand-Ausgang",
+          closeForm: "Formular schließen",
+          who: "Wer hat es mitgenommen?",
+          partyType: "Art",
+          partyName: "Name",
+          partyNamePlaceholder: "Firma oder Personenname",
+          note: "Notiz (optional)",
+          items: "Positionen",
+          save: "Speichern",
+          saving: "Wird gespeichert...",
+          noOutgoingYet: "Noch kein Pfand-Ausgang erfasst.",
+          paid: "Bezahlt",
+          notPaid: "Zahlung ausstehend",
+          markPaid: "In die Kasse buchen",
+          markingPaid: "Wird gebucht...",
+          total: "Gesamt",
+          partyTypeLabels: {
+            CUSTOMER: "Kunde",
+            SUPPLIER: "Lieferant",
+            WHOLESALER: "Großhändler",
+            METRO: "Metro",
+            TRINKGUT: "Trinkgut",
+            OTHER_COMPANY: "Andere Firma",
+            OWN_BRANCH: "Eigene Filiale",
+            OTHER: "Sonstige",
+          } as Record<string, string>,
         }
       : {
           pending: "Bekliyor",
@@ -136,6 +196,37 @@ export default function AdminPfandPage() {
           paidCash: "Nakit Ödendi",
           deductedFromOrder: "Siparişten Düşüldü",
           cancelled: "İptal Edildi",
+          loadingReturns: "Pfand iadeleri yükleniyor...",
+          includedMovements: "Hesaplamaya dahil edilen depo hareketi:",
+          noReturnsYet: "Henüz Pfand iade talebi bulunmuyor.",
+          outgoingTitle: "Pfand Çıkışı",
+          outgoingSubtitle: "Depodan Pfand'ı kimin götürdüğünü ve ödemenin alınıp alınmadığını kaydedin.",
+          newOutgoing: "+ Yeni Pfand Çıkışı",
+          closeForm: "Formu kapat",
+          who: "Kim götürdü?",
+          partyType: "Tür",
+          partyName: "Ad",
+          partyNamePlaceholder: "Firma veya kişi adı",
+          note: "Not (isteğe bağlı)",
+          items: "Kalemler",
+          save: "Kaydet",
+          saving: "Kaydediliyor...",
+          noOutgoingYet: "Henüz Pfand çıkışı kaydedilmedi.",
+          paid: "Ödendi",
+          notPaid: "Ödeme bekleniyor",
+          markPaid: "Kasaya İşle",
+          markingPaid: "İşleniyor...",
+          total: "Toplam",
+          partyTypeLabels: {
+            CUSTOMER: "Müşteri",
+            SUPPLIER: "Tedarikçi",
+            WHOLESALER: "Toptancı",
+            METRO: "Metro",
+            TRINKGUT: "Trinkgut",
+            OTHER_COMPANY: "Diğer Firma",
+            OWN_BRANCH: "Kendi Şubemiz",
+            OTHER: "Diğer",
+          } as Record<string, string>,
         };
 
 
@@ -187,6 +278,26 @@ export default function AdminPfandPage() {
   ] = useState<Record<string, number>>(
     {}
   );
+
+  const [outgoingMovements, setOutgoingMovements] = useState<
+    OutgoingMovement[]
+  >([]);
+
+  const [showOutgoingForm, setShowOutgoingForm] = useState(false);
+
+  const [outgoingPartyType, setOutgoingPartyType] = useState("SUPPLIER");
+
+  const [outgoingPartyName, setOutgoingPartyName] = useState("");
+
+  const [outgoingNote, setOutgoingNote] = useState("");
+
+  const [outgoingQuantities, setOutgoingQuantities] = useState<
+    Record<string, number>
+  >({});
+
+  const [savingOutgoing, setSavingOutgoing] = useState(false);
+
+  const [markingPaidId, setMarkingPaidId] = useState<string | null>(null);
 
   function getReportedQuantity(
     item: PfandReturn["items"][number]
@@ -265,6 +376,10 @@ export default function AdminPfandPage() {
             movementCount: 0,
             items: [],
           }
+        );
+
+        setOutgoingMovements(
+          data.outgoingMovements || []
         );
       } catch {
         setError(
@@ -365,12 +480,145 @@ export default function AdminPfandPage() {
     }
   }
 
+  function changeOutgoingQuantity(itemKey: string, difference: number) {
+    setOutgoingQuantities((current) => {
+      const currentQuantity = current[itemKey] ?? 0;
+
+      return {
+        ...current,
+        [itemKey]: Math.max(0, currentQuantity + difference),
+      };
+    });
+  }
+
+  async function createOutgoingMovement() {
+    setError("");
+    setSuccess("");
+
+    const items = warehouseSummary.items
+      .filter((item) => (outgoingQuantities[item.key] || 0) > 0)
+      .map((item) => ({
+        name: item.name,
+        quantity: outgoingQuantities[item.key],
+        unitAmount: item.unitAmount,
+      }));
+
+    if (!outgoingPartyName.trim()) {
+      setError(
+        language === "de"
+          ? "Der Name der Person/Firma ist erforderlich."
+          : "Kişi/firma adı zorunludur.",
+      );
+      return;
+    }
+
+    if (items.length === 0) {
+      setError(
+        language === "de"
+          ? "Sie müssen mindestens eine Pfand-Position mit Menge angeben."
+          : "En az bir Pfand kalemi ve miktarı girmelisiniz.",
+      );
+      return;
+    }
+
+    setSavingOutgoing(true);
+
+    try {
+      const response = await fetch("/api/admin/pfand-warehouse", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          partyType: outgoingPartyType,
+          partyName: outgoingPartyName.trim(),
+          note: outgoingNote.trim() || undefined,
+          items,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(
+          data.error ||
+            (language === "de"
+              ? "Pfand-Ausgang konnte nicht gespeichert werden."
+              : "Pfand çıkışı kaydedilemedi."),
+        );
+        return;
+      }
+
+      setSuccess(data.message);
+      setOutgoingPartyName("");
+      setOutgoingNote("");
+      setOutgoingQuantities({});
+      setShowOutgoingForm(false);
+
+      await loadReturns();
+    } catch {
+      setError(
+        language === "de"
+          ? "Pfand-Ausgang konnte nicht gespeichert werden."
+          : "Pfand çıkışı kaydedilemedi.",
+      );
+    } finally {
+      setSavingOutgoing(false);
+    }
+  }
+
+  async function markOutgoingPaid(movementId: string) {
+    setError("");
+    setSuccess("");
+
+    setMarkingPaidId(movementId);
+
+    try {
+      const response = await fetch(
+        `/api/admin/pfand-warehouse/${movementId}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            action: "MARK_PAID",
+          }),
+        },
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(
+          data.error ||
+            (language === "de"
+              ? "Zahlung konnte nicht in die Kasse gebucht werden."
+              : "Ödeme kasaya işlenemedi."),
+        );
+        return;
+      }
+
+      setSuccess(data.message);
+
+      await loadReturns();
+    } catch {
+      setError(
+        language === "de"
+          ? "Zahlung konnte nicht in die Kasse gebucht werden."
+          : "Ödeme kasaya işlenemedi.",
+      );
+    } finally {
+      setMarkingPaidId(null);
+    }
+  }
+
   if (loading) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-slate-100">
         <div className="flex items-center gap-3 font-bold text-slate-600">
           <Loader2 className="animate-spin" />
-          Pfand iadeleri yükleniyor...
+          {t.loadingReturns}
         </div>
       </main>
     );
@@ -605,13 +853,226 @@ export default function AdminPfandPage() {
               )}
 
               <div className="border-t border-slate-200 bg-slate-50 px-6 py-3 text-xs font-semibold text-slate-500">
-                Hesaplamaya dahil edilen depo hareketi:{" "}
+                {t.includedMovements}{" "}
                 {
                   warehouseSummary.movementCount
                 }
               </div>
             </div>
           ) : null}
+        </section>
+
+        <section className="mt-8 rounded-[28px] bg-white p-6 shadow-sm">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-black text-slate-950">
+                {t.outgoingTitle}
+              </h2>
+
+              <p className="mt-1 text-sm text-slate-500">
+                {t.outgoingSubtitle}
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowOutgoingForm((current) => !current)}
+              className="rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-black text-white transition hover:bg-slate-800"
+            >
+              {showOutgoingForm ? t.closeForm : t.newOutgoing}
+            </button>
+          </div>
+
+          {showOutgoingForm ? (
+            <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-5">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="block">
+                  <span className="text-xs font-black uppercase text-slate-500">
+                    {t.partyType}
+                  </span>
+
+                  <select
+                    value={outgoingPartyType}
+                    onChange={(event) =>
+                      setOutgoingPartyType(event.target.value)
+                    }
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-orange-500"
+                  >
+                    {partyTypeOptions.map((option) => (
+                      <option key={option} value={option}>
+                        {t.partyTypeLabels[option] || option}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className="block">
+                  <span className="text-xs font-black uppercase text-slate-500">
+                    {t.partyName}
+                  </span>
+
+                  <input
+                    type="text"
+                    value={outgoingPartyName}
+                    onChange={(event) =>
+                      setOutgoingPartyName(event.target.value)
+                    }
+                    placeholder={t.partyNamePlaceholder}
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-orange-500"
+                  />
+                </label>
+              </div>
+
+              <label className="mt-4 block">
+                <span className="text-xs font-black uppercase text-slate-500">
+                  {t.note}
+                </span>
+
+                <input
+                  type="text"
+                  value={outgoingNote}
+                  onChange={(event) => setOutgoingNote(event.target.value)}
+                  className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-orange-500"
+                />
+              </label>
+
+              <div className="mt-4">
+                <span className="text-xs font-black uppercase text-slate-500">
+                  {t.items}
+                </span>
+
+                <div className="mt-2 space-y-2">
+                  {warehouseSummary.items.map((item) => (
+                    <div
+                      key={item.key}
+                      className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white p-3"
+                    >
+                      <div>
+                        <p className="font-bold text-slate-900">
+                          {item.name}
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          {item.unitAmount.toFixed(2)} € ·{" "}
+                          {language === "de" ? "im Lager:" : "depoda:"}{" "}
+                          {item.quantity}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => changeOutgoingQuantity(item.key, -1)}
+                          className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200"
+                        >
+                          <Minus size={15} />
+                        </button>
+
+                        <span className="w-8 text-center font-black">
+                          {outgoingQuantities[item.key] || 0}
+                        </span>
+
+                        <button
+                          type="button"
+                          onClick={() => changeOutgoingQuantity(item.key, 1)}
+                          className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500 text-white hover:bg-orange-600"
+                        >
+                          <Plus size={15} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <button
+                type="button"
+                disabled={savingOutgoing}
+                onClick={createOutgoingMovement}
+                className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-orange-500 px-4 py-3 font-black text-white transition hover:bg-orange-600 disabled:opacity-60"
+              >
+                {savingOutgoing ? (
+                  <>
+                    <Loader2 size={17} className="animate-spin" />
+                    {t.saving}
+                  </>
+                ) : (
+                  t.save
+                )}
+              </button>
+            </div>
+          ) : null}
+
+          <div className="mt-5 space-y-3">
+            {outgoingMovements.length === 0 ? (
+              <p className="text-sm text-slate-500">{t.noOutgoingYet}</p>
+            ) : (
+              outgoingMovements.map((movement) => (
+                <div
+                  key={movement.id}
+                  className="rounded-2xl border border-slate-200 p-4"
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-4">
+                    <div>
+                      <p className="text-xs font-bold text-orange-500">
+                        {new Date(movement.createdAt).toLocaleString("de-DE")}
+                      </p>
+
+                      <p className="mt-1 font-black text-slate-950">
+                        {movement.partyName}{" "}
+                        <span className="font-semibold text-slate-500">
+                          ({t.partyTypeLabels[movement.partyType] || movement.partyType})
+                        </span>
+                      </p>
+
+                      {movement.note ? (
+                        <p className="mt-1 text-sm text-slate-500">
+                          {movement.note}
+                        </p>
+                      ) : null}
+
+                      <p className="mt-2 text-xs text-slate-500">
+                        {movement.items
+                          .map((item) => `${item.quantity}x ${item.name}`)
+                          .join(", ")}
+                      </p>
+                    </div>
+
+                    <div className="text-right">
+                      <p className="text-xs font-bold text-slate-500">
+                        {t.total}
+                      </p>
+
+                      <p className="text-lg font-black text-slate-950">
+                        {movement.totalAmount.toFixed(2)} €
+                      </p>
+
+                      {movement.paidAt ? (
+                        <span className="mt-2 inline-block rounded-full bg-green-50 px-3 py-1 text-xs font-black text-green-700">
+                          {t.paid}
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          disabled={markingPaidId === movement.id}
+                          onClick={() => markOutgoingPaid(movement.id)}
+                          className="mt-2 flex items-center gap-2 rounded-xl bg-slate-950 px-3 py-2 text-xs font-black text-white transition hover:bg-slate-800 disabled:opacity-60"
+                        >
+                          {markingPaidId === movement.id ? (
+                            <>
+                              <Loader2 size={14} className="animate-spin" />
+                              {t.markingPaid}
+                            </>
+                          ) : (
+                            t.markPaid
+                          )}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </section>
 
         {error ? (
@@ -629,7 +1090,7 @@ export default function AdminPfandPage() {
         <section className="mt-8 rounded-[28px] bg-white p-6 shadow-sm">
           {returns.length === 0 ? (
             <p className="text-slate-500">
-              Henüz Pfand iade talebi bulunmuyor.
+              {t.noReturnsYet}
             </p>
           ) : (
             <div className="space-y-4">

@@ -2,6 +2,7 @@ import {
   requireAdminPermission,
 } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
+import { getRequestLanguage } from "@/lib/request-language";
 import { withTenant } from "@/lib/tenant";
 import { NextResponse } from "next/server";
 
@@ -74,6 +75,8 @@ function serializePfandReturn(
 }
 
 export const GET = withTenant(async () => {
+  const language = await getRequestLanguage();
+
   const admin =
     await requireAdminPermission(
       "managePfand"
@@ -83,7 +86,9 @@ export const GET = withTenant(async () => {
     return NextResponse.json(
       {
         error:
-          "Pfand iadelerini görüntüleme yetkiniz yok.",
+          language === "de"
+            ? "Sie sind nicht berechtigt, Pfand-Rückgaben einzusehen."
+            : "Pfand iadelerini görüntüleme yetkiniz yok.",
       },
       {
         status: 403,
@@ -164,7 +169,21 @@ export const GET = withTenant(async () => {
         select: {
           id: true,
           type: true,
+          partyType: true,
+          partyName: true,
+          note: true,
+          totalAmount: true,
+          paidAt: true,
           createdAt: true,
+
+          createdBy: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+            },
+          },
 
           items: {
             select: {
@@ -355,6 +374,35 @@ export const GET = withTenant(async () => {
           item.quantity < 0
       ).length;
 
+    const outgoingMovements = warehouseMovements
+      .filter((movement) => movement.type === "OUT")
+      .map((movement) => ({
+        id: movement.id,
+        partyType: movement.partyType,
+        partyName: movement.partyName,
+        note: movement.note,
+        totalAmount: Number(movement.totalAmount),
+        paidAt: movement.paidAt,
+        createdAt: movement.createdAt,
+
+        createdByName:
+          [movement.createdBy.firstName, movement.createdBy.lastName]
+            .filter(Boolean)
+            .join(" ") || movement.createdBy.email,
+
+        items: movement.items.map((item) => ({
+          id: item.id,
+          name: item.name,
+          quantity: item.quantity,
+          unitAmount: Number(item.unitAmount),
+          totalAmount: Number(item.totalAmount),
+        })),
+      }))
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      );
+
     return NextResponse.json({
       returns:
         returns.map(
@@ -370,6 +418,8 @@ export const GET = withTenant(async () => {
         items:
           warehouseItems,
       },
+
+      outgoingMovements,
     });
   } catch (error) {
     console.error(
@@ -380,7 +430,9 @@ export const GET = withTenant(async () => {
     return NextResponse.json(
       {
         error:
-          "Pfand iadeleri yüklenemedi.",
+          language === "de"
+            ? "Pfand-Rückgaben konnten nicht geladen werden."
+            : "Pfand iadeleri yüklenemedi.",
       },
       {
         status: 500,
