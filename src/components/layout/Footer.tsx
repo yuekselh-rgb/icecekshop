@@ -24,12 +24,6 @@ fetch("/api/company-settings",{cache:"no-store"})
       ? {
           description:
             "Ihre moderne Plattform für die einfache Bestellung von Getränken, Verpackungen und Reinigungsprodukten.",
-          categories: "Kategorien",
-          drinks: "Getränke",
-          packaging: "Verpackungen",
-          takeaway: "Take Away",
-          cleaning: "Reinigung",
-          pfand: "Pfandsystem",
           contact: "Kontakt",
           country: "Deutschland",
           rights: "Alle Rechte vorbehalten.",
@@ -51,12 +45,6 @@ fetch("/api/company-settings",{cache:"no-store"})
       : {
           description:
             "İçecek, ambalaj ve temizlik ürünlerini kolayca sipariş edebileceğiniz modern alışveriş platformu.",
-          categories: "Kategoriler",
-          drinks: "İçecekler",
-          packaging: "Ambalaj",
-          takeaway: "Take Away",
-          cleaning: "Temizlik",
-          pfand: "Pfand Sistemi",
           contact: "İletişim",
           country: "Almanya",
           rights: "Tüm hakları saklıdır.",
@@ -78,7 +66,7 @@ fetch("/api/company-settings",{cache:"no-store"})
 
   return (
     <footer className="bg-slate-950 px-4 py-12 text-white lg:px-8">
-      <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[2.2fr_1fr_1fr]">
+      <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[2.2fr_1fr]">
 
         <div>
           <h3 className="font-black">{t.companyInfo}</h3>
@@ -166,44 +154,6 @@ fetch("/api/company-settings",{cache:"no-store"})
 </div>
 )}
 </div>
-        </div>
-
-        <div>
-          <h3 className="font-black">{t.categories}</h3>
-
-          <div className="mt-4 space-y-3 text-sm text-slate-400">
-            <Link
-              href="/products?category=icecekler"
-              className="block hover:text-white"
-            >
-              {t.drinks}
-            </Link>
-
-            <Link
-              href="/products?category=ambalaj"
-              className="block hover:text-white"
-            >
-              {t.packaging}
-            </Link>
-
-            <Link
-              href="/products?category=take-away"
-              className="block hover:text-white"
-            >
-              {t.takeaway}
-            </Link>
-
-            <Link
-              href="/products?category=temizlik"
-              className="block hover:text-white"
-            >
-              {t.cleaning}
-            </Link>
-
-            <Link href="/pfand" className="block hover:text-white">
-              {t.pfand}
-            </Link>
-          </div>
         </div>
 
         <div>
