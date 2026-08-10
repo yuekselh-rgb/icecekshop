@@ -470,7 +470,10 @@ export const PATCH = withTenant(async (
 
             createdById: admin.user.id,
 
-            note: "Admin tarafından fiziksel depo girişi sayılarak onaylandı.",
+            note:
+              language === "de"
+                ? "Vom Admin durch physische Lagerzählung bestätigt."
+                : "Admin tarafından fiziksel depo girişi sayılarak onaylandı.",
 
             totalAmount: approvedAmount,
 

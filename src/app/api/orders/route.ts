@@ -501,7 +501,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
 
             amount: -item.quantity,
 
-            reason: `Sipariş ${orderNumber}`,
+            reason:
+              language === "de"
+                ? `Bestellung ${orderNumber}`
+                : `Sipariş ${orderNumber}`,
           },
         });
       }

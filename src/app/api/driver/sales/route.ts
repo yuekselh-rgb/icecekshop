@@ -604,15 +604,24 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
             approvedAmount: null,
 
             driverNote:
-              `${driverName}, ${customerName} müşterisinden araç satışı ` +
-              `sırasında ${returnedPfandAmount.toLocaleString("de-DE", {
-                style: "currency",
-                currency: "EUR",
-              })} Pfand teslim aldı.`,
+              language === "de"
+                ? `${driverName} hat beim Fahrzeugverkauf von ${customerName} ` +
+                  `${returnedPfandAmount.toLocaleString("de-DE", {
+                    style: "currency",
+                    currency: "EUR",
+                  })} Pfand entgegengenommen.`
+                : `${driverName}, ${customerName} müşterisinden araç satışı ` +
+                  `sırasında ${returnedPfandAmount.toLocaleString("de-DE", {
+                    style: "currency",
+                    currency: "EUR",
+                  })} Pfand teslim aldı.`,
 
             note:
-              `Şoför araç satışı ${orderNumber}. ` +
-              `Admin şoförden fiziksel Pfandları teslim aldığında onaylanmalıdır.`,
+              language === "de"
+                ? `Fahrzeugverkauf ${orderNumber}. ` +
+                  `Muss vom Admin bestätigt werden, sobald das physische Pfand vom Fahrer entgegengenommen wurde.`
+                : `Şoför araç satışı ${orderNumber}. ` +
+                  `Admin şoförden fiziksel Pfandları teslim aldığında onaylanmalıdır.`,
 
             items: {
               create: returnedPfandItems.map((item) => {

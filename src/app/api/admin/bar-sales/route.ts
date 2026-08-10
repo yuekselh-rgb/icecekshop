@@ -438,7 +438,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
             tenantId: tenant.id,
             productId: item.productId,
             amount: -item.quantity,
-            reason: `Bar satışı ${orderNumber} - ${adminName}`,
+            reason:
+              language === "de"
+                ? `Barverkauf ${orderNumber} - ${adminName}`
+                : `Bar satışı ${orderNumber} - ${adminName}`,
           },
         });
       }
@@ -453,7 +456,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
           deliveryFee: 0,
           pfandAmount,
           totalAmount,
-          deliveryAddress: "Bar Satışı\nMağazadan teslim",
+          deliveryAddress:
+            language === "de"
+              ? "Barverkauf\nAbholung im Geschäft"
+              : "Bar Satışı\nMağazadan teslim",
           customerNote: [
             "BAR SATIŞI",
             `Satışı yapan: ${adminName}`,
@@ -519,7 +525,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
                 approvedAt: new Date(),
               }),
 
-          note: `Bar satışı ${orderNumber}. Satışı yapan: ${adminName}.`,
+          note:
+            language === "de"
+              ? `Barverkauf ${orderNumber}. Verkauft von: ${adminName}.`
+              : `Bar satışı ${orderNumber}. Satışı yapan: ${adminName}.`,
         },
       });
 
@@ -540,7 +549,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
             approvedById: admin.user.id,
             approvedAt: receivedAt,
 
-            note: `Bar kasasında teslim alındı. Admin: ${adminName}`,
+            note:
+              language === "de"
+                ? `In der Barkasse entgegengenommen. Admin: ${adminName}`
+                : `Bar kasasında teslim alındı. Admin: ${adminName}`,
 
             items: {
               create: pfandItems.map((item) => {
@@ -568,7 +580,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
                 partyType: "CUSTOMER",
                 partyName: selectedCustomerName,
                 createdById: admin.user.id,
-                note: `Bar kasasında fiziksel olarak teslim alındı. Satış: ${orderNumber}`,
+                note:
+                  language === "de"
+                    ? `Physisch in der Barkasse entgegengenommen. Verkauf: ${orderNumber}`
+                    : `Bar kasasında fiziksel olarak teslim alındı. Satış: ${orderNumber}`,
                 totalAmount: pfandReturnAmount,
                 createdAt: receivedAt,
 
@@ -618,7 +633,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
                 orderId: createdOrder.id,
                 createdById: admin.user.id,
                 companyName: selectedCustomerName,
-                description: `Nakit bar satışı ${orderNumber}. Satışı yapan: ${adminName}`,
+                description:
+                  language === "de"
+                    ? `Barverkauf ${orderNumber}. Verkauft von: ${adminName}`
+                    : `Nakit bar satışı ${orderNumber}. Satışı yapan: ${adminName}`,
               },
             });
           }

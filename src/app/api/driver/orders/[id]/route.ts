@@ -656,10 +656,15 @@ export const PATCH = withTenant(async (
 
           approvedAmount: null,
 
-          note: "Şoför tarafından müşteriden fiziksel olarak teslim alınan Pfand.",
+          note:
+            language === "de"
+              ? "Vom Fahrer physisch vom Kunden entgegengenommenes Pfand."
+              : "Şoför tarafından müşteriden fiziksel olarak teslim alınan Pfand.",
 
           driverNote:
-            "Şoför Pfand kaydı oluşturdu. Admin fiziksel kontrolü bekleniyor.",
+            language === "de"
+              ? "Fahrer hat einen Pfand-Eintrag erstellt. Physische Prüfung durch Admin steht aus."
+              : "Şoför Pfand kaydı oluşturdu. Admin fiziksel kontrolü bekleniyor.",
 
           items: {
             create: preparedItems.map((item) => ({
@@ -1028,7 +1033,10 @@ export const PATCH = withTenant(async (
 
               createdById: session.userId,
 
-              note: `Sipariş teslim edildi: ${updatedOrder.orderNumber}.`,
+              note:
+                language === "de"
+                  ? `Bestellung zugestellt: ${updatedOrder.orderNumber}.`
+                  : `Sipariş teslim edildi: ${updatedOrder.orderNumber}.`,
             },
           });
         }

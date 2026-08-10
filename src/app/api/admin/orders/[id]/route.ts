@@ -387,7 +387,10 @@ export const PATCH = withTenant(async (
               tenantId: tenant.id,
               productId: item.productId,
               amount: item.quantity,
-              reason: `İptal edilen sipariş ${existingOrder.orderNumber}`,
+              reason:
+                language === "de"
+                  ? `Stornierte Bestellung ${existingOrder.orderNumber}`
+                  : `İptal edilen sipariş ${existingOrder.orderNumber}`,
             },
           });
         }
@@ -422,7 +425,10 @@ export const PATCH = withTenant(async (
               tenantId: tenant.id,
               productId: item.productId,
               amount: -item.quantity,
-              reason: `Yeniden açılan sipariş ${existingOrder.orderNumber}`,
+              reason:
+                language === "de"
+                  ? `Wiedereröffnete Bestellung ${existingOrder.orderNumber}`
+                  : `Yeniden açılan sipariş ${existingOrder.orderNumber}`,
             },
           });
         }

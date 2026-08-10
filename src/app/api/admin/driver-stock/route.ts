@@ -1566,8 +1566,19 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
             createdById: admin.session.userId,
 
             note:
-              `Admin tarafından şoföre ${item.quantity} ` +
-              `${product.stockUnit.toLocaleLowerCase("tr-TR")} yüklendi.`,
+              language === "de"
+                ? `Admin hat ${item.quantity} ` +
+                  `${(
+                    {
+                      KASA: "Kiste",
+                      KARTON: "Karton",
+                      PAKET: "Paket",
+                      ADET: "Stück",
+                    } as Record<string, string>
+                  )[product.stockUnit] ||
+                    product.stockUnit.toLocaleLowerCase("de-DE")} an den Fahrer geladen.`
+                : `Admin tarafından şoföre ${item.quantity} ` +
+                  `${product.stockUnit.toLocaleLowerCase("tr-TR")} yüklendi.`,
           },
         });
       }

@@ -236,7 +236,10 @@ export const POST = withTenant(async (
           approvedById: admin.user.id,
           approvedAt: new Date(),
 
-          note: "Bayi depodan siparişini alırken admin tarafından sayılarak teslim alındı.",
+          note:
+            language === "de"
+              ? "Bei Abholung der Händlerbestellung im Lager vom Admin gezählt und entgegengenommen."
+              : "Bayi depodan siparişini alırken admin tarafından sayılarak teslim alındı.",
 
           items: {
             create: preparedItems.map((item) => ({
@@ -269,7 +272,10 @@ export const POST = withTenant(async (
 
           totalAmount: approvedAmount,
 
-          note: `Bayi siparişi ${order.orderNumber} için fiziksel Pfand girişi.`,
+          note:
+            language === "de"
+              ? `Physischer Pfand-Eingang für Händlerbestellung ${order.orderNumber}.`
+              : `Bayi siparişi ${order.orderNumber} için fiziksel Pfand girişi.`,
 
           items: {
             create: preparedItems.map((item) => ({
