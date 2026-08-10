@@ -345,17 +345,32 @@ const [pressedProductId, setPressedProductId] = useState<string | null>(null);
       const customersData = await customersResponse.json();
 
       if (!productsResponse.ok) {
-        setError(productsData.error || "Produkte konnten nicht geladen werden.");
+        setError(
+          productsData.error ||
+            (language === "de"
+              ? "Produkte konnten nicht geladen werden."
+              : "Ürünler yüklenemedi."),
+        );
         return;
       }
 
       if (!meResponse.ok) {
-        setError(meData.error || "Admin bilgisi yüklenemedi.");
+        setError(
+          meData.error ||
+            (language === "de"
+              ? "Admin-Informationen konnten nicht geladen werden."
+              : "Admin bilgisi yüklenemedi."),
+        );
         return;
       }
 
       if (!customersResponse.ok) {
-        setError(customersData.error || "Müşteriler yüklenemedi.");
+        setError(
+          customersData.error ||
+            (language === "de"
+              ? "Kunden konnten nicht geladen werden."
+              : "Müşteriler yüklenemedi."),
+        );
         return;
       }
 
@@ -375,7 +390,7 @@ console.log("ACTIVE PRODUCTS", activeProducts.length);
 
       setCustomers(customersData.customers || []);
     } catch {
-      setError("Bilgiler yüklenemedi.");
+      setError(language === "de" ? "Daten konnten nicht geladen werden." : "Bilgiler yüklenemedi.");
     } finally {
       setLoading(false);
     }
@@ -776,7 +791,12 @@ const adminName =
       const data = await response.json();
 
       if (!response.ok) {
-        setNewCustomerError(data.error || "Müşteri kaydedilemedi.");
+        setNewCustomerError(
+          data.error ||
+            (language === "de"
+              ? "Kunde konnte nicht gespeichert werden."
+              : "Müşteri kaydedilemedi."),
+        );
         return;
       }
 
@@ -793,13 +813,22 @@ const adminName =
 
       setShowNewCustomerForm(false);
 
-      setSuccess(data.message || "Müşteri kaydedildi ve seçildi.");
+      setSuccess(
+        data.message ||
+          (language === "de"
+            ? "Kunde wurde gespeichert und ausgewählt."
+            : "Müşteri kaydedildi ve seçildi."),
+      );
 
       form.reset();
 
       setNewCustomerType("BUSINESS");
     } catch {
-      setNewCustomerError("Müşteri kaydedilemedi.");
+      setNewCustomerError(
+        language === "de"
+          ? "Kunde konnte nicht gespeichert werden."
+          : "Müşteri kaydedilemedi.",
+      );
     } finally {
       setCreatingCustomer(false);
     }
@@ -807,12 +836,16 @@ const adminName =
 
   async function completeSale() {
     if (cart.length === 0) {
-      setError("Satış sepeti boş.");
+      setError(language === "de" ? "Der Verkaufswarenkorb ist leer." : "Satış sepeti boş.");
       return;
     }
 
     if (paymentMethod === "OPEN" && !selectedCustomerId) {
-      setError("Açık hesap satışı için müşteri seçin.");
+      setError(
+        language === "de"
+          ? "Wählen Sie für einen Verkauf auf offener Rechnung einen Kunden aus."
+          : "Açık hesap satışı için müşteri seçin.",
+      );
       return;
     }
 
@@ -854,7 +887,12 @@ const adminName =
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Satış kaydedilemedi.");
+        setError(
+          data.error ||
+            (language === "de"
+              ? "Verkauf konnte nicht gespeichert werden."
+              : "Satış kaydedilemedi."),
+        );
         return;
       }
 
@@ -871,7 +909,11 @@ const adminName =
 
       await loadData();
     } catch {
-      setError("Satış kaydedilemedi.");
+      setError(
+        language === "de"
+          ? "Verkauf konnte nicht gespeichert werden."
+          : "Satış kaydedilemedi.",
+      );
     } finally {
       setSaving(false);
     }
@@ -1058,7 +1100,7 @@ const adminName =
       <main className="flex min-h-screen items-center justify-center bg-slate-100">
         <div className="flex items-center gap-3 font-bold text-slate-500">
           <Loader2 className="animate-spin" />
-          Yükleniyor...
+          {language === "de" ? "Wird geladen..." : "Yükleniyor..."}
         </div>
       </main>
     );
@@ -1078,7 +1120,7 @@ const adminName =
             </Link>
 
             <h1 className="mt-3 text-4xl font-black text-slate-950">
-              Bar Satışı
+              {language === "de" ? "Barverkauf" : "Bar Satışı"}
             </h1>
 
             <p className="mt-2 text-slate-500">

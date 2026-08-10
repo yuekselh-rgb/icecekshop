@@ -2544,8 +2544,8 @@ export default function DriverPage() {
                         ) : null}
 
                         {savingDriverSale
-                          ? "Satış Kaydediliyor..."
-                          : "Satışı Tamamla"}
+                          ? t.savingSale
+                          : t.completeSale}
                       </button>
                     </div>
                   </div>
@@ -2562,7 +2562,7 @@ export default function DriverPage() {
                 <div className="mb-6 grid gap-4 md:grid-cols-3">
                   <div className="rounded-2xl border border-violet-200 bg-violet-50 p-5">
                     <p className="text-xs font-black uppercase tracking-wide text-violet-700">
-                      Bu Tur Yüklenen Mal Değeri
+                      {language === "de" ? "In dieser Tour geladener Warenwert" : "Bu Tur Yüklenen Mal Değeri"}
                     </p>
 
                     <p className="mt-2 text-3xl font-black text-violet-950">
@@ -2582,7 +2582,7 @@ export default function DriverPage() {
 
                   <div className="rounded-2xl border border-orange-200 bg-orange-50 p-5">
                     <p className="text-xs font-black uppercase tracking-wide text-orange-700">
-                      Araçta Kalan Mal Değeri
+                      {language === "de" ? "Im Fahrzeug verbleibender Warenwert" : "Araçta Kalan Mal Değeri"}
                     </p>
 
                     <p className="mt-2 text-3xl font-black text-orange-950">
@@ -2914,7 +2914,7 @@ export default function DriverPage() {
               <div className="mb-5 grid gap-4 md:grid-cols-2">
                 <div className="rounded-2xl bg-white p-5 shadow">
                   <p className="text-xs font-bold uppercase text-slate-500">
-                    Teslim Edilen Sipariş
+                    {t.deliveredOrderCount}
                   </p>
 
                   <p className="mt-2 text-3xl font-black text-slate-900">
@@ -2924,7 +2924,7 @@ export default function DriverPage() {
 
                 <div className="rounded-2xl bg-green-50 p-5 shadow">
                   <p className="text-xs font-bold uppercase text-green-700">
-                    Toplam Satış
+                    {t.totalSales}
                   </p>
 
                   <p className="mt-2 text-3xl font-black text-green-700">
@@ -3031,7 +3031,7 @@ export default function DriverPage() {
 
                             <div>
                               <p className="text-xs font-bold uppercase text-slate-400">
-                                Durum
+                                {t.status}
                               </p>
 
                               <p className="mt-1 font-black text-slate-950">
@@ -3041,7 +3041,7 @@ export default function DriverPage() {
 
                             <div>
                               <p className="text-xs font-bold uppercase text-slate-400">
-                                Toplam
+                                {t.total}
                               </p>
 
                               <p className="mt-1 font-black text-slate-950">
@@ -3051,13 +3051,13 @@ export default function DriverPage() {
 
                             <div className="min-w-44">
                               <p className="text-xs font-bold uppercase text-slate-400">
-                                Ödeme
+                                {t.payment}
                               </p>
 
                               {order.driverPaymentReportedAt ? (
                                 <>
                                   <p className="mt-1 font-black text-green-700">
-                                    Admin Onayladı
+                                    {t.adminApproved}
                                   </p>
 
                                   <p className="mt-1 text-[10px] font-bold text-green-600">
@@ -3067,7 +3067,7 @@ export default function DriverPage() {
                               ) : order.paymentStatus === "PAID" ? (
                                 <>
                                   <p className="mt-1 font-black text-amber-600">
-                                    Para Alındı
+                                    {language === "de" ? "Geld erhalten" : "Para Alındı"}
                                   </p>
 
                                   <p className="mt-1 text-[10px] font-bold text-amber-700">
@@ -3079,7 +3079,7 @@ export default function DriverPage() {
                                     <div className="mt-2 space-y-1 rounded-xl bg-amber-50 p-3">
                                       <div className="flex items-center justify-between gap-3">
                                         <span className="text-[10px] font-black uppercase text-amber-700">
-                                          Bildirilen tutar
+                                          {language === "de" ? "Gemeldeter Betrag" : "Bildirilen tutar"}
                                         </span>
 
                                         <strong className="text-sm text-amber-900">
@@ -3138,14 +3138,16 @@ export default function DriverPage() {
                                     className="mt-2 w-full rounded-xl bg-slate-700 px-3 py-2 text-sm font-black text-white transition hover:bg-slate-800 disabled:opacity-50"
                                   >
                                     {updatingOrderId === order.id
-                                      ? "Kaydediliyor..."
-                                      : "Para Bildirimini Geri Al"}
+                                      ? t.saving
+                                      : language === "de"
+                                        ? "Zahlungsmeldung zurückziehen"
+                                        : "Para Bildirimini Geri Al"}
                                   </button>
                                 </>
                               ) : (
                                 <>
                                   <p className="mt-1 font-black text-red-600">
-                                    Ödeme Açık
+                                    {language === "de" ? "Zahlung offen" : "Ödeme Açık"}
                                   </p>
 
                                   <div className="mt-2 rounded-xl bg-red-50 p-3">
@@ -3172,7 +3174,7 @@ export default function DriverPage() {
 
                                     {order.approvedPaymentAmount > 0.009 ? (
                                       <p className="mt-1 text-[10px] font-bold text-green-700">
-                                        Daha önce onaylanan:{" "}
+                                        {language === "de" ? "Zuvor bestätigt:" : "Daha önce onaylanan:"}{" "}
                                         {order.approvedPaymentAmount.toLocaleString(
                                           "de-DE",
                                           {
@@ -3291,8 +3293,12 @@ export default function DriverPage() {
                                     className="mt-2 w-full rounded-xl bg-green-600 px-3 py-2 text-sm font-black text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-40"
                                   >
                                     {updatingOrderId === order.id
-                                      ? "Bildiriliyor..."
-                                      : "Ödemeyi Bildir"}
+                                      ? language === "de"
+                                        ? "Wird gemeldet..."
+                                        : "Bildiriliyor..."
+                                      : language === "de"
+                                        ? "Zahlung melden"
+                                        : "Ödemeyi Bildir"}
                                   </button>
                                 </>
                               )}
@@ -3310,8 +3316,10 @@ export default function DriverPage() {
                                     className="w-full rounded-xl bg-green-600 px-4 py-3 font-black text-white transition hover:bg-green-700 disabled:opacity-50"
                                   >
                                     {updatingOrderId === order.id
-                                      ? "Kaydediliyor..."
-                                      : "Teslim Ettim"}
+                                      ? t.saving
+                                      : language === "de"
+                                        ? "Zugestellt"
+                                        : "Teslim Ettim"}
                                   </button>
                                 ) : ["READY", "PREPARING", "CONFIRMED"].includes(
                                     order.status,
@@ -3328,8 +3336,10 @@ export default function DriverPage() {
                                     className="w-full rounded-xl bg-orange-500 px-4 py-3 font-black text-white transition hover:bg-orange-600 disabled:opacity-50"
                                   >
                                     {updatingOrderId === order.id
-                                      ? "Kaydediliyor..."
-                                      : "Teslimata Çıktım"}
+                                      ? t.saving
+                                      : language === "de"
+                                        ? "Unterwegs zur Lieferung"
+                                        : "Teslimata Çıktım"}
                                   </button>
                                 ) : (
                                   <div className="rounded-xl bg-slate-100 px-4 py-3 text-center text-sm font-bold text-slate-500">
@@ -3398,7 +3408,7 @@ export default function DriverPage() {
                               </p>
 
                               <p className="text-sm text-slate-600">
-                                {order.user.phone || "Telefon yok"}
+                                {order.user.phone || t.noPhone}
                               </p>
                             </div>
                           </div>
@@ -3422,7 +3432,7 @@ export default function DriverPage() {
                                     </p>
 
                                     <p className="text-sm text-slate-500">
-                                      Adet: {item.quantity}
+                                      {t.quantity} {item.quantity}
                                     </p>
                                   </div>
 
@@ -3453,8 +3463,9 @@ export default function DriverPage() {
                                   </h4>
 
                                   <p className="text-[11px] text-slate-500">
-                                    {language === "de" ? "Prüfen Sie die vom Kunden gemeldete Menge" : "Müşterinin bildirdiği miktarı kontrol edin"}
-                                    ve gerçek alınan miktarı girin.
+                                    {language === "de"
+                                      ? "Prüfen Sie die vom Kunden gemeldete Menge und geben Sie die tatsächlich erhaltene Menge ein."
+                                      : "Müşterinin bildirdiği miktarı kontrol edin ve gerçek alınan miktarı girin."}
                                   </p>
                                 </div>
 
@@ -3463,7 +3474,7 @@ export default function DriverPage() {
                                     <div>{language === "de" ? "Pfandart" : "Pfand Türü"}</div>
 
                                     <div className="text-center">
-                                      Şoförün Aldığı
+                                      {language === "de" ? "Vom Fahrer erhalten" : "Şoförün Aldığı"}
                                     </div>
 
                                     <div className="text-right">{language === "de" ? "Betrag" : "Tutar"}</div>
@@ -3484,7 +3495,7 @@ export default function DriverPage() {
                                           </p>
 
                                           <p className="text-[9px] text-slate-400">
-                                            Birim: {item.unitAmount.toFixed(2)}{" "}
+                                            {language === "de" ? "Einheit:" : "Birim:"} {item.unitAmount.toFixed(2)}{" "}
                                             €
                                           </p>
                                         </div>
@@ -3589,12 +3600,14 @@ export default function DriverPage() {
                                       className="rounded-md bg-orange-500 px-2.5 py-1.5 text-[10px] font-black text-white transition hover:bg-orange-600 disabled:opacity-50"
                                     >
                                       {updatingOrderId === order.id
-                                        ? "Kaydediliyor..."
-                                        : "Pfand Miktarını Kaydet"}
+                                        ? t.saving
+                                        : language === "de"
+                                          ? "Pfand-Menge speichern"
+                                          : "Pfand Miktarını Kaydet"}
                                     </button>
                                   ) : (
                                     <div className="rounded-md bg-green-100 px-2 py-1 text-[10px] font-black text-green-700">
-                                      Pfand Kesinleşti
+                                      {language === "de" ? "Pfand bestätigt" : "Pfand Kesinleşti"}
                                     </div>
                                   )}
                                 </div>

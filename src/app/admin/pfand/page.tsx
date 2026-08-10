@@ -268,7 +268,9 @@ export default function AdminPfandPage() {
         );
       } catch {
         setError(
-          "Pfand iadeleri yüklenemedi."
+          language === "de"
+            ? "Pfand-Rückgaben konnten nicht geladen werden."
+            : "Pfand iadeleri yüklenemedi."
         );
       } finally {
         setLoading(false);
@@ -338,7 +340,9 @@ export default function AdminPfandPage() {
       if (!response.ok) {
         setError(
           data.error ||
-            "Pfand durumu güncellenemedi."
+            (language === "de"
+              ? "Pfand-Status konnte nicht aktualisiert werden."
+              : "Pfand durumu güncellenemedi.")
         );
         return;
       }
@@ -350,7 +354,9 @@ export default function AdminPfandPage() {
       );
     } catch {
       setError(
-        "Pfand durumu güncellenemedi."
+        language === "de"
+          ? "Pfand-Status konnte nicht aktualisiert werden."
+          : "Pfand durumu güncellenemedi."
       );
     } finally {
       setUpdatingId(
@@ -414,11 +420,11 @@ export default function AdminPfandPage() {
           >
             <div>
               <p className="text-sm font-black uppercase tracking-wide text-orange-500">
-                Güncel Depo Durumu
+                {language === "de" ? "Aktueller Lagerstatus" : "Güncel Depo Durumu"}
               </p>
 
               <h2 className="mt-1 text-2xl font-black text-slate-950">
-                Pfand Depo Özeti
+                {language === "de" ? "Pfand-Lagerübersicht" : "Pfand Depo Özeti"}
               </h2>
 
               <p className="mt-2 text-sm font-semibold text-slate-500">
@@ -432,7 +438,7 @@ export default function AdminPfandPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="min-w-32 rounded-2xl bg-orange-50 p-3 text-center sm:min-w-36">
                   <p className="text-xs font-black uppercase tracking-wide text-orange-600">
-                    Toplam Adet
+                    {language === "de" ? "Gesamtstück" : "Toplam Adet"}
                   </p>
 
                   <p className="mt-1 text-xl font-black text-orange-700 sm:text-2xl">
@@ -444,7 +450,7 @@ export default function AdminPfandPage() {
 
                 <div className="min-w-32 rounded-2xl bg-green-50 p-3 text-center sm:min-w-36">
                   <p className="text-xs font-black uppercase tracking-wide text-green-600">
-                    Toplam Değer
+                    {language === "de" ? "Gesamtwert" : "Toplam Değer"}
                   </p>
 
                   <p className="mt-1 text-xl font-black text-green-700 sm:text-2xl">
@@ -497,27 +503,27 @@ export default function AdminPfandPage() {
                     <thead className="bg-slate-50">
                       <tr className="text-left text-xs font-black uppercase tracking-wide text-slate-500">
                         <th className="px-5 py-4">
-                          Pfand Türü
+                          {language === "de" ? "Pfand-Art" : "Pfand Türü"}
                         </th>
 
                         <th className="px-5 py-4 text-right">
-                          Birim Değeri
+                          {language === "de" ? "Stückwert" : "Birim Değeri"}
                         </th>
 
                         <th className="px-5 py-4 text-right">
-                          Toplam Giriş
+                          {language === "de" ? "Gesamteingang" : "Toplam Giriş"}
                         </th>
 
                         <th className="px-5 py-4 text-right">
-                          Toplam Çıkış
+                          {language === "de" ? "Gesamtausgang" : "Toplam Çıkış"}
                         </th>
 
                         <th className="px-5 py-4 text-right">
-                          Depodaki Adet
+                          {language === "de" ? "Anzahl im Lager" : "Depodaki Adet"}
                         </th>
 
                         <th className="px-5 py-4 text-right">
-                          Güncel Değer
+                          {language === "de" ? "Aktueller Wert" : "Güncel Değer"}
                         </th>
                       </tr>
                     </thead>
@@ -673,7 +679,7 @@ export default function AdminPfandPage() {
 
                         <div>
                           <p className="text-sm font-bold text-slate-500">
-                            Toplam
+                            {language === "de" ? "Gesamt" : "Toplam"}
                           </p>
 
                           <p className="font-black text-slate-950">
@@ -686,13 +692,13 @@ export default function AdminPfandPage() {
 
                         <div className="min-w-64">
                           <p className="mb-1 text-sm font-bold text-slate-500">
-                            Depo Durumu
+                            {language === "de" ? "Lagerstatus" : "Depo Durumu"}
                           </p>
 
                           {pfandReturn.warehouseMovement ? (
                             <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3">
                               <p className="font-black text-green-700">
-                                Depoya Alındı
+                                {language === "de" ? "Ins Lager übernommen" : "Depoya Alındı"}
                               </p>
 
                               <p className="mt-1 text-xs font-semibold text-green-600">
@@ -718,7 +724,7 @@ export default function AdminPfandPage() {
                             </div>
                           ) : pfandReturn.status === "CANCELLED" ? (
                             <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 font-black text-red-700">
-                              İptal Edildi
+                              {language === "de" ? "Storniert" : "İptal Edildi"}
                             </div>
                           ) : (
                             <button
@@ -738,7 +744,7 @@ export default function AdminPfandPage() {
                                     size={18}
                                     className="animate-spin"
                                   />
-                                  Depoya Kaydediliyor...
+                                  {language === "de" ? "Wird ins Lager übernommen..." : "Depoya Kaydediliyor..."}
                                 </>
                               ) : (
                                 language === "de" ? "Ins Lager übernommen" : "Depoya Alındı"
@@ -798,7 +804,7 @@ export default function AdminPfandPage() {
                                           </p>
 
                                           <p className="mt-1 text-sm text-slate-500">
-                                            Şoför bildirdi:{" "}
+                                            {language === "de" ? "Fahrer meldete:" : "Şoför bildirdi:"}{" "}
                                             {getReportedQuantity(
                                               item
                                             )}{" "}
@@ -813,13 +819,13 @@ export default function AdminPfandPage() {
                                         {pfandReturn.warehouseMovement ? (
                                           <div className="text-right">
                                             <p className="text-xs font-bold uppercase tracking-wide text-green-600">
-                                              Depoya Giren
+                                              {language === "de" ? "Ins Lager eingegangen" : "Depoya Giren"}
                                             </p>
 
                                             <p className="font-black text-green-700">
                                               {item.approvedQuantity ??
                                                 item.quantity}{" "}
-                                              adet
+                                              {language === "de" ? "Stück" : "adet"}
                                             </p>
 
                                             <p className="text-sm font-bold text-green-700">
@@ -835,7 +841,7 @@ export default function AdminPfandPage() {
                                         ) : (
                                           <div>
                                             <p className="mb-2 text-center text-xs font-bold uppercase tracking-wide text-slate-400">
-                                              Admin Sayımı
+                                              {language === "de" ? "Admin-Zählung" : "Admin Sayımı"}
                                             </p>
 
                                             <div className="flex items-center rounded-xl border border-slate-200 bg-slate-50">

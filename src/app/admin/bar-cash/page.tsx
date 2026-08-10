@@ -506,7 +506,12 @@ const categoryLabels: Record<string, string> =
       }
 
       if (!categoriesResponse.ok) {
-        setError(categoriesData.error || language === "de" ? "Produktkategorien konnten nicht geladen werden." : "Produktkategorien yüklenemedi.");
+        setError(
+          categoriesData.error ||
+            (language === "de"
+              ? "Produktkategorien konnten nicht geladen werden."
+              : "Ürün kategorileri yüklenemedi."),
+        );
         return;
       }
 
@@ -636,7 +641,11 @@ const categoryLabels: Record<string, string> =
     const nameDe = String(formData.get("stockUnitNameDe") || "").trim();
 
     if (!nameTr || !nameDe) {
-      setStockUnitError("Türkçe ve Almanca birim adı zorunludur.");
+      setStockUnitError(
+        language === "de"
+          ? "Türkischer und deutscher Einheitenname sind erforderlich."
+          : "Türkçe ve Almanca birim adı zorunludur.",
+      );
       return;
     }
 
@@ -644,7 +653,11 @@ const categoryLabels: Record<string, string> =
       editingStockUnitId &&
       !stockUnits.some((unit) => unit.id === editingStockUnitId)
     ) {
-      setStockUnitError("Düzenlenecek birim bulunamadı.");
+      setStockUnitError(
+        language === "de"
+          ? "Die zu bearbeitende Einheit wurde nicht gefunden."
+          : "Düzenlenecek birim bulunamadı.",
+      );
       return;
     }
 
@@ -707,14 +720,27 @@ const categoryLabels: Record<string, string> =
 
       form.reset();
 
+      const savedUnitName =
+        language === "de" ? savedUnit.nameDe : savedUnit.nameTr;
+
       setSuccess(
-        isEditing
-          ? `${savedUnit.nameTr} birimi başarıyla düzenlendi.`
-          : `${savedUnit.nameTr} birimi eklendi ve alış/satış birimi olarak seçildi.`,
+        language === "de"
+          ? isEditing
+            ? `Einheit ${savedUnitName} wurde erfolgreich bearbeitet.`
+            : `Einheit ${savedUnitName} wurde hinzugefügt und als Einkaufs-/Verkaufseinheit ausgewählt.`
+          : isEditing
+            ? `${savedUnitName} birimi başarıyla düzenlendi.`
+            : `${savedUnitName} birimi eklendi ve alış/satış birimi olarak seçildi.`,
       );
     } catch {
       setStockUnitError(
-        isEditing ? "Birim düzenlenemedi." : "Yeni birim kaydedilemedi.",
+        language === "de"
+          ? isEditing
+            ? "Einheit konnte nicht bearbeitet werden."
+            : "Neue Einheit konnte nicht gespeichert werden."
+          : isEditing
+            ? "Birim düzenlenemedi."
+            : "Yeni birim kaydedilemedi.",
       );
     } finally {
       setSavingStockUnit(false);
@@ -735,7 +761,11 @@ const categoryLabels: Record<string, string> =
     const type = String(formData.get("type") || "OTHER");
 
     if (!nameTr || !nameDe) {
-      setCategoryError("Türkçe ve Almanca kategori adı zorunludur.");
+      setCategoryError(
+        language === "de"
+          ? "Türkischer und deutscher Kategoriename sind erforderlich."
+          : "Türkçe ve Almanca kategori adı zorunludur.",
+      );
       return;
     }
 
@@ -759,7 +789,12 @@ const categoryLabels: Record<string, string> =
       const data = await response.json();
 
       if (!response.ok) {
-        setCategoryError(data.error || "Kategorie eklenemedi.");
+        setCategoryError(
+          data.error ||
+            (language === "de"
+              ? "Kategorie konnte nicht hinzugefügt werden."
+              : "Kategori eklenemedi."),
+        );
         return;
       }
 
@@ -783,9 +818,17 @@ const categoryLabels: Record<string, string> =
       setCategoryError("");
       form.reset();
 
-      setSuccess("Yeni ürün kategorisi kaydedildi ve otomatik seçildi.");
+      setSuccess(
+        language === "de"
+          ? "Neue Produktkategorie wurde gespeichert und automatisch ausgewählt."
+          : "Yeni ürün kategorisi kaydedildi ve otomatik seçildi.",
+      );
     } catch {
-      setCategoryError("Kategorie eklenemedi.");
+      setCategoryError(
+        language === "de"
+          ? "Kategorie konnte nicht hinzugefügt werden."
+          : "Kategori eklenemedi.",
+      );
     } finally {
       setSavingCategory(false);
     }
@@ -839,7 +882,12 @@ const categoryLabels: Record<string, string> =
       const data = await response.json();
 
       if (!response.ok) {
-        setSupplierError(data.error || "Firma kaydedilemedi.");
+        setSupplierError(
+          data.error ||
+            (language === "de"
+              ? "Firma konnte nicht gespeichert werden."
+              : "Firma kaydedilemedi."),
+        );
         return;
       }
 
@@ -851,9 +899,17 @@ const categoryLabels: Record<string, string> =
 
       form.reset();
 
-      setSuccess("Firma kaydedildi ve seçildi.");
+      setSuccess(
+        language === "de"
+          ? "Firma wurde gespeichert und ausgewählt."
+          : "Firma kaydedildi ve seçildi.",
+      );
     } catch {
-      setSupplierError("Firma kaydedilemedi.");
+      setSupplierError(
+        language === "de"
+          ? "Firma konnte nicht gespeichert werden."
+          : "Firma kaydedilemedi.",
+      );
     } finally {
       setSavingSupplier(false);
     }
@@ -971,7 +1027,13 @@ const categoryLabels: Record<string, string> =
   }
 
   async function deleteMovement(movement: Movement) {
-    if (!window.confirm("Bu kasa hareketi silinsin mi?")) {
+    if (
+      !window.confirm(
+        language === "de"
+          ? "Soll diese Kassenbewegung gelöscht werden?"
+          : "Bu kasa hareketi silinsin mi?",
+      )
+    ) {
       return;
     }
 
@@ -985,7 +1047,12 @@ const categoryLabels: Record<string, string> =
     const data = await response.json();
 
     if (!response.ok) {
-      setError(data.error || language === "de" ? "Kassenbewegung konnte nicht gelöscht werden." : "Kasa hareketi silinemedi.");
+      setError(
+        data.error ||
+          (language === "de"
+            ? "Kassenbewegung konnte nicht gelöscht werden."
+            : "Kasa hareketi silinemedi."),
+      );
       return;
     }
 
