@@ -121,69 +121,86 @@ export default function CategorySection({
 
   /*
    * Scroll sırasında aktif kategoriyi otomatik değiştir.
+   *
+   * IntersectionObserver kullanır (manuel scroll+rAF hesaplamasının
+   * yerine), çünkü bir kategori pilline tıklandığında
+   * FeaturedProducts diğer kategori bölümlerini DOM'dan tamamen
+   * kaldırıyordu ve eski scroll dinleyicisi bunu fark edemiyordu.
+   * Gözlemlenen bölüm listesi, "home-category-change" olayından
+   * sonra (DOM güncellendikten bir kare sonra) yeniden taranır.
    */
   useEffect(() => {
-    let frameId = 0;
+    const line = isPinned ? categoryBarHeight + 20 : 150;
 
-    function detectActiveCategory() {
-      cancelAnimationFrame(frameId);
+    const bottomMargin = Math.max(
+      0,
+      window.innerHeight - line - 4,
+    );
 
-      frameId = requestAnimationFrame(() => {
-        if (window.scrollY < 80) {
-          setActiveCategory("all");
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries.filter((entry) => entry.isIntersecting);
+
+        if (visible.length === 0) {
           return;
         }
 
-        const products = Array.from(
-          document.querySelectorAll<HTMLElement>(
-            "[data-home-product-category]"
-          )
+        const topMost = visible.reduce((a, b) =>
+          a.boundingClientRect.top < b.boundingClientRect.top ? a : b,
         );
 
-        if (!products.length) {
-          setActiveCategory("all");
-          return;
+        const slug = (topMost.target as HTMLElement).dataset
+          .homeProductCategory;
+
+        if (slug) {
+          setActiveCategory(slug);
         }
+      },
+      {
+        rootMargin: `-${line}px 0px -${bottomMargin}px 0px`,
+        threshold: 0,
+      },
+    );
 
-        const line = isPinned ? categoryBarHeight + 20 : 150;
+    function observeSections() {
+      const sections = document.querySelectorAll<HTMLElement>(
+        "[data-home-product-category]",
+      );
 
-        let current: HTMLElement | null = null;
-
-        for (const el of products) {
-          const rect = el.getBoundingClientRect();
-
-          if (rect.top <= line && rect.bottom > line) {
-            current = el;
-            break;
-          }
-
-          if (!current && rect.top > line) {
-            current = el;
-          }
-        }
-
-        if (!current) {
-          current = products[products.length - 1];
-        }
-
-        setActiveCategory(
-          current.dataset.homeProductCategory || "all"
-        );
-      });
+      sections.forEach((section) => observer.observe(section));
     }
 
-    detectActiveCategory();
+    observeSections();
 
-    window.addEventListener("scroll", detectActiveCategory, {
+    function handleScrollTop() {
+      if (window.scrollY < 80) {
+        setActiveCategory("all");
+      }
+    }
+
+    function handleCategoryChange() {
+      observer.disconnect();
+      requestAnimationFrame(observeSections);
+    }
+
+    handleScrollTop();
+
+    window.addEventListener("scroll", handleScrollTop, {
       passive: true,
     });
 
-    window.addEventListener("resize", detectActiveCategory);
+    window.addEventListener(
+      "home-category-change",
+      handleCategoryChange,
+    );
 
     return () => {
-      cancelAnimationFrame(frameId);
-      window.removeEventListener("scroll", detectActiveCategory);
-      window.removeEventListener("resize", detectActiveCategory);
+      observer.disconnect();
+      window.removeEventListener("scroll", handleScrollTop);
+      window.removeEventListener(
+        "home-category-change",
+        handleCategoryChange,
+      );
     };
   }, [isPinned, categoryBarHeight]);
 

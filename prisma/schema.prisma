@@ -348,6 +348,8 @@ model Product {
   driverStockMovements DriverStockMovement[]
 
   @@unique([tenantId, slug])
+  @@index([categoryId])
+  @@index([tenantId, active, stock])
 }
 
 model Order {

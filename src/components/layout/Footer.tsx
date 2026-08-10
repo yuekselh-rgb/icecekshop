@@ -5,18 +5,30 @@ import { Globe, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-export default function Footer() {
-  
+export default function Footer({
+  initialSettings,
+}: {
+  initialSettings?: any;
+} = {}) {
+
 const { language } = useLanguage();
 
-const [settings,setSettings]=useState<any>({});
+const [settings,setSettings]=useState<any>(initialSettings || {});
 
 useEffect(()=>{
-fetch("/api/company-settings",{cache:"no-store"})
+  /*
+   * initialSettings zaten sunucudan geldiyse (ör. anasayfada)
+   * mount anında aynı veriyi tekrar istemeye gerek yok.
+   */
+  if (initialSettings) {
+    return;
+  }
+
+fetch("/api/company-settings")
 .then(r=>r.json())
 .then(d=>setSettings(d.settings||{}))
 .catch(()=>{});
-},[]);
+},[initialSettings]);
 
 
   const t =

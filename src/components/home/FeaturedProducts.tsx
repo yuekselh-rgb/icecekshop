@@ -76,13 +76,21 @@ export default function FeaturedProducts({
         };
 
   useEffect(() => {
+    /*
+     * Sunucu tarafında initialProducts zaten taze çekildiyse
+     * (anasayfanın tek çağrı noktası her zaman bunu sağlıyor),
+     * mount anında aynı verileri tekrar istemek gereksiz bir
+     * ağ round-trip'i ekliyordu.
+     */
+    if (initialProducts.length > 0) {
+      return;
+    }
+
     async function loadProducts() {
       try {
         const [productsResponse, settingsResponse] = await Promise.all([
           fetch("/api/products"),
-          fetch(`/api/company-settings?refresh=${Date.now()}`, {
-            cache: "no-store",
-          }),
+          fetch("/api/company-settings"),
         ]);
 
         const productsData = await productsResponse.json();
@@ -93,7 +101,6 @@ export default function FeaturedProducts({
           return;
         }
 
-        console.log("FEATURED_PRODUCTS", productsData.products);
         setProducts(productsData.products || []);
 
         if (settingsResponse.ok && settingsData.settings) {
@@ -107,6 +114,7 @@ export default function FeaturedProducts({
     }
 
     loadProducts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [t.error]);
 
   const offerProducts = useMemo(

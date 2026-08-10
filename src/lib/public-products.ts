@@ -12,6 +12,9 @@ export async function getPublicProducts() {
     where: {
       tenantId: tenant.id,
       active: true,
+      stock: {
+        gt: 0,
+      },
     },
     include: {
       category: true,

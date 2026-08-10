@@ -49,14 +49,19 @@ export default async function HomePage() {
     getPublicProducts().catch(() => []),
   ]);
 
-  const initialSettings = {
-    companyName: companySetting?.companyName || "Firma Adı",
-    companySubtitle: companySetting?.companySubtitle ?? null,
-    logoUrl: companySetting?.logoUrl ?? null,
-    logoWidth: companySetting?.logoWidth ?? 260,
-    logoHeight: companySetting?.logoHeight ?? 120,
-    updatedAt: companySetting?.updatedAt?.toISOString(),
-  };
+  const initialSettings = companySetting
+    ? {
+        ...companySetting,
+        createdAt: companySetting.createdAt.toISOString(),
+        updatedAt: companySetting.updatedAt.toISOString(),
+      }
+    : {
+        companyName: "Firma Adı",
+        companySubtitle: null,
+        logoUrl: null,
+        logoWidth: 260,
+        logoHeight: 120,
+      };
 
   return (
     <main className="min-h-screen bg-[#f7f7f5]">
@@ -77,7 +82,7 @@ export default async function HomePage() {
         initialShowOffers={companySetting?.showOffers !== false}
       />
       <BenefitsSection />
-      <Footer />
+      <Footer initialSettings={initialSettings} />
     </main>
   );
 }

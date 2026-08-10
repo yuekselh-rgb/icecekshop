@@ -67,7 +67,14 @@ export default function CompanyBrand({
       }
     }
 
-    loadSettings();
+    /*
+     * initialSettings zaten sunucudan taze geldiyse mount anında
+     * tekrar aynı isteği atmaya gerek yok; sadece sekmeye geri
+     * dönüldüğünde güncel kalması için yeniden çekilir.
+     */
+    if (!initialSettings) {
+      loadSettings();
+    }
 
     window.addEventListener("focus", loadSettings);
     window.addEventListener("pageshow", loadSettings);
