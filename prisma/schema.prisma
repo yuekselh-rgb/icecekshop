@@ -567,6 +567,8 @@ model CompanySetting {
   minOrderValueEnabled Boolean  @default(false)
   minOrderValue        Decimal? @db.Decimal(10, 2)
 
+  autoPrintOrders Boolean @default(false)
+
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 

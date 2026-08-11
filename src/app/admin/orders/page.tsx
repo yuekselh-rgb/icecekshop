@@ -13,7 +13,7 @@ import {
   Trash2,
 } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import QRCode from "qrcode";
 
 type OrderStatus =
@@ -192,6 +192,10 @@ export default function AdminOrdersPage() {
 
   const [permissions, setPermissions] = useState<Permissions | null>(null);
 
+  const [autoPrintOrders, setAutoPrintOrders] = useState(false);
+
+  const seenOrderIdsRef = useRef<Set<string> | null>(null);
+
   const [loading, setLoading] = useState(true);
 
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
@@ -256,13 +260,19 @@ export default function AdminOrdersPage() {
     }
 
     try {
-      const [ordersResponse, meResponse, driversResponse, staffResponse] =
-        await Promise.all([
-          fetch("/api/admin/orders"),
-          fetch("/api/admin/me"),
-          fetch("/api/admin/drivers"),
-          fetch("/api/admin/staff"),
-        ]);
+      const [
+        ordersResponse,
+        meResponse,
+        driversResponse,
+        staffResponse,
+        companySettingsResponse,
+      ] = await Promise.all([
+        fetch("/api/admin/orders"),
+        fetch("/api/admin/me"),
+        fetch("/api/admin/drivers"),
+        fetch("/api/admin/staff"),
+        fetch("/api/company-settings").catch(() => null),
+      ]);
 
       const ordersData = await ordersResponse.json();
 
@@ -271,6 +281,10 @@ export default function AdminOrdersPage() {
       const driversData = await driversResponse.json();
 
       const staffData = await staffResponse.json();
+
+      const companySettingsData = companySettingsResponse?.ok
+        ? await companySettingsResponse.json()
+        : null;
 
       if (!ordersResponse.ok) {
         setError(ordersData.error || t.ordersLoadError);
@@ -298,6 +312,37 @@ export default function AdminOrdersPage() {
       setStaff(staffData.staff || []);
 
       setPermissions(meData.permissions);
+
+      const autoPrintEnabled = Boolean(
+        companySettingsData?.settings?.autoPrintOrders,
+      );
+
+      setAutoPrintOrders(autoPrintEnabled);
+
+      const fetchedIds: string[] = ordersData.orders.map(
+        (fetchedOrder: Order) => fetchedOrder.id,
+      );
+
+      if (seenOrderIdsRef.current === null) {
+        seenOrderIdsRef.current = new Set(fetchedIds);
+      } else {
+        const newOrders = ordersData.orders.filter(
+          (fetchedOrder: Order) =>
+            !seenOrderIdsRef.current!.has(fetchedOrder.id),
+        );
+
+        fetchedIds.forEach((id) => seenOrderIdsRef.current!.add(id));
+
+        if (
+          newOrders.length > 0 &&
+          autoPrintEnabled &&
+          meData.permissions?.printOrder
+        ) {
+          newOrders.forEach((newOrder: Order) => {
+            printOrderSilently(newOrder);
+          });
+        }
+      }
     } catch {
       setError(
         language === "de"
@@ -851,23 +896,8 @@ export default function AdminOrdersPage() {
     }
   }
 
-  async function printOrder(order: Order) {
-    const popup = window.open("", "_blank", "width=900,height=700");
-
-    if (!popup) {
-      setError(
-        language === "de"
-          ? "Druckfenster konnte nicht geöffnet werden. Bitte Popup-Blocker des Browsers prüfen."
-          : "Yazdırma penceresi açılamadı. Tarayıcı popup engelini kontrol edin.",
-      );
-      return;
-    }
-
-    const deliveryQrCode = hasNavigableDeliveryAddress(order)
-      ? await getDeliveryQrCode(order)
-      : null;
-
-    popup.document.write(`
+  function buildOrderReceiptHtml(order: Order, deliveryQrCode: string | null) {
+    return `
       <!doctype html>
       <html lang="${language === "de" ? "de" : "tr"}">
         <head>
@@ -1180,7 +1210,26 @@ export default function AdminOrdersPage() {
           </div>
         </body>
       </html>
-    `);
+    `;
+  }
+
+  async function printOrder(order: Order) {
+    const popup = window.open("", "_blank", "width=900,height=700");
+
+    if (!popup) {
+      setError(
+        language === "de"
+          ? "Druckfenster konnte nicht geöffnet werden. Bitte Popup-Blocker des Browsers prüfen."
+          : "Yazdırma penceresi açılamadı. Tarayıcı popup engelini kontrol edin.",
+      );
+      return;
+    }
+
+    const deliveryQrCode = hasNavigableDeliveryAddress(order)
+      ? await getDeliveryQrCode(order)
+      : null;
+
+    popup.document.write(buildOrderReceiptHtml(order, deliveryQrCode));
 
     popup.document.close();
     popup.focus();
@@ -1188,6 +1237,50 @@ export default function AdminOrdersPage() {
     setTimeout(() => {
       popup.print();
     }, 250);
+  }
+
+  async function printOrderSilently(order: Order) {
+    const deliveryQrCode = hasNavigableDeliveryAddress(order)
+      ? await getDeliveryQrCode(order)
+      : null;
+
+    const iframe = document.createElement("iframe");
+
+    iframe.style.position = "fixed";
+    iframe.style.right = "0";
+    iframe.style.bottom = "0";
+    iframe.style.width = "0";
+    iframe.style.height = "0";
+    iframe.style.border = "0";
+
+    document.body.appendChild(iframe);
+
+    const frameDocument = iframe.contentDocument;
+
+    if (!frameDocument) {
+      iframe.remove();
+      return;
+    }
+
+    frameDocument.open();
+    frameDocument.write(buildOrderReceiptHtml(order, deliveryQrCode));
+    frameDocument.close();
+
+    function cleanup() {
+      window.removeEventListener("afterprint", cleanup);
+      iframe.remove();
+    }
+
+    iframe.onload = () => {
+      setTimeout(() => {
+        iframe.contentWindow?.focus();
+        iframe.contentWindow?.print();
+      }, 250);
+    };
+
+    window.addEventListener("afterprint", cleanup);
+
+    setTimeout(cleanup, 60000);
   }
 
   function getEffectiveOrderTotal(order: Order) {

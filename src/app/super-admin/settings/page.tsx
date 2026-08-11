@@ -61,6 +61,8 @@ type Settings = {
 
   minOrderValueEnabled: boolean;
   minOrderValue: string;
+
+  autoPrintOrders: boolean;
 };
 
 const emptySettings: Settings = {
@@ -111,6 +113,8 @@ const emptySettings: Settings = {
 
   minOrderValueEnabled: false,
   minOrderValue: "",
+
+  autoPrintOrders: false,
 };
 
 export default function CompanySettingsPage() {
@@ -201,6 +205,8 @@ export default function CompanySettingsPage() {
             data.settings.minOrderValue !== undefined
               ? String(data.settings.minOrderValue)
               : "",
+
+          autoPrintOrders: Boolean(data.settings.autoPrintOrders),
         });
       } catch {
         setError(
@@ -366,6 +372,8 @@ export default function CompanySettingsPage() {
           data.settings.minOrderValue !== undefined
             ? String(data.settings.minOrderValue)
             : "",
+
+        autoPrintOrders: Boolean(data.settings.autoPrintOrders),
       });
 
       setSuccess(
@@ -466,6 +474,8 @@ export default function CompanySettingsPage() {
           data.settings.minOrderValue !== undefined
             ? String(data.settings.minOrderValue)
             : "",
+
+        autoPrintOrders: Boolean(data.settings.autoPrintOrders),
       });
 
       setSuccess(
@@ -1272,6 +1282,57 @@ export default function CompanySettingsPage() {
                 : language === "de"
                   ? "Kein Mindestbestellwert aktiv."
                   : "Minimum sipariş tutarı aktif değil."}
+            </p>
+          </section>
+
+          <section className="rounded-3xl border border-slate-200 p-5">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-xl font-black text-slate-950">
+                  {language === "de"
+                    ? "Automatischer Bestelldruck"
+                    : "Otomatik Sipariş Yazdırma"}
+                </h2>
+
+                <p className="mt-1 text-sm text-slate-500">
+                  {language === "de"
+                    ? "Neue Bestellungen werden auf der Bestellseite automatisch gedruckt, sobald sie eingehen."
+                    : "Yeni siparişler, sipariş sayfasına ulaştığı anda otomatik olarak yazdırılır."}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setSettings((current) => ({
+                    ...current,
+                    autoPrintOrders: !current.autoPrintOrders,
+                  }))
+                }
+                className={`relative h-8 w-14 shrink-0 rounded-full transition ${
+                  settings.autoPrintOrders ? "bg-green-500" : "bg-slate-300"
+                }`}
+              >
+                <span
+                  className={`absolute top-1 h-6 w-6 rounded-full bg-white shadow transition ${
+                    settings.autoPrintOrders ? "left-7" : "left-1"
+                  }`}
+                />
+              </button>
+            </div>
+
+            <p
+              className={`mt-4 text-sm font-black ${
+                settings.autoPrintOrders ? "text-green-700" : "text-red-600"
+              }`}
+            >
+              {settings.autoPrintOrders
+                ? language === "de"
+                  ? "Aktiv — die Bestellseite muss dafür geöffnet bleiben."
+                  : "Aktif — bunun için sipariş sayfası açık kalmalıdır."
+                : language === "de"
+                  ? "Automatischer Druck ist deaktiviert."
+                  : "Otomatik yazdırma devre dışı."}
             </p>
           </section>
 

@@ -115,6 +115,9 @@ export const PATCH = withTenant(async (request: Request, _context, tenant) => {
         ? Math.round(rawMinOrderValue * 100) / 100
         : null;
 
+    const autoPrintOrders =
+      typeof body.autoPrintOrders === "boolean" ? body.autoPrintOrders : false;
+
     if (minOrderValueEnabled && minOrderValue === null) {
       return NextResponse.json(
         {
@@ -262,6 +265,7 @@ export const PATCH = withTenant(async (request: Request, _context, tenant) => {
         showOffers,
         minOrderValueEnabled,
         minOrderValue,
+        autoPrintOrders,
       },
       update: {
         companyName,
@@ -307,6 +311,7 @@ export const PATCH = withTenant(async (request: Request, _context, tenant) => {
         showOffers,
         minOrderValueEnabled,
         minOrderValue,
+        autoPrintOrders,
       },
     });
 

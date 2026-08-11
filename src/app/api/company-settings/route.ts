@@ -50,6 +50,8 @@ const fallbackSettings = {
 
   minOrderValueEnabled: false,
   minOrderValue: null,
+
+  autoPrintOrders: false,
 };
 
 export const GET = withTenant(async (_request, _context, tenant) => {
