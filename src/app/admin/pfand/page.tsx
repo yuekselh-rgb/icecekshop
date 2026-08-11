@@ -345,6 +345,16 @@ export default function AdminPfandPage() {
     );
   }
 
+  function setApprovedQuantityValue(
+    item: PfandReturn["items"][number],
+    value: number
+  ) {
+    setApprovedQuantities((current) => ({
+      ...current,
+      [item.id]: Math.max(0, Number.isFinite(value) ? Math.floor(value) : 0),
+    }));
+  }
+
   const loadReturns =
     useCallback(async () => {
       try {
@@ -489,6 +499,13 @@ export default function AdminPfandPage() {
         [itemKey]: Math.max(0, currentQuantity + difference),
       };
     });
+  }
+
+  function setOutgoingQuantity(itemKey: string, value: number) {
+    setOutgoingQuantities((current) => ({
+      ...current,
+      [itemKey]: Math.max(0, Number.isFinite(value) ? Math.floor(value) : 0),
+    }));
   }
 
   async function createOutgoingMovement() {
@@ -967,9 +984,16 @@ export default function AdminPfandPage() {
                           <Minus size={15} />
                         </button>
 
-                        <span className="w-8 text-center font-black">
-                          {outgoingQuantities[item.key] || 0}
-                        </span>
+                        <input
+                          type="number"
+                          min={0}
+                          value={outgoingQuantities[item.key] || 0}
+                          onChange={(event) =>
+                            setOutgoingQuantity(item.key, Number(event.target.value))
+                          }
+                          onFocus={(event) => event.target.select()}
+                          className="w-14 rounded-lg border border-slate-200 bg-white py-1 text-center font-black outline-none focus:border-orange-500"
+                        />
 
                         <button
                           type="button"
@@ -1327,11 +1351,24 @@ export default function AdminPfandPage() {
                                                 />
                                               </button>
 
-                                              <span className="min-w-12 text-center font-black">
-                                                {getApprovedQuantity(
+                                              <input
+                                                type="number"
+                                                min={0}
+                                                disabled={updating}
+                                                value={getApprovedQuantity(
                                                   item
                                                 )}
-                                              </span>
+                                                onChange={(event) =>
+                                                  setApprovedQuantityValue(
+                                                    item,
+                                                    Number(event.target.value)
+                                                  )
+                                                }
+                                                onFocus={(event) =>
+                                                  event.target.select()
+                                                }
+                                                className="w-14 border-x border-slate-200 bg-transparent py-2 text-center font-black outline-none focus:bg-white disabled:text-slate-300"
+                                              />
 
                                               <button
                                                 type="button"
