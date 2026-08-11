@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import QRCode from "qrcode";
 
 type Category = {
   id: string;
@@ -65,6 +66,7 @@ type Customer = {
 type CartItem = {
   product: Product;
   quantity: number;
+  price: number;
 };
 
 type PaymentMethod = "CASH" | "CARD" | "OPEN";
@@ -265,6 +267,8 @@ export default function BarSalesPage() {
 
   const [adminUser, setAdminUser] = useState<AdminUser | null>(null);
 
+  const [canChangePrice, setCanChangePrice] = useState(false);
+
   const [cart, setCart] = useState<CartItem[]>([]);
 
   /*
@@ -394,6 +398,8 @@ console.log("ACTIVE PRODUCTS", activeProducts.length);
       }
 
       setAdminUser(meData.user);
+
+      setCanChangePrice(Boolean(meData.permissions?.changePrice));
 
       setCustomers(customersData.customers || []);
     } catch {
@@ -690,6 +696,7 @@ const adminName =
         {
           product,
           quantity: 1,
+          price: Number(product.price),
         },
       ];
       });
@@ -722,6 +729,19 @@ const adminName =
     );
   }
 
+  function setItemPrice(productId: string, value: number) {
+    setCart((current) =>
+      current.map((item) =>
+        item.product.id === productId
+          ? {
+              ...item,
+              price: Number.isFinite(value) ? Math.max(0, value) : 0,
+            }
+          : item,
+      ),
+    );
+  }
+
   function changePfandQuantity(unitAmount: number, amount: number) {
     setPfandOptions((current) =>
       current.map((option) =>
@@ -736,7 +756,7 @@ const adminName =
   }
 
   const subtotal = cart.reduce(
-    (total, item) => total + Number(item.product.price) * item.quantity,
+    (total, item) => total + item.price * item.quantity,
     0,
   );
 
@@ -883,6 +903,7 @@ const adminName =
           items: cart.map((item) => ({
             productId: item.product.id,
             quantity: item.quantity,
+            price: item.price,
           })),
           pfandItems: pfandOptions
             .filter((option) => option.quantity > 0)
@@ -929,6 +950,34 @@ const adminName =
     }
   }
 
+  function hasNavigableAddress(order: { paymentStatus: string; deliveryAddress: string }) {
+    return (
+      order.paymentStatus === "OPEN" &&
+      !order.deliveryAddress.startsWith("Barverkauf") &&
+      !order.deliveryAddress.startsWith("Bar Satışı")
+    );
+  }
+
+  function getMapsQuery(order: { deliveryAddress: string }) {
+    return order.deliveryAddress
+      .split("\n")
+      .filter((line) => !line.startsWith("Telefon:"))
+      .join(", ");
+  }
+
+  async function getDeliveryQrCode(order: { deliveryAddress: string }) {
+    const redirectUrl = `${window.location.origin}/api/maps-redirect?address=${encodeURIComponent(getMapsQuery(order))}`;
+
+    try {
+      return await QRCode.toDataURL(redirectUrl, {
+        width: 160,
+        margin: 1,
+      });
+    } catch {
+      return null;
+    }
+  }
+
   async function printLastSale() {
     if (!lastSaleOrderId) {
       return;
@@ -947,6 +996,10 @@ const adminName =
       }
 
       const order = data.order;
+
+      const deliveryQrCode = hasNavigableAddress(order)
+        ? await getDeliveryQrCode(order)
+        : null;
 
       const popup = window.open("", "_blank", "width=900,height=700");
 
@@ -1036,9 +1089,17 @@ const adminName =
 
             <h2>${t.receiptDeliveryAddress}</h2>
 
-            <p class="address">
-              ${escapeHtml(order.deliveryAddress || "")}
-            </p>
+            <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;">
+              <p class="address">
+                ${escapeHtml(order.deliveryAddress || "")}
+              </p>
+
+              ${
+                deliveryQrCode
+                  ? `<img src="${deliveryQrCode}" width="120" height="120" alt="QR" />`
+                  : ""
+              }
+            </div>
 
             ${
               order.customerNote
@@ -1408,8 +1469,39 @@ const adminName =
                             : (item.product.nameTr || item.product.name)}
                         </p>
 
-                        <div className="mt-1 space-y-0.5 text-xs text-slate-500">
-                          <p>{t.product}: {Number(item.product.price).toFixed(2)} €</p>
+                        <div className="mt-1 space-y-1 text-xs text-slate-500">
+                          {canChangePrice ? (
+                            <label className="flex items-center gap-2">
+                              <span>{t.product}:</span>
+
+                              <input
+                                type="number"
+                                min={0}
+                                step={0.01}
+                                value={item.price}
+                                onChange={(event) =>
+                                  setItemPrice(
+                                    item.product.id,
+                                    Number(event.target.value),
+                                  )
+                                }
+                                onFocus={(event) => event.target.select()}
+                                className="w-20 rounded-lg border border-slate-200 px-2 py-1 text-right font-bold text-slate-900 outline-none focus:border-orange-500"
+                              />
+
+                              <span>€</span>
+
+                              {item.price !== Number(item.product.price) ? (
+                                <span className="text-slate-400 line-through">
+                                  {Number(item.product.price).toFixed(2)} €
+                                </span>
+                              ) : null}
+                            </label>
+                          ) : (
+                            <p>
+                              {t.product}: {item.price.toFixed(2)} €
+                            </p>
+                          )}
 
                           {Number(item.product.pfandAmount || 0) > 0 ? (
                             <p>
@@ -1421,7 +1513,7 @@ const adminName =
                           <p className="font-black text-slate-700">
                             {language === "de" ? "Einheit gesamt" : "Birim toplam"}:{" "}
                             {(
-                              Number(item.product.price) +
+                              item.price +
                               Number(item.product.pfandAmount)
                             ).toFixed(2)}{" "}
                             €
@@ -1470,8 +1562,7 @@ const adminName =
 
                       <strong>
                         {(
-                          (Number(item.product.price) +
-                            Number(item.product.pfandAmount)) *
+                          (item.price + Number(item.product.pfandAmount)) *
                           item.quantity
                         ).toFixed(2)}{" "}
                         €

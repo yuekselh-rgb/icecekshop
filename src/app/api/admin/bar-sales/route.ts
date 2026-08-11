@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from "next/server";
 type RequestedItem = {
   productId: string;
   quantity: number;
+  price?: number;
 };
 
 type RequestedPfandItem = {
@@ -93,6 +94,8 @@ function normalizeItems(value: unknown): RequestedItem[] {
 
   const quantities = new Map<string, number>();
 
+  const prices = new Map<string, number>();
+
   for (const rawItem of value) {
     if (!rawItem || typeof rawItem !== "object") {
       continue;
@@ -101,6 +104,7 @@ function normalizeItems(value: unknown): RequestedItem[] {
     const raw = rawItem as {
       productId?: unknown;
       quantity?: unknown;
+      price?: unknown;
     };
 
     const productId = String(raw.productId || "").trim();
@@ -117,11 +121,18 @@ function normalizeItems(value: unknown): RequestedItem[] {
     }
 
     quantities.set(productId, (quantities.get(productId) || 0) + quantity);
+
+    const rawPrice = Number(raw.price);
+
+    if (Number.isFinite(rawPrice) && rawPrice >= 0 && rawPrice <= 99999) {
+      prices.set(productId, Math.round(rawPrice * 100) / 100);
+    }
   }
 
   return Array.from(quantities.entries()).map(([productId, quantity]) => ({
     productId,
     quantity,
+    price: prices.get(productId),
   }));
 }
 
@@ -251,6 +262,17 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
               lastName: true,
               companyName: true,
               phone: true,
+
+              addresses: {
+                select: {
+                  street: true,
+                  houseNumber: true,
+                  postalCode: true,
+                  city: true,
+                  country: true,
+                },
+                take: 1,
+              },
             },
           })
         : null;
@@ -319,7 +341,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
         throw new Error(`INSUFFICIENT_STOCK:${product.name}:${product.stock}`);
       }
 
-      const price = Number(product.price);
+      const price =
+        admin.permissions.changePrice && item.price !== undefined
+          ? item.price
+          : Number(product.price);
 
       const pfand = Number(product.pfandAmount);
 
@@ -376,6 +401,23 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
         selectedCustomerFullName ||
         selectedCustomer.email
       : "Bar Satışı";
+
+    const selectedCustomerAddress = selectedCustomer?.addresses?.[0];
+
+    const deliveryAddress =
+      paymentMethod === "OPEN" && selectedCustomer && selectedCustomerAddress
+        ? [
+            selectedCustomerName,
+            `${selectedCustomerAddress.street} ${selectedCustomerAddress.houseNumber}`,
+            `${selectedCustomerAddress.postalCode} ${selectedCustomerAddress.city}`,
+            selectedCustomerAddress.country,
+            selectedCustomer.phone ? `Telefon: ${selectedCustomer.phone}` : null,
+          ]
+            .filter(Boolean)
+            .join("\n")
+        : language === "de"
+          ? "Barverkauf\nAbholung im Geschäft"
+          : "Bar Satışı\nMağazadan teslim";
 
     const orderNumber = createOrderNumber();
 
@@ -456,10 +498,7 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
           deliveryFee: 0,
           pfandAmount,
           totalAmount,
-          deliveryAddress:
-            language === "de"
-              ? "Barverkauf\nAbholung im Geschäft"
-              : "Bar Satışı\nMağazadan teslim",
+          deliveryAddress,
           customerNote: [
             "BAR SATIŞI",
             `Satışı yapan: ${adminName}`,
