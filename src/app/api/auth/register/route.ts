@@ -26,7 +26,6 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
       houseNumber,
       postalCode,
       city,
-      floor,
       doorbellName,
     } = body;
 
@@ -40,9 +39,7 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
       !street ||
       !houseNumber ||
       !postalCode ||
-      !city ||
-      !floor ||
-      !doorbellName
+      !city
     ) {
       return NextResponse.json(
         {
@@ -231,15 +228,12 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
               country:
                 "Deutschland",
 
-              floor:
-                String(
-                  floor
-                ).trim(),
-
               doorbellName:
-                String(
-                  doorbellName
-                ).trim(),
+                doorbellName
+                  ? String(
+                      doorbellName
+                    ).trim() || null
+                  : null,
 
               isDefault:
                 true,

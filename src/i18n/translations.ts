@@ -127,8 +127,9 @@ export const translations = {
       postalCode: "Posta Kodu",
       city: "Şehir",
       country: "Ülke",
-      floor: "Kat",
       doorbellName: "Zilde Yazacak İsim",
+      doorbellNameHint:
+        "Sadece isminizden farklıysa doldurun, zorunlu değildir.",
 
       passwordHint: "Şifre en az 8 karakter olmalıdır.",
 
@@ -270,8 +271,9 @@ export const translations = {
       postalCode: "PLZ",
       city: "Ort",
       country: "Land",
-      floor: "Etage",
       doorbellName: "Name am Klingelschild",
+      doorbellNameHint:
+        "Nur ausfüllen, falls abweichend von Ihrem Namen — nicht Pflicht.",
 
       passwordHint: "Das Passwort muss mindestens 8 Zeichen lang sein.",
 

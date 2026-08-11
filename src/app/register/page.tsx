@@ -151,11 +151,6 @@ export default function RegisterPage() {
           "city"
         ),
 
-      floor:
-        formData.get(
-          "floor"
-        ),
-
       doorbellName:
         formData.get(
           "doorbellName"
@@ -398,19 +393,14 @@ export default function RegisterPage() {
                     />
                   </label>
 
-                  <Input
-                    label={
-                      t.floor
-                    }
-                    name="floor"
-                  />
-
                   <div className="sm:col-span-2">
                     <Input
                       label={
                         t.doorbellName
                       }
                       name="doorbellName"
+                      required={false}
+                      helperText={t.doorbellNameHint}
                     />
                   </div>
                 </div>
@@ -519,6 +509,8 @@ type InputProps = {
     | "text"
     | "numeric";
   maxLength?: number;
+  required?: boolean;
+  helperText?: string;
 };
 
 function Input({
@@ -527,15 +519,17 @@ function Input({
   type = "text",
   inputMode,
   maxLength,
+  required = true,
+  helperText,
 }: InputProps) {
   return (
     <label className="block">
       <span className="text-sm font-bold text-slate-700">
-        {label} *
+        {label} {required ? "*" : ""}
       </span>
 
       <input
-        required
+        required={required}
         name={name}
         type={type}
         inputMode={
@@ -546,6 +540,12 @@ function Input({
         }
         className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 outline-none transition focus:border-orange-500"
       />
+
+      {helperText ? (
+        <span className="mt-1 block text-xs text-slate-400">
+          {helperText}
+        </span>
+      ) : null}
     </label>
   );
 }
