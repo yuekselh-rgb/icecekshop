@@ -300,8 +300,7 @@ export default function CompanySettingsPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          companyName: settings.companyName,
-          companySubtitle: settings.companySubtitle,
+          ...settings,
           logoUrl: "",
         }),
       });
