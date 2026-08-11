@@ -58,6 +58,9 @@ type Settings = {
   twitter: string;
 
   showOffers: boolean;
+
+  minOrderValueEnabled: boolean;
+  minOrderValue: string;
 };
 
 const emptySettings: Settings = {
@@ -105,6 +108,9 @@ const emptySettings: Settings = {
   twitter: "",
 
   showOffers: true,
+
+  minOrderValueEnabled: false,
+  minOrderValue: "",
 };
 
 export default function CompanySettingsPage() {
@@ -186,6 +192,15 @@ export default function CompanySettingsPage() {
           twitter: data.settings.twitter || "",
 
           showOffers: data.settings.showOffers !== false,
+
+          minOrderValueEnabled: Boolean(
+            data.settings.minOrderValueEnabled,
+          ),
+          minOrderValue:
+            data.settings.minOrderValue !== null &&
+            data.settings.minOrderValue !== undefined
+              ? String(data.settings.minOrderValue)
+              : "",
         });
       } catch {
         setError(
@@ -342,6 +357,15 @@ export default function CompanySettingsPage() {
         twitter: data.settings.twitter || "",
 
         showOffers: data.settings.showOffers !== false,
+
+        minOrderValueEnabled: Boolean(
+          data.settings.minOrderValueEnabled,
+        ),
+        minOrderValue:
+          data.settings.minOrderValue !== null &&
+          data.settings.minOrderValue !== undefined
+            ? String(data.settings.minOrderValue)
+            : "",
       });
 
       setSuccess(
@@ -433,6 +457,15 @@ export default function CompanySettingsPage() {
         twitter: data.settings.twitter || "",
 
         showOffers: data.settings.showOffers !== false,
+
+        minOrderValueEnabled: Boolean(
+          data.settings.minOrderValueEnabled,
+        ),
+        minOrderValue:
+          data.settings.minOrderValue !== null &&
+          data.settings.minOrderValue !== undefined
+            ? String(data.settings.minOrderValue)
+            : "",
       });
 
       setSuccess(
@@ -1160,6 +1193,85 @@ export default function CompanySettingsPage() {
                 : language === "de"
                   ? "Aktionen werden auf der Startseite ausgeblendet."
                   : "Kampanyalar ana sayfada gizleniyor."}
+            </p>
+          </section>
+
+          <section className="rounded-3xl border border-slate-200 p-5">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-xl font-black text-slate-950">
+                  {language === "de"
+                    ? "Mindestbestellwert"
+                    : "Minimum Sipariş Tutarı"}
+                </h2>
+
+                <p className="mt-1 text-sm text-slate-500">
+                  {language === "de"
+                    ? "Legen Sie fest, ob Kunden einen Mindestbestellwert erreichen müssen."
+                    : "Müşterilerin belirli bir minimum tutara ulaşması gerekip gerekmediğini belirleyin."}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setSettings((current) => ({
+                    ...current,
+                    minOrderValueEnabled: !current.minOrderValueEnabled,
+                  }))
+                }
+                className={`relative h-8 w-14 shrink-0 rounded-full transition ${
+                  settings.minOrderValueEnabled
+                    ? "bg-green-500"
+                    : "bg-slate-300"
+                }`}
+              >
+                <span
+                  className={`absolute top-1 h-6 w-6 rounded-full bg-white shadow transition ${
+                    settings.minOrderValueEnabled ? "left-7" : "left-1"
+                  }`}
+                />
+              </button>
+            </div>
+
+            {settings.minOrderValueEnabled ? (
+              <label className="mt-4 block max-w-xs">
+                <span className="text-sm font-bold text-slate-700">
+                  {language === "de"
+                    ? "Mindestbestellwert (€)"
+                    : "Minimum Sipariş Tutarı (€)"}
+                </span>
+
+                <input
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  value={settings.minOrderValue}
+                  onChange={(event) =>
+                    setSettings((current) => ({
+                      ...current,
+                      minOrderValue: event.target.value,
+                    }))
+                  }
+                  className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-2.5 outline-none focus:border-orange-500"
+                />
+              </label>
+            ) : null}
+
+            <p
+              className={`mt-4 text-sm font-black ${
+                settings.minOrderValueEnabled
+                  ? "text-green-700"
+                  : "text-red-600"
+              }`}
+            >
+              {settings.minOrderValueEnabled
+                ? language === "de"
+                  ? `Bestellungen unter ${Number(settings.minOrderValue || 0).toFixed(2)} € werden abgelehnt.`
+                  : `${Number(settings.minOrderValue || 0).toFixed(2)} € altındaki siparişler reddedilir.`
+                : language === "de"
+                  ? "Kein Mindestbestellwert aktiv."
+                  : "Minimum sipariş tutarı aktif değil."}
             </p>
           </section>
 

@@ -4,7 +4,14 @@ import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
 import { useCart } from "@/context/CartContext";
 import { useLanguage } from "@/context/LanguageContext";
-import { CheckCircle2, Loader2, MapPin, Truck, Wallet } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  Loader2,
+  MapPin,
+  Truck,
+  Wallet,
+} from "lucide-react";
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 
@@ -182,6 +189,36 @@ export default function CheckoutPage() {
   const deliveryFee = isDealer ? 0 : productSubtotal >= 100 ? 0 : 7.9;
 
   const total = Math.max(0, subtotal + deliveryFee - pfandReturnTotal);
+
+  const [minOrderSettings, setMinOrderSettings] = useState({
+    enabled: false,
+    value: 0,
+  });
+
+  useEffect(() => {
+    async function loadCompanySettings() {
+      try {
+        const response = await fetch("/api/company-settings");
+        const data = await response.json();
+
+        setMinOrderSettings({
+          enabled: Boolean(data.settings?.minOrderValueEnabled),
+          value: Number(data.settings?.minOrderValue) || 0,
+        });
+      } catch {
+        // Mindestbestellwert ist optional; bei Fehler einfach nicht durchsetzen.
+      }
+    }
+
+    loadCompanySettings();
+  }, []);
+
+  const belowMinOrderValue =
+    !isDealer &&
+    minOrderSettings.enabled &&
+    minOrderSettings.value > 0 &&
+    items.length > 0 &&
+    productSubtotal < minOrderSettings.value;
 
   useEffect(() => {
     async function loadUser() {
@@ -720,9 +757,29 @@ export default function CheckoutPage() {
               </div>
             </div>
 
+            {belowMinOrderValue ? (
+              <div className="mt-6 flex items-start gap-3 rounded-2xl bg-amber-50 p-4">
+                <AlertTriangle
+                  size={20}
+                  className="mt-0.5 shrink-0 text-amber-600"
+                />
+
+                <p className="text-sm font-bold text-amber-800">
+                  {language === "de"
+                    ? `Der Mindestbestellwert beträgt ${minOrderSettings.value.toFixed(2)} €. Bitte fügen Sie noch ${(minOrderSettings.value - productSubtotal).toFixed(2)} € hinzu.`
+                    : `Minimum sipariş tutarı ${minOrderSettings.value.toFixed(2)} €. Lütfen ${(minOrderSettings.value - productSubtotal).toFixed(2)} € daha ekleyin.`}
+                </p>
+              </div>
+            ) : null}
+
             <button
               type="submit"
-              disabled={submitting || items.length === 0 || Boolean(error)}
+              disabled={
+                submitting ||
+                items.length === 0 ||
+                Boolean(error) ||
+                belowMinOrderValue
+              }
               className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-orange-500 px-6 py-4 font-black text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:bg-slate-300"
             >
               {submitting ? (

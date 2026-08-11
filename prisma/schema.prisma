@@ -563,6 +563,10 @@ model CompanySetting {
   twitter   String?
 
   showOffers Boolean  @default(true)
+
+  minOrderValueEnabled Boolean  @default(false)
+  minOrderValue        Decimal? @db.Decimal(10, 2)
+
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 

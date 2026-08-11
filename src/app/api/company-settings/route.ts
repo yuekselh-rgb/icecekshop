@@ -47,6 +47,9 @@ const fallbackSettings = {
   twitter: null,
 
   showOffers: true,
+
+  minOrderValueEnabled: false,
+  minOrderValue: null,
 };
 
 export const GET = withTenant(async (_request, _context, tenant) => {

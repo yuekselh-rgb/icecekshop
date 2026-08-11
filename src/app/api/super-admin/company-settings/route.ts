@@ -103,6 +103,31 @@ export const PATCH = withTenant(async (request: Request, _context, tenant) => {
         ? Math.min(700, Math.max(40, body.logoHeight))
         : 120;
 
+    const minOrderValueEnabled =
+      typeof body.minOrderValueEnabled === "boolean"
+        ? body.minOrderValueEnabled
+        : false;
+
+    const rawMinOrderValue = Number(body.minOrderValue);
+
+    const minOrderValue =
+      Number.isFinite(rawMinOrderValue) && rawMinOrderValue > 0
+        ? Math.round(rawMinOrderValue * 100) / 100
+        : null;
+
+    if (minOrderValueEnabled && minOrderValue === null) {
+      return NextResponse.json(
+        {
+          error:
+            language === "de"
+              ? "Bitte geben Sie einen gültigen Mindestbestellwert an."
+              : "Lütfen geçerli bir minimum sipariş tutarı girin.",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
 
     const phone = String(body.phone || "").trim();
 
@@ -235,6 +260,8 @@ export const PATCH = withTenant(async (request: Request, _context, tenant) => {
         twitter: twitter || null,
 
         showOffers,
+        minOrderValueEnabled,
+        minOrderValue,
       },
       update: {
         companyName,
@@ -278,6 +305,8 @@ export const PATCH = withTenant(async (request: Request, _context, tenant) => {
         twitter: twitter || null,
 
         showOffers,
+        minOrderValueEnabled,
+        minOrderValue,
       },
     });
 

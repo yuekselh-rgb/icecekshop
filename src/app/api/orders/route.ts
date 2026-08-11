@@ -405,6 +405,40 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
 
     pfandAmount = Number(pfandAmount.toFixed(2));
 
+    if (!isDealer) {
+      const companySettings = await prisma.companySetting.findUnique({
+        where: {
+          tenantId: tenant.id,
+        },
+        select: {
+          minOrderValueEnabled: true,
+          minOrderValue: true,
+        },
+      });
+
+      const minOrderValue = companySettings?.minOrderValue
+        ? Number(companySettings.minOrderValue)
+        : 0;
+
+      if (
+        companySettings?.minOrderValueEnabled &&
+        minOrderValue > 0 &&
+        subtotal < minOrderValue
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              language === "de"
+                ? `Der Mindestbestellwert beträgt ${minOrderValue.toFixed(2)} €. Bitte fügen Sie weitere Artikel hinzu.`
+                : `Minimum sipariş tutarı ${minOrderValue.toFixed(2)} €. Lütfen sepetinize ürün ekleyin.`,
+          },
+          {
+            status: 400,
+          },
+        );
+      }
+    }
+
     const pfandReturnAmount = Number(
       pfandItems
         .reduce((total, item) => total + item.quantity * item.unitAmount, 0)
