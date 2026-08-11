@@ -67,6 +67,7 @@ type CartItem = {
   product: Product;
   quantity: number;
   price: number;
+  priceText: string;
 };
 
 type PaymentMethod = "CASH" | "CARD" | "OPEN";
@@ -697,6 +698,7 @@ const adminName =
           product,
           quantity: 1,
           price: Number(product.price),
+          priceText: String(Number(product.price)),
         },
       ];
       });
@@ -729,13 +731,27 @@ const adminName =
     );
   }
 
-  function setItemPrice(productId: string, value: number) {
+  function setItemPriceText(productId: string, text: string) {
     setCart((current) =>
       current.map((item) =>
         item.product.id === productId
           ? {
               ...item,
-              price: Number.isFinite(value) ? Math.max(0, value) : 0,
+              priceText: text,
+              price: Math.max(0, Number(text) || 0),
+            }
+          : item,
+      ),
+    );
+  }
+
+  function normalizeItemPriceText(productId: string) {
+    setCart((current) =>
+      current.map((item) =>
+        item.product.id === productId && item.priceText === ""
+          ? {
+              ...item,
+              priceText: "0",
             }
           : item,
       ),
@@ -1478,14 +1494,17 @@ const adminName =
                                 type="number"
                                 min={0}
                                 step={0.01}
-                                value={item.price}
+                                value={item.priceText}
                                 onChange={(event) =>
-                                  setItemPrice(
+                                  setItemPriceText(
                                     item.product.id,
-                                    Number(event.target.value),
+                                    event.target.value,
                                   )
                                 }
                                 onFocus={(event) => event.target.select()}
+                                onBlur={() =>
+                                  normalizeItemPriceText(item.product.id)
+                                }
                                 className="w-20 rounded-lg border border-slate-200 px-2 py-1 text-right font-bold text-slate-900 outline-none focus:border-orange-500"
                               />
 
