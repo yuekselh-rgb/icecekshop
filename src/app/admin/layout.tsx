@@ -1,3 +1,4 @@
+import AutoPrintWatcher from "@/components/AutoPrintWatcher";
 import { getAdminWithPermissions } from "@/lib/admin-auth";
 import { redirect } from "next/navigation";
 
@@ -14,5 +15,10 @@ export default async function AdminLayout({
     redirect("/login");
   }
 
-  return children;
+  return (
+    <>
+      <AutoPrintWatcher />
+      {children}
+    </>
+  );
 }

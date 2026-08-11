@@ -1296,8 +1296,8 @@ export default function CompanySettingsPage() {
 
                 <p className="mt-1 text-sm text-slate-500">
                   {language === "de"
-                    ? "Neue Bestellungen werden auf der Bestellseite automatisch gedruckt, sobald sie eingehen."
-                    : "Yeni siparişler, sipariş sayfasına ulaştığı anda otomatik olarak yazdırılır."}
+                    ? "Neue Bestellungen werden automatisch gedruckt, sobald sie eingehen — solange irgendwo im Admin-Bereich ein Browser-Tab geöffnet ist (nicht nur auf der Bestellseite)."
+                    : "Yeni siparişler geldiği anda otomatik yazdırılır — admin panelinde herhangi bir sayfa açık olması yeterlidir (sadece sipariş sayfası değil)."}
                 </p>
               </div>
 
@@ -1328,8 +1328,8 @@ export default function CompanySettingsPage() {
             >
               {settings.autoPrintOrders
                 ? language === "de"
-                  ? "Aktiv — die Bestellseite muss dafür geöffnet bleiben."
-                  : "Aktif — bunun için sipariş sayfası açık kalmalıdır."
+                  ? "Aktiv — ein eingeloggter Admin-Tab muss geöffnet bleiben."
+                  : "Aktif — giriş yapılmış bir admin sekmesi açık kalmalıdır."
                 : language === "de"
                   ? "Automatischer Druck ist deaktiviert."
                   : "Otomatik yazdırma devre dışı."}
