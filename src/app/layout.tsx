@@ -37,8 +37,13 @@ export async function generateMetadata(): Promise<Metadata> {
       "Getränke, Verpackungen und Reinigungsprodukte bequem bestellen.",
 
     icons: companySettings?.logoUrl
-      ? { icon: companySettings.logoUrl }
+      ? {
+          icon: companySettings.logoUrl,
+          apple: companySettings.logoUrl,
+        }
       : undefined,
+
+    manifest: "/manifest.webmanifest",
   };
 }
 
