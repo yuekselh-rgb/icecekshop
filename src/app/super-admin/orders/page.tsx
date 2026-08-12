@@ -55,6 +55,9 @@ type Order = {
   pfandAmount: number;
   totalAmount: number;
 
+  approvedPaymentAmount?: number;
+  openPaymentAmount?: number;
+
   deliveryAddress: string;
   customerNote: string | null;
 
@@ -123,6 +126,12 @@ export default function SuperAdminOrdersPage() {
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
 
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+
+  const [paymentAmountInputs, setPaymentAmountInputs] = useState<
+    Record<string, string>
+  >({});
+
+  const [settlingOrderId, setSettlingOrderId] = useState<string | null>(null);
 
   const [loading, setLoading] = useState(true);
 
@@ -779,6 +788,57 @@ export default function SuperAdminOrdersPage() {
           ? "Beim Löschen der Bestellung ist ein Fehler aufgetreten."
           : "Sipariş silinirken hata oluştu.",
       );
+    }
+  }
+
+  async function settlePayment(order: Order, amount: number) {
+    setSettlingOrderId(order.id);
+
+    setError("");
+
+    try {
+      const response = await fetch(
+        `/api/super-admin/orders/${order.id}/settle-payment`,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json",
+          },
+
+          body: JSON.stringify({
+            amount,
+          }),
+        },
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(
+          data.error ||
+            (language === "de"
+              ? "Zahlung konnte nicht erfasst werden."
+              : "Ödeme kaydedilemedi."),
+        );
+        return;
+      }
+
+      setPaymentAmountInputs((current) => {
+        const next = { ...current };
+        delete next[order.id];
+        return next;
+      });
+
+      await loadOrders(true);
+    } catch {
+      setError(
+        language === "de"
+          ? "Beim Erfassen der Zahlung ist ein Fehler aufgetreten."
+          : "Ödeme kaydedilirken hata oluştu.",
+      );
+    } finally {
+      setSettlingOrderId(null);
     }
   }
 
@@ -2216,7 +2276,12 @@ export default function SuperAdminOrdersPage() {
                             className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-2.5 py-1.5 text-sm font-black text-slate-700"
                           >
                             {language === "de" ? "Detail" : "Detay"}
-                            <ChevronDown size={16} />
+                            <ChevronDown
+                              size={16}
+                              className={`transition-transform ${
+                                expandedOrderId === order.id ? "rotate-180" : ""
+                              }`}
+                            />
                           </button>
 
                           <button
@@ -2230,6 +2295,133 @@ export default function SuperAdminOrdersPage() {
                         </div>
                       </div>
                     </div>
+
+                    {expandedOrderId === order.id ? (
+                      <div className="mt-3 space-y-3 border-t border-slate-200 pt-3">
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          <div>
+                            <p className="text-[10px] font-bold uppercase text-slate-400">
+                              {language === "de" ? "Lieferadresse" : "Teslimat Adresi"}
+                            </p>
+
+                            <p className="mt-1 whitespace-pre-line text-sm text-slate-700">
+                              {order.deliveryAddress}
+                            </p>
+                          </div>
+
+                          {order.customerNote ? (
+                            <div>
+                              <p className="text-[10px] font-bold uppercase text-slate-400">
+                                {language === "de" ? "Kundennotiz" : "Müşteri Notu"}
+                              </p>
+
+                              <p className="mt-1 whitespace-pre-line text-sm text-slate-700">
+                                {order.customerNote}
+                              </p>
+                            </div>
+                          ) : null}
+                        </div>
+
+                        <div>
+                          <p className="text-[10px] font-bold uppercase text-slate-400">
+                            {language === "de" ? "Produkte" : "Ürünler"}
+                          </p>
+
+                          <div className="mt-1 divide-y divide-slate-100 rounded-lg border border-slate-100">
+                            {order.items.map((item) => (
+                              <div
+                                key={item.id}
+                                className="flex items-center justify-between gap-3 px-3 py-1.5 text-sm"
+                              >
+                                <span className="text-slate-700">
+                                  {item.name} × {item.quantity}
+                                </span>
+
+                                <span className="font-bold text-slate-950">
+                                  {(
+                                    (item.price + item.pfand) *
+                                    item.quantity
+                                  ).toFixed(2)} €
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {order.paymentStatus === "OPEN" ? (
+                          <div className="rounded-lg border border-orange-200 bg-orange-50 p-3">
+                            <p className="text-[10px] font-bold uppercase text-orange-700">
+                              {language === "de" ? "Zahlung erfassen" : "Ödeme kaydet"}
+                            </p>
+
+                            <p className="mt-1 text-xs text-orange-700">
+                              {language === "de" ? "Offener Betrag" : "Açık tutar"}:{" "}
+                              {(
+                                order.openPaymentAmount ??
+                                getEffectiveOrderTotal(order)
+                              ).toFixed(2)} €
+                            </p>
+
+                            <div className="mt-2 flex flex-wrap items-center gap-2">
+                              <input
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                value={
+                                  paymentAmountInputs[order.id] ??
+                                  (
+                                    order.openPaymentAmount ??
+                                    getEffectiveOrderTotal(order)
+                                  ).toFixed(2)
+                                }
+                                onChange={(event) =>
+                                  setPaymentAmountInputs((current) => ({
+                                    ...current,
+                                    [order.id]: event.target.value,
+                                  }))
+                                }
+                                className="w-28 rounded-lg border border-orange-300 bg-white px-2.5 py-1.5 text-sm font-bold text-slate-950 outline-none focus:border-orange-500"
+                              />
+
+                              <button
+                                type="button"
+                                disabled={settlingOrderId === order.id}
+                                onClick={() => {
+                                  const raw =
+                                    paymentAmountInputs[order.id] ??
+                                    (
+                                      order.openPaymentAmount ??
+                                      getEffectiveOrderTotal(order)
+                                    ).toFixed(2);
+
+                                  const amount = Number(raw.replace(",", "."));
+
+                                  if (!Number.isFinite(amount) || amount <= 0) {
+                                    setError(
+                                      language === "de"
+                                        ? "Bitte geben Sie einen gültigen Betrag ein."
+                                        : "Lütfen geçerli bir tutar girin.",
+                                    );
+                                    return;
+                                  }
+
+                                  settlePayment(order, amount);
+                                }}
+                                className="inline-flex items-center gap-1.5 rounded-lg bg-orange-500 px-3 py-1.5 text-sm font-black text-white transition hover:bg-orange-600 disabled:opacity-60"
+                              >
+                                {settlingOrderId === order.id
+                                  ? language === "de"
+                                    ? "Wird gespeichert..."
+                                    : "Kaydediliyor..."
+                                  : language === "de"
+                                    ? "Als bezahlt erfassen"
+                                    : "Ödendi olarak kaydet"}
+                              </button>
+                            </div>
+                          </div>
+                        ) : null}
+                      </div>
+                    ) : null}
                   </article>
                 );
               })}

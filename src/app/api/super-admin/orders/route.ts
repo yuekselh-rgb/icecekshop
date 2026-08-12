@@ -101,6 +101,14 @@ export const GET = withTenant(async () => {
               },
             },
           },
+
+          payments: {
+            select: {
+              id: true,
+              amount: true,
+              status: true,
+            },
+          },
         },
 
         orderBy: {
@@ -111,7 +119,22 @@ export const GET = withTenant(async () => {
     return NextResponse.json({
       orders:
         orders.map(
-          (order) => ({
+          (order) => {
+            const approvedPaymentAmount = Number(
+              order.payments
+                .filter((payment) => payment.status === "APPROVED")
+                .reduce((total, payment) => total + Number(payment.amount), 0)
+                .toFixed(2),
+            );
+
+            const openPaymentAmount = Number(
+              Math.max(
+                0,
+                Number(order.totalAmount) - approvedPaymentAmount,
+              ).toFixed(2),
+            );
+
+            return {
             ...order,
 
             subtotal:
@@ -133,6 +156,9 @@ export const GET = withTenant(async () => {
               Number(
                 order.totalAmount
               ),
+
+            approvedPaymentAmount,
+            openPaymentAmount,
 
             items:
               order.items.map(
@@ -195,7 +221,8 @@ export const GET = withTenant(async () => {
                     ),
                 })
               ),
-          })
+            };
+          }
         ),
     });
   } catch (error) {
