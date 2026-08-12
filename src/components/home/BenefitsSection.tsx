@@ -4,6 +4,11 @@ import { useLanguage } from "@/context/LanguageContext";
 import { Truck, PackageCheck, RotateCcw } from "lucide-react";
 import Link from "next/link";
 
+function scrollToProducts(event: React.MouseEvent) {
+  event.preventDefault();
+  document.getElementById("produkte")?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 export default function BenefitsSection() {
   const { language } = useLanguage();
 
@@ -54,7 +59,7 @@ export default function BenefitsSection() {
             <Truck size={28} className="text-[#1B4965]" />
             <h3 className="mt-5 text-xl font-medium text-[#05090A]">{t.bigTitle}</h3>
             <p className="mt-2 text-[#05090A]">{t.bigText}</p>
-            <Link href="/#produkte" className="mt-4 w-fit font-medium text-[#05090A] underline">
+            <Link href="/#produkte" onClick={scrollToProducts} className="mt-4 w-fit font-medium text-[#05090A] underline">
               {t.more} ›
             </Link>
           </div>

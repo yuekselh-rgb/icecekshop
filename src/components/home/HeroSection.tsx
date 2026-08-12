@@ -4,6 +4,11 @@ import { useLanguage } from "@/context/LanguageContext";
 import { ArrowRight, Check } from "lucide-react";
 import Link from "next/link";
 
+function scrollToProducts(event: React.MouseEvent) {
+  event.preventDefault();
+  document.getElementById("produkte")?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 export default function HeroSection() {
   const { language } = useLanguage();
 
@@ -59,6 +64,7 @@ export default function HeroSection() {
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
             <Link
               href="/#produkte"
+              onClick={scrollToProducts}
               className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 py-3.5 font-bold text-[#05090A] transition hover:bg-[#D9DADA]"
             >
               {t.shop}

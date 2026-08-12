@@ -37,9 +37,18 @@ export default function Header() {
   /*
    * Auf der Homepage zeigt der Produktkatalog bereits dort, im
    * Header-Link dann nur dorthin scrollen statt zur separaten
-   * /products-Seite zu navigieren.
+   * /products-Seite zu navigieren. next/link scrollt bei einem
+   * reinen Hash-Wechsel auf derselben Seite nicht zuverlässig,
+   * daher zusätzlich manuell per onClick scrollen.
    */
   const productsHref = pathname === "/" ? "/#produkte" : "/products";
+
+  function handleProductsClick(event: React.MouseEvent) {
+    if (pathname === "/") {
+      event.preventDefault();
+      document.getElementById("produkte")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }
 
   const { totalItems, clearCart } = useCart();
 
@@ -372,7 +381,7 @@ export default function Header() {
       <span>{t.home}</span>
     </Link>
 
-    <Link href={productsHref} className="flex items-center gap-3 rounded-none px-4 py-3 font-semibold transition hover:bg-[#E8ECEF] hover:text-[#1B4965]">
+    <Link href={productsHref} onClick={handleProductsClick} className="flex items-center gap-3 rounded-none px-4 py-3 font-semibold transition hover:bg-[#E8ECEF] hover:text-[#1B4965]">
       <Package size={20}/>
       <span>{t.products}</span>
     </Link>
@@ -444,7 +453,7 @@ export default function Header() {
           </Sheet>
 
           <nav className="hidden items-center gap-1 lg:flex">
-            <Link href={productsHref} className="rounded-full px-4 py-2 font-semibold text-[#05090A] transition hover:bg-[#E8ECEF]">
+            <Link href={productsHref} onClick={handleProductsClick} className="rounded-full px-4 py-2 font-semibold text-[#05090A] transition hover:bg-[#E8ECEF]">
               {t.products}
             </Link>
             <Link href="/pfand" className="rounded-full px-4 py-2 font-semibold text-[#05090A] transition hover:bg-[#E8ECEF]">
