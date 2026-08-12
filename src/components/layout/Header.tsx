@@ -182,13 +182,13 @@ export default function Header() {
 
   return (
     <>
-      <div className="bg-slate-950 px-4 py-2 text-center text-sm text-white">
-        {minOrderValueSettings.enabled && minOrderValueSettings.value > 0
-          ? language === "de"
+      {minOrderValueSettings.enabled && minOrderValueSettings.value > 0 ? (
+        <div className="bg-slate-950 px-4 py-2 text-center text-sm text-white">
+          {language === "de"
             ? `Mindestbestellwert: ${minOrderValueSettings.value.toFixed(2)} €`
-            : `Minimum sipariş tutarı: ${minOrderValueSettings.value.toFixed(2)} €`
-          : t.freeDelivery}
-      </div>
+            : `Minimum sipariş tutarı: ${minOrderValueSettings.value.toFixed(2)} €`}
+        </div>
+      ) : null}
 
       <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-5 px-4 py-4 lg:px-8">
