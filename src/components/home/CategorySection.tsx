@@ -208,8 +208,20 @@ export default function CategorySection({
   /*
    * Aktif kategori telefonda görünmeyen tarafta kalırsa
    * kategori satırı otomatik olarak yana kayar.
+   *
+   * İlk mount'ta atlanır: aksi halde varsayılan "all" kategorisi
+   * için çalışan bu efekt, kategori çubuğu artık sayfanın daha
+   * aşağısında olduğundan (Hero/Vorteile/Pfand/Gastro'dan sonra)
+   * sayfa her yüklendiğinde dikey olarak çubuğa kaydırır.
    */
+  const isInitialActiveCategoryRender = useRef(true);
+
   useEffect(() => {
+    if (isInitialActiveCategoryRender.current) {
+      isInitialActiveCategoryRender.current = false;
+      return;
+    }
+
     buttonRefs.current[activeCategory]?.scrollIntoView({
       behavior: "smooth",
       block: "nearest",
