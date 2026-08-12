@@ -4,6 +4,7 @@ import {
   Boxes,
   ClipboardList,
   FileBarChart,
+  Lock,
   PackageSearch,
   RotateCcw,
   ShoppingBasket,
@@ -122,6 +123,15 @@ export default async function AdminPage() {
       href: "/admin/pfand",
       icon: RotateCcw,
       permission: admin.permissions.managePfand,
+      featured: false,
+    },
+    {
+      title: lang === "de" ? "Passwort ändern" : "Şifre Değiştir",
+      description:
+        lang === "de" ? "Ihr eigenes Passwort ändern." : "Kendi şifrenizi değiştirin.",
+      href: "/admin/change-password",
+      icon: Lock,
+      permission: true,
       featured: false,
     },
   ].filter((card) => card.permission);
