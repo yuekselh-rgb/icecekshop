@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { CartProvider } from "@/context/CartContext";
 import { LanguageProvider } from "@/context/LanguageContext";
 import "./globals.css";
@@ -55,6 +56,9 @@ export default function RootLayout({
   return (
     <html lang="de" className="font-sans" data-scroll-behavior="smooth">
       <body>
+        <Script id="disable-scroll-restoration" strategy="beforeInteractive">
+          {"try{if('scrollRestoration' in history){history.scrollRestoration='manual';}}catch(e){}"}
+        </Script>
         <LanguageProvider>
           <CartProvider>{children}</CartProvider>
         </LanguageProvider>
