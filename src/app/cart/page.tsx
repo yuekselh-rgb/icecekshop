@@ -289,7 +289,7 @@ export default function CartPage() {
                                 return next;
                               });
                             }}
-                            className="min-w-10 border-0 bg-transparent text-center font-black outline-none"
+                            className="w-10 shrink-0 border-0 bg-transparent text-center font-black outline-none"
                           />
 
                           <button
