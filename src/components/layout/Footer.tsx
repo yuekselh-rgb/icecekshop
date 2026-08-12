@@ -1,6 +1,7 @@
 "use client";
 
 import { useLanguage } from "@/context/LanguageContext";
+import CompanyBrand from "@/components/company/CompanyBrand";
 import { Globe, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -78,6 +79,12 @@ fetch("/api/company-settings")
 
   return (
     <footer className="bg-[#E8ECEF] px-4 py-12 text-[#05090A] lg:px-8">
+      <div className="mx-auto mb-10 flex max-w-7xl justify-center lg:justify-start">
+        <div className="w-40">
+          <CompanyBrand variant="footer" initialSettings={settings} />
+        </div>
+      </div>
+
       <div className="mx-auto grid max-w-7xl gap-12 border-t border-[#05090a26] pt-12 lg:grid-cols-[2.2fr_1fr]">
 
         <div>

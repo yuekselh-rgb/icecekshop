@@ -132,13 +132,13 @@ export default function ProductCard({
 
   return (
     <article
-      className="group flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white transition duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+      className="group flex h-full flex-col overflow-hidden rounded-none border border-[#05090a26] bg-white transition duration-300">
       <Link
         href={`/products/${id}`}
-        className="relative flex h-44 items-center justify-center overflow-hidden bg-slate-100"
+        className="relative flex aspect-square items-center justify-center overflow-hidden bg-[#F2F2F2]"
       >
         {localizedBadge ? (
-          <span className="absolute left-3 top-3 z-10 rounded-full bg-slate-950 px-2.5 py-1 text-[10px] font-bold text-white">
+          <span className="absolute left-3 top-3 z-10 rounded-full bg-[#05090A] px-2.5 py-1 text-[10px] font-bold text-white">
             {localizedBadge}
           </span>
         ) : null}
@@ -162,13 +162,13 @@ export default function ProductCard({
 
       <div className="flex flex-1 flex-col px-2.5 pb-2.5 pt-2">
         <div className="flex items-center justify-between gap-2">
-          <p className="truncate text-[10px] font-bold text-orange-500">
+          <p className="truncate text-[10px] font-bold text-[#1B4965]">
             {localizedCategory}
           </p>
 
           <span
             className={`shrink-0 text-[9px] font-bold ${
-              inStock ? "text-green-600" : "text-red-500"
+              inStock ? "text-green-700" : "text-red-500"
             }`}
           >
             {inStock ? t.inStock : t.outOfStock}
@@ -176,30 +176,30 @@ export default function ProductCard({
         </div>
 
         <Link href={`/products/${id}`}>
-          <h3 className="mt-0.5 line-clamp-2 min-h-9 text-sm font-black leading-4 text-slate-950 transition hover:text-orange-500">
+          <h3 className="mt-0.5 line-clamp-2 min-h-9 text-sm font-bold leading-4 text-[#05090A] transition hover:text-[#1B4965]">
             {localizedName}
           </h3>
         </Link>
 
-        <p className="mt-0.5 truncate text-[11px] text-slate-500">
+        <p className="mt-0.5 truncate text-[11px] text-[#505253]">
           {packageInfo}
         </p>
 
         <div className="mt-auto pt-2">
           <div className="flex items-center gap-2">
             <div className="min-w-0 flex-1">
-              <span className="text-sm font-black text-slate-950">
+              <span className="text-sm font-bold text-[#05090A]">
                 {(price + pfandAmount).toFixed(2)} €
               </span>
 
               {oldPrice ? (
-                <span className="ml-1.5 text-[10px] text-slate-400 line-through">
+                <span className="ml-1.5 text-[10px] text-[#828484] line-through">
                   {(oldPrice + pfandAmount).toFixed(2)} €
                 </span>
               ) : null}
 
               {pfandAmount > 0 ? (
-                <p className="mt-0.5 text-[9px] font-bold text-orange-600">
+                <p className="mt-0.5 text-[9px] font-bold text-[#1B4965]">
                   {price.toFixed(2)} € + {pfandAmount.toFixed(2)} € {t.pfand}
                 </p>
               ) : null}
@@ -207,18 +207,18 @@ export default function ProductCard({
           </div>
 
           <div className="mt-1.5 flex items-center gap-1.5">
-            <div className="flex h-8 shrink-0 items-center rounded-lg border border-slate-200">
+            <div className="flex h-8 shrink-0 items-center rounded-none border border-[#05090a26]">
               <button
                 type="button"
                 onClick={decreaseQuantity}
                 disabled={quantity <= 1 || !inStock}
                 aria-label={t.decreaseQuantity}
-                className="flex h-full w-8 items-center justify-center text-slate-600 transition hover:text-orange-500 disabled:text-slate-300"
+                className="flex h-full w-8 items-center justify-center text-[#505253] transition hover:text-[#1B4965] disabled:text-[#D9DADA]"
               >
                 <Minus size={14} />
               </button>
 
-              <span className="min-w-6 text-center text-xs font-black">
+              <span className="min-w-6 text-center text-xs font-bold">
                 {quantity}
               </span>
 
@@ -227,7 +227,7 @@ export default function ProductCard({
                 onClick={increaseQuantity}
                 disabled={!inStock}
                 aria-label={t.increaseQuantity}
-                className="flex h-full w-8 items-center justify-center text-slate-600 transition hover:text-orange-500 disabled:text-slate-300"
+                className="flex h-full w-8 items-center justify-center text-[#505253] transition hover:text-[#1B4965] disabled:text-[#D9DADA]"
               >
                 <Plus size={14} />
               </button>
@@ -237,7 +237,7 @@ export default function ProductCard({
               type="button"
               disabled={!inStock}
               onClick={handleAddToCart}
-              className={`flex h-8 min-w-0 flex-1 items-center justify-center gap-1 rounded-lg px-2 text-[10px] font-black text-white transition ${added ? 'bg-orange-500' : 'bg-slate-950 hover:bg-orange-500'} disabled:bg-slate-300`}
+              className={`flex h-8 min-w-0 flex-1 items-center justify-center gap-1 rounded-full px-2 text-[10px] font-bold text-white transition ${added ? 'bg-[#1B4965]' : 'bg-[#05090A] hover:bg-[#1B4965]'} disabled:bg-[#B4B5B5]`}
             >
               {added ? <Check size={15} /> : <ShoppingCart size={15} />}
 

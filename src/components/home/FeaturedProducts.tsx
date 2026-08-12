@@ -222,32 +222,36 @@ export default function FeaturedProducts({
         ) : (
           <div>
             {showOffers && offerProducts.length > 0 ? (
-              <section className="mb-12">
-                <div className="mb-6">
-                  <p className="font-bold text-[#1B4965]">{t.offersEyebrow}</p>
+              <section className="mb-16">
+                <div className="mx-auto mb-8 max-w-lg text-center">
+                  <p className="font-semibold text-[#05090A]">{t.offersEyebrow}</p>
 
-                  <h2 className="mt-2 text-3xl font-medium tracking-tight text-[#05090A] sm:text-4xl">
+                  <h2 className="mt-3 text-3xl font-medium tracking-tight text-[#05090A] sm:text-4xl">
                     {t.offersTitle}
                   </h2>
 
-                  <p className="mt-3 max-w-2xl text-[#505253]">
+                  <p className="mt-3 text-[#505253]">
                     {t.offersDescription}
                   </p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-5">
+                <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
                   {offerProducts.map(renderProductCard)}
                 </div>
               </section>
             ) : null}
 
             <section id="home-products" className="scroll-mt-28">
-              <div className="mb-8">
-                <h2 className="text-3xl font-medium tracking-tight text-[#05090A] sm:text-4xl">
+              <div className="mx-auto mb-12 max-w-lg text-center">
+                <p className="font-semibold text-[#05090A]">
+                  {language === "de" ? "Sortiment" : "Ürünler"}
+                </p>
+
+                <h2 className="mt-3 text-3xl font-medium tracking-tight text-[#05090A] sm:text-4xl">
                   {t.allProductsTitle}
                 </h2>
 
-                <p className="mt-3 max-w-2xl text-[#505253]">
+                <p className="mt-3 text-[#505253]">
                   {t.allProductsDescription}
                 </p>
               </div>
@@ -265,7 +269,7 @@ export default function FeaturedProducts({
         : group.category.tr}
     </h3>
 
-    <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-5">
+    <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
       {group.products.map(renderProductCard)}
     </div>
   </section>

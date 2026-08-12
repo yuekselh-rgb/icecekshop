@@ -517,7 +517,7 @@ export default function Header() {
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
                 placeholder={t.search}
-                className="w-full rounded-none border border-[#05090a26] py-3 pl-12 pr-12 outline-none transition focus:border-[#1B4965]"
+                className="w-full rounded-[12px] border border-[#05090a26] py-3 pl-12 pr-12 outline-none transition focus:border-[#1B4965]"
               />
 
               <button
