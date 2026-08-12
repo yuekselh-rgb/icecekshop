@@ -5,6 +5,12 @@ import { useState } from "react";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 
+const tabImages = [
+  { src: "/images/home/gastro-restaurant.jpg", alt: "Restaurant" },
+  { src: "/images/home/gastro-bar.jpg", alt: "Bar" },
+  { src: "/images/home/gastro-imbiss.jpg", alt: "Imbiss" },
+];
+
 export default function GastroSection() {
   const { language } = useLanguage();
   const [active, setActive] = useState(0);
@@ -88,8 +94,12 @@ export default function GastroSection() {
               </div>
             </div>
 
-            <div className="flex aspect-square items-center justify-center bg-[#05090A] text-white md:aspect-auto md:min-h-[18rem]">
-              <p className="px-6 text-center text-2xl font-medium">{t.tabs[active]}</p>
+            <div className="relative aspect-square overflow-hidden bg-[#05090A] md:aspect-auto md:min-h-[18rem]">
+              <img
+                src={tabImages[active].src}
+                alt={tabImages[active].alt}
+                className="h-full w-full object-cover"
+              />
             </div>
           </div>
         </div>
