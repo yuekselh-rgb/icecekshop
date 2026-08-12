@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { useLanguage } from "@/context/LanguageContext";
+import CompanyBrand from "@/components/company/CompanyBrand";
 
 import {
   Crown,
@@ -192,6 +193,11 @@ export default function Header() {
 
       <header className="sticky top-0 z-50 border-b border-[#05090a26] bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-5 px-4 py-4 lg:px-8">
+          <div className="flex items-center gap-6">
+            <div className="w-28 shrink-0 lg:w-32">
+              <CompanyBrand variant="footer" />
+            </div>
+
           <Sheet>
             <SheetTrigger
               render={
@@ -439,6 +445,7 @@ export default function Header() {
               {language === "de" ? "Gastro" : "İşletmeler"}
             </Link>
           </nav>
+          </div>
 
           <div className="flex items-center gap-2">
             <div className="flex items-center rounded-full border border-[#05090a26] p-1">
