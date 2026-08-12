@@ -938,6 +938,24 @@ export default function CompanySettingsPage() {
                 />
               </label>
 
+              <label>
+                <span className="text-sm font-bold text-slate-700">{language === "de" ? "Postleitzahl" : "Posta Kodu"}</span>
+                <input
+                  value={settings.postalCode}
+                  onChange={(e)=>setSettings(c=>({...c,postalCode:e.target.value}))}
+                  className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3"
+                />
+              </label>
+
+              <label>
+                <span className="text-sm font-bold text-slate-700">{language === "de" ? "Stadt" : "Şehir"}</span>
+                <input
+                  value={settings.city}
+                  onChange={(e)=>setSettings(c=>({...c,city:e.target.value}))}
+                  className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3"
+                />
+              </label>
+
             </div>
           </section>
 

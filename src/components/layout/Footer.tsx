@@ -83,6 +83,20 @@ fetch("/api/company-settings")
           bic: "BIC",
         };
 
+  const streetLine = [settings.street, settings.houseNumber]
+    .filter(Boolean)
+    .join(" ");
+
+  const cityLine = [settings.postalCode, settings.city]
+    .filter(Boolean)
+    .join(" ");
+
+  const addressLines = [
+    streetLine || settings.address,
+    cityLine,
+    settings.country,
+  ].filter(Boolean);
+
   return (
     <footer className="bg-[#E8ECEF] px-4 py-12 text-[#05090A] lg:px-8">
       <div className="mx-auto grid max-w-7xl gap-12 border-t border-[#05090a26] pt-12 lg:grid-cols-[2.2fr_1fr]">
@@ -210,14 +224,10 @@ fetch("/api/company-settings")
               </div>
             ) : null}
 
-            {(settings.address || settings.country) ? (
+            {addressLines.length > 0 ? (
               <div className="flex items-start gap-3">
                 <MapPin size={18} className="text-[#1B4965]" />
-                <span>
-                  {[settings.address, settings.country]
-                    .filter(Boolean)
-                    .join(", ")}
-                </span>
+                <span>{addressLines.join(", ")}</span>
               </div>
             ) : null}
 
