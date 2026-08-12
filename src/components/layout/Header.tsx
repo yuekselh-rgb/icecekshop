@@ -102,6 +102,32 @@ export default function Header() {
   const [permissions, setPermissions] =
     useState<Record<string, boolean>>({});
 
+  const [minOrderValueSettings, setMinOrderValueSettings] = useState({
+    enabled: false,
+    value: 0,
+  });
+
+  useEffect(() => {
+    async function loadCompanySettings() {
+      try {
+        const res = await fetch("/api/company-settings");
+
+        if (!res.ok) return;
+
+        const data = await res.json();
+
+        setMinOrderValueSettings({
+          enabled: Boolean(data.settings?.minOrderValueEnabled),
+          value: Number(data.settings?.minOrderValue) || 0,
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    loadCompanySettings();
+  }, []);
+
   useEffect(() => {
     async function loadUser() {
       try {
@@ -157,7 +183,11 @@ export default function Header() {
   return (
     <>
       <div className="bg-slate-950 px-4 py-2 text-center text-sm text-white">
-        {t.freeDelivery}
+        {minOrderValueSettings.enabled && minOrderValueSettings.value > 0
+          ? language === "de"
+            ? `Mindestbestellwert: ${minOrderValueSettings.value.toFixed(2)} €`
+            : `Minimum sipariş tutarı: ${minOrderValueSettings.value.toFixed(2)} €`
+          : t.freeDelivery}
       </div>
 
       <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur">
