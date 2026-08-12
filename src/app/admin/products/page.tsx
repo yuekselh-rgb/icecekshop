@@ -64,6 +64,7 @@ type Product = {
   imagePositionY: number;
   active: boolean;
   soldOut: boolean;
+  sortOrder: number;
   categoryId: string;
   category: Category;
 };
@@ -186,6 +187,10 @@ export default function AdminProductsPage() {
   const [draggedCategoryId, setDraggedCategoryId] = useState<string | null>(null);
 
   const [dragOverCategoryId, setDragOverCategoryId] = useState<string | null>(null);
+
+  const [draggedProductId, setDraggedProductId] = useState<string | null>(null);
+
+  const [dragOverProductId, setDragOverProductId] = useState<string | null>(null);
 
   const [permissions, setPermissions] = useState<Permissions | null>(null);
 
@@ -327,9 +332,9 @@ export default function AdminProductsPage() {
     return categories
       .map((category) => ({
         category,
-        products: products.filter(
-          (product) => product.categoryId === category.id,
-        ),
+        products: products
+          .filter((product) => product.categoryId === category.id)
+          .sort((a, b) => a.sortOrder - b.sortOrder),
       }))
       .filter((group) => group.products.length > 0);
   }, [categories, products]);
@@ -423,6 +428,110 @@ export default function AdminProductsPage() {
     persistCategoryOrder(updated);
   }
 
+  async function persistProductOrder(
+    categoryId: string,
+    reorderedGroupProducts: Product[],
+  ) {
+    const previous = products;
+
+    const reordered = reorderedGroupProducts.map((product, i) => ({
+      ...product,
+      sortOrder: i + 1,
+    }));
+
+    setProducts((current) =>
+      current.map(
+        (product) =>
+          reordered.find((updated) => updated.id === product.id) || product,
+      ),
+    );
+
+    try {
+      const response = await fetch("/api/admin/products", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          products: reordered.map((product) => ({
+            id: product.id,
+            sortOrder: product.sortOrder,
+          })),
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+
+        setProducts(previous);
+        setError(
+          data?.error ||
+            (language === "de"
+              ? "Produktreihenfolge konnte nicht gespeichert werden."
+              : "Ürün sıralaması kaydedilemedi."),
+        );
+      }
+    } catch {
+      setProducts(previous);
+      setError(
+        language === "de"
+          ? "Produktreihenfolge konnte nicht gespeichert werden."
+          : "Ürün sıralaması kaydedilemedi.",
+      );
+    }
+  }
+
+  async function moveProduct(
+    categoryId: string,
+    productId: string,
+    direction: -1 | 1,
+  ) {
+    const groupProducts = products.filter(
+      (product) => product.categoryId === categoryId,
+    );
+
+    const index = groupProducts.findIndex((p) => p.id === productId);
+    const target = index + direction;
+
+    if (index === -1 || target < 0 || target >= groupProducts.length) {
+      return;
+    }
+
+    const updated = [...groupProducts];
+
+    [updated[index], updated[target]] = [updated[target], updated[index]];
+
+    await persistProductOrder(categoryId, updated);
+  }
+
+  function handleProductDrop(categoryId: string, targetProductId: string) {
+    const draggedId = draggedProductId;
+
+    setDraggedProductId(null);
+    setDragOverProductId(null);
+
+    if (!draggedId || draggedId === targetProductId) {
+      return;
+    }
+
+    const groupProducts = products.filter(
+      (product) => product.categoryId === categoryId,
+    );
+
+    const fromIndex = groupProducts.findIndex((p) => p.id === draggedId);
+    const toIndex = groupProducts.findIndex((p) => p.id === targetProductId);
+
+    if (fromIndex === -1 || toIndex === -1) {
+      return;
+    }
+
+    const updated = [...groupProducts];
+
+    const [moved] = updated.splice(fromIndex, 1);
+    updated.splice(toIndex, 0, moved);
+
+    persistProductOrder(categoryId, updated);
+  }
 
   function updateProductForm(
     key: keyof typeof emptyProductForm,
@@ -2187,8 +2296,64 @@ export default function AdminProductsPage() {
                   {group.products.map((product) => (
                     <div
                       key={product.id}
-                      className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-5 lg:flex-row lg:items-center"
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        if (draggedProductId && draggedProductId !== product.id) {
+                          setDragOverProductId(product.id);
+                        }
+                      }}
+                      onDragLeave={() => {
+                        setDragOverProductId((current) =>
+                          current === product.id ? null : current,
+                        );
+                      }}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        handleProductDrop(group.category.id, product.id);
+                      }}
+                      className={`flex flex-col gap-4 rounded-2xl border bg-white p-5 transition-colors lg:flex-row lg:items-center ${
+                        dragOverProductId === product.id
+                          ? "border-slate-900"
+                          : "border-slate-200"
+                      }`}
                     >
+                      {permissions?.updateProduct ? (
+                        <div className="flex items-center gap-1 lg:flex-col">
+                          <span
+                            draggable
+                            onDragStart={() => setDraggedProductId(product.id)}
+                            onDragEnd={() => {
+                              setDraggedProductId(null);
+                              setDragOverProductId(null);
+                            }}
+                            className="cursor-grab rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 active:cursor-grabbing"
+                            title={language === "de" ? "Zum Verschieben ziehen" : "Taşımak için sürükleyin"}
+                          >
+                            <GripVertical size={16} />
+                          </span>
+
+                          <div className="flex gap-1 lg:flex-col">
+                            <button
+                              type="button"
+                              onClick={() => moveProduct(group.category.id, product.id, -1)}
+                              className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                              title={language === "de" ? "Nach oben" : "Yukarı taşı"}
+                            >
+                              <ChevronUp size={16} />
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => moveProduct(group.category.id, product.id, 1)}
+                              className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                              title={language === "de" ? "Nach unten" : "Aşağı taşı"}
+                            >
+                              <ChevronDown size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      ) : null}
+
                       <div className="flex-1">
                         <h3 className="text-lg font-black text-slate-950">
                           {language === "de" ? (product.nameDe || product.name) : (product.nameTr || product.name)}

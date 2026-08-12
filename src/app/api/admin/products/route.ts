@@ -30,8 +30,16 @@ export const GET = withTenant(async () => {
     orderBy: [
       {
         category: {
+          sortOrder: "asc",
+        },
+      },
+      {
+        category: {
           name: "asc",
         },
+      },
+      {
+        sortOrder: "asc",
       },
       {
         name: "asc",
@@ -39,26 +47,66 @@ export const GET = withTenant(async () => {
     ],
   });
 
-  console.log(
-    JSON.stringify(
-      products.map((p) => ({
-        name: p.name,
-        categoryId: p.categoryId,
-        category: p.category?.name,
-        slug: p.category?.slug,
-      })),
-      null,
-      2,
-    ),
-  );
-
-  
-console.log("ADMIN PRODUCT COUNT", products.length);
-
-return NextResponse.json({
-
+  return NextResponse.json({
     products,
   });
+});
+
+export const PUT = withTenant(async (request: NextRequest) => {
+  const language = await getRequestLanguage();
+
+  const admin = await requireAdminPermission("updateProduct");
+
+  if (!admin) {
+    return NextResponse.json(
+      {
+        error:
+          language === "de"
+            ? "Sie sind nicht berechtigt, Produkte zu bearbeiten."
+            : "Ürün düzenleme yetkiniz yok.",
+      },
+      {
+        status: 403,
+      },
+    );
+  }
+
+  try {
+    const body = await request.json();
+
+    const items = Array.isArray(body.products) ? body.products : [];
+
+    await prisma.$transaction(
+      items.map((item: { id: string; sortOrder: number }) =>
+        prisma.product.update({
+          where: {
+            id: item.id,
+          },
+          data: {
+            sortOrder: item.sortOrder,
+          },
+        }),
+      ),
+    );
+
+    return NextResponse.json({
+      success: true,
+    });
+  } catch (error) {
+    console.error("PRODUCT_SORT_ERROR", error);
+
+    return NextResponse.json(
+      {
+        error:
+          language === "de"
+            ? "Produktreihenfolge konnte nicht gespeichert werden."
+            : "Ürün sıralaması kaydedilemedi.",
+      },
+      {
+        status: 500,
+      },
+    );
+  }
 });
 
 export const POST = withTenant(async (request: NextRequest, _context, tenant) => {
