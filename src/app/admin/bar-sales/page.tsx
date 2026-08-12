@@ -191,6 +191,9 @@ export default function BarSalesPage() {
           noCustomersFound: "Kein Kunde gefunden.",
           openAccountHolder: "Inhaber der offenen Rechnung",
           unpaidAmountNote: "Der offene Betrag wird diesem Kunden zugeordnet.",
+          cashReceived: "Erhaltenes Geld",
+          changeDue: "Restgeld",
+          notEnoughCash: "Zu wenig Geld erhalten",
         }
       : {
           all: "Alle",
@@ -260,6 +263,9 @@ export default function BarSalesPage() {
           noCustomersFound: "Müşteri bulunamadı.",
           openAccountHolder: "Açık hesap sahibi",
           unpaidAmountNote: "Ödenmeyen tutar bu müşteriye kaydedilecek.",
+          cashReceived: "Alınan Nakit",
+          changeDue: "Para Üstü",
+          notEnoughCash: "Yetersiz nakit alındı",
         };
 
 
@@ -302,6 +308,8 @@ const [pressedProductId, setPressedProductId] = useState<string | null>(null);
   );
 
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("CASH");
+
+  const [cashReceived, setCashReceived] = useState("");
 
   const [pfandOptions, setPfandOptions] =
     useState<PfandOption[]>(initialPfandOptions);
@@ -789,6 +797,8 @@ const adminName =
 
   const totalAmount = Math.max(0, subtotal + pfandAmount - pfandReturnAmount);
 
+  const changeDue = (parseFloat(cashReceived.replace(",", ".")) || 0) - totalAmount;
+
   async function createCustomer(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -954,6 +964,7 @@ const adminName =
       setSelectedCustomerId("");
       setCustomerSearch("");
       setPfandOptions(initialPfandOptions);
+      setCashReceived("");
 
       await loadData();
     } catch {
@@ -1684,7 +1695,13 @@ const adminName =
                     <button
                       key={method.value}
                       type="button"
-                      onClick={() => setPaymentMethod(method.value)}
+                      onClick={() => {
+                        setPaymentMethod(method.value);
+
+                        if (method.value !== "CASH") {
+                          setCashReceived("");
+                        }
+                      }}
                       className={`rounded-xl border p-3 text-xs font-black transition ${
                         paymentMethod === method.value
                           ? "border-orange-500 bg-orange-50 text-orange-600"
@@ -1699,6 +1716,43 @@ const adminName =
                 })}
               </div>
             </div>
+
+            {paymentMethod === "CASH" ? (
+              <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <label className="text-xs font-black uppercase tracking-wide text-slate-500">
+                  {t.cashReceived}
+                </label>
+
+                <input
+                  type="number"
+                  inputMode="decimal"
+                  min="0"
+                  step="0.01"
+                  value={cashReceived}
+                  onChange={(event) => setCashReceived(event.target.value)}
+                  placeholder="0.00"
+                  className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-3 text-lg font-black outline-none focus:border-orange-500"
+                />
+
+                {cashReceived !== "" ? (
+                  <div
+                    className={`mt-3 flex items-center justify-between rounded-xl px-4 py-3 ${
+                      changeDue >= 0
+                        ? "bg-emerald-100 text-emerald-700"
+                        : "bg-red-100 text-red-700"
+                    }`}
+                  >
+                    <span className="text-xs font-black uppercase tracking-wide">
+                      {changeDue >= 0 ? t.changeDue : t.notEnoughCash}
+                    </span>
+
+                    <span className="text-lg font-black">
+                      {Math.abs(changeDue).toFixed(2)} €
+                    </span>
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
 
             {paymentMethod === "OPEN" ? (
               <div className="mt-5 rounded-2xl border border-orange-200 bg-orange-50 p-4">
