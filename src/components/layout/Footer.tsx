@@ -4,78 +4,13 @@ import { useLanguage } from "@/context/LanguageContext";
 import { Globe, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-
-function InstagramIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" {...props}>
-      <rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" strokeWidth="1.8" />
-      <circle cx="12" cy="12" r="4.2" stroke="currentColor" strokeWidth="1.8" />
-      <circle cx="17.2" cy="6.8" r="1.1" fill="currentColor" />
-    </svg>
-  );
-}
-
-function FacebookIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" {...props}>
-      <path
-        d="M14.5 8.5H16.5V5.3C16.16 5.26 15 5.17 13.65 5.17C10.82 5.17 8.89 6.9 8.89 10.06V12.7H5.7V16.28H8.89V22H12.6V16.28H15.66L16.14 12.7H12.6V10.42C12.6 9.38 12.88 8.5 14.5 8.5Z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-}
-
-function LinkedinIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" {...props}>
-      <rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor" strokeWidth="1.8" />
-      <circle cx="7.5" cy="8" r="1.2" fill="currentColor" />
-      <path d="M7.5 11V17" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-      <path
-        d="M11.3 17V13.7C11.3 12.4 12.1 11.3 13.5 11.3C14.8 11.3 15.5 12.2 15.5 13.7V17"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function TiktokIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" {...props}>
-      <path
-        d="M15 3v10.6a2.9 2.9 0 1 1-2.3-2.84"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M15 6.5a4.5 4.5 0 0 0 4.5 4.5"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function XIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" {...props}>
-      <path
-        d="M5 5L19 19M19 5L5 19"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
+import {
+  FaFacebookF,
+  FaInstagram,
+  FaLinkedinIn,
+  FaTiktok,
+  FaXTwitter,
+} from "react-icons/fa6";
 
 export default function Footer({
   initialSettings,
@@ -300,7 +235,7 @@ fetch("/api/company-settings")
                     aria-label="Facebook"
                     className="flex h-10 w-10 items-center justify-center rounded-full border border-[#05090a26] text-[#05090A] transition hover:border-[#1B4965] hover:text-[#1B4965]"
                   >
-                    <FacebookIcon className="h-[18px] w-[18px]" />
+                    <FaFacebookF size={16} />
                   </a>
                 ) : null}
 
@@ -312,7 +247,7 @@ fetch("/api/company-settings")
                     aria-label="Instagram"
                     className="flex h-10 w-10 items-center justify-center rounded-full border border-[#05090a26] text-[#05090A] transition hover:border-[#1B4965] hover:text-[#1B4965]"
                   >
-                    <InstagramIcon className="h-[18px] w-[18px]" />
+                    <FaInstagram size={17} />
                   </a>
                 ) : null}
 
@@ -324,7 +259,7 @@ fetch("/api/company-settings")
                     aria-label="X"
                     className="flex h-10 w-10 items-center justify-center rounded-full border border-[#05090a26] text-[#05090A] transition hover:border-[#1B4965] hover:text-[#1B4965]"
                   >
-                    <XIcon className="h-[18px] w-[18px]" />
+                    <FaXTwitter size={16} />
                   </a>
                 ) : null}
 
@@ -336,7 +271,7 @@ fetch("/api/company-settings")
                     aria-label="LinkedIn"
                     className="flex h-10 w-10 items-center justify-center rounded-full border border-[#05090a26] text-[#05090A] transition hover:border-[#1B4965] hover:text-[#1B4965]"
                   >
-                    <LinkedinIcon className="h-[18px] w-[18px]" />
+                    <FaLinkedinIn size={16} />
                   </a>
                 ) : null}
 
@@ -348,7 +283,7 @@ fetch("/api/company-settings")
                     aria-label="TikTok"
                     className="flex h-10 w-10 items-center justify-center rounded-full border border-[#05090a26] text-[#05090A] transition hover:border-[#1B4965] hover:text-[#1B4965]"
                   >
-                    <TiktokIcon className="h-[18px] w-[18px]" />
+                    <FaTiktok size={16} />
                   </a>
                 ) : null}
               </div>
