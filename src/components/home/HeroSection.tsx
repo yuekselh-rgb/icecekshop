@@ -39,7 +39,7 @@ export default function HeroSection() {
 
   return (
     // Relume header-98: full-bleed sharp-cornered dark panel, centered content, two pill CTAs
-    <section className="px-4 pb-0 pt-8 lg:px-8 lg:pt-12">
+    <section className="px-4 pb-8 pt-8 lg:px-8 lg:pb-12 lg:pt-12">
       <div className="relative mx-auto max-w-7xl overflow-hidden rounded-none bg-[#05090A]">
         <img
           src="/images/home/hero-lager.jpg"
