@@ -63,7 +63,7 @@ export default function HeroSection() {
 
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
             <Link
-              href="/#produkte"
+              href="/products"
               onClick={scrollToProducts}
               className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 py-3.5 font-bold text-[#05090A] transition hover:bg-[#D9DADA]"
             >

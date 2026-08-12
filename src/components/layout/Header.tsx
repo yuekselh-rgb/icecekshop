@@ -37,11 +37,11 @@ export default function Header() {
   /*
    * Auf der Homepage zeigt der Produktkatalog bereits dort, im
    * Header-Link dann nur dorthin scrollen statt zur separaten
-   * /products-Seite zu navigieren. next/link scrollt bei einem
-   * reinen Hash-Wechsel auf derselben Seite nicht zuverlässig,
-   * daher zusätzlich manuell per onClick scrollen.
+   * /products-Seite zu navigieren. href bleibt bewusst "/products"
+   * (kein #produkte-Hash) — sonst bleibt der Hash in der URL hängen
+   * und ein Reload landet danach immer wieder mitten auf der Seite.
    */
-  const productsHref = pathname === "/" ? "/#produkte" : "/products";
+  const productsHref = "/products";
 
   function handleProductsClick(event: React.MouseEvent) {
     if (pathname === "/") {
