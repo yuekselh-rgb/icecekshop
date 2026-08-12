@@ -35,8 +35,15 @@ export default function HeroSection() {
   return (
     // Relume header-98: full-bleed sharp-cornered dark panel, centered content, two pill CTAs
     <section className="px-4 pb-0 pt-8 lg:px-8 lg:pt-12">
-      <div className="mx-auto max-w-7xl rounded-none bg-[#05090A]">
-        <div className="flex min-h-[26rem] flex-col items-center justify-center px-6 py-14 text-center sm:px-10 md:min-h-[32rem] md:py-20">
+      <div className="relative mx-auto max-w-7xl overflow-hidden rounded-none bg-[#05090A]">
+        <img
+          src="/images/home/hero-lager.jpg"
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-[#05090A]/75" />
+
+        <div className="relative flex min-h-[26rem] flex-col items-center justify-center px-6 py-14 text-center sm:px-10 md:min-h-[32rem] md:py-20">
           <span className="mb-5 w-fit rounded-full bg-[#5F7F93]/20 px-4 py-2 text-sm font-bold text-[#91CBDA] md:mb-6">
             {t.badge}
           </span>
