@@ -64,11 +64,14 @@ export default async function HomePage() {
       };
 
   return (
-    <main className="min-h-screen bg-[#f7f7f5]">
+    // bg: Flussgetränke Scheme 3 background (neutral-lightest #F2F2F2)
+    <main className="min-h-screen bg-[#F2F2F2]">
       <Header />
       <CategorySection initialCategories={categories} />
 
-      <div className="mx-auto mt-3 mb-0 flex w-full max-w-7xl items-center justify-center rounded-2xl bg-white px-4 py-0 lg:px-8 lg:py-0 shadow-sm">
+      {/* card: Flussgetränke "default" card style — sharp corners (radiusLarge 0px),
+          1px border in scheme-border color instead of a drop shadow */}
+      <div className="mx-auto mt-3 mb-0 flex w-full max-w-7xl items-center justify-center rounded-none border border-[#05090a26] bg-white px-4 py-0 lg:px-8 lg:py-0">
 
 <div className="w-full max-w-[500px] sm:max-w-[700px] md:max-w-[900px] lg:max-w-[1100px]">
   <CompanyBrand variant="header" initialSettings={initialSettings} />
