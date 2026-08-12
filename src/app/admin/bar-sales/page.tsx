@@ -1254,8 +1254,8 @@ const adminName =
               />
             </div>
 
-            <div className="sticky top-0 z-40 -mx-3 mt-4 border-y border-slate-200 bg-white px-3 py-3 shadow-sm sm:-mx-5 sm:px-5">
-              <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="sticky top-0 z-40 -mx-3 mt-4 min-w-0 border-y border-slate-200 bg-white px-3 py-3 shadow-sm sm:-mx-5 sm:px-5">
+              <div className="flex min-w-0 gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {categoryButtons.map((category) => (
                   <button
                     key={category.value}
