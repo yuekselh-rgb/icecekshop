@@ -66,22 +66,21 @@ export default async function HomePage() {
         logoHeight: 120,
       };
 
-  // Section order matches the Relume sitemap 1:1:
-  // Navbar, Hero, Features Liste, Feature/Pfand, Feature/Gastro,
-  // Produkte, Testimonial, CTA, Footer.
+  // Angepasste Reihenfolge (Kundenwunsch): Header, Hero, Kategorien,
+  // Produkte, Vorteile, Pfand, Gastro, Testimonial, CTA, Footer.
   return (
     <main className="min-h-screen bg-[#F2F2F2]">
       <Header />
       <HeroSection />
-      <BenefitsSection />
-      <PfandSection />
-      <GastroSection />
       <CategorySection initialCategories={categories} />
 
       <FeaturedProducts
         initialProducts={products}
         initialShowOffers={companySetting?.showOffers !== false}
       />
+      <BenefitsSection />
+      <PfandSection />
+      <GastroSection />
       <TestimonialsSection />
       <CtaSection />
       <Footer initialSettings={initialSettings} />
