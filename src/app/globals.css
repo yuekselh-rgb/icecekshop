@@ -4,6 +4,25 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@font-face{font-family:"Aleo";src:url("/fonts/aleo-100.woff2") format("woff2");font-weight:100;font-style:normal;font-display:swap;}
+@font-face{font-family:"Aleo";src:url("/fonts/aleo-200.woff2") format("woff2");font-weight:200;font-style:normal;font-display:swap;}
+@font-face{font-family:"Aleo";src:url("/fonts/aleo-300.woff2") format("woff2");font-weight:300;font-style:normal;font-display:swap;}
+@font-face{font-family:"Aleo";src:url("/fonts/aleo-400.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap;}
+@font-face{font-family:"Aleo";src:url("/fonts/aleo-500.woff2") format("woff2");font-weight:500;font-style:normal;font-display:swap;}
+@font-face{font-family:"Aleo";src:url("/fonts/aleo-600.woff2") format("woff2");font-weight:600;font-style:normal;font-display:swap;}
+@font-face{font-family:"Aleo";src:url("/fonts/aleo-700.woff2") format("woff2");font-weight:700;font-style:normal;font-display:swap;}
+@font-face{font-family:"Aleo";src:url("/fonts/aleo-800.woff2") format("woff2");font-weight:800;font-style:normal;font-display:swap;}
+@font-face{font-family:"Aleo";src:url("/fonts/aleo-900.woff2") format("woff2");font-weight:900;font-style:normal;font-display:swap;}
+@font-face{font-family:"Inter";src:url("/fonts/inter-100.woff2") format("woff2");font-weight:100;font-style:normal;font-display:swap;}
+@font-face{font-family:"Inter";src:url("/fonts/inter-200.woff2") format("woff2");font-weight:200;font-style:normal;font-display:swap;}
+@font-face{font-family:"Inter";src:url("/fonts/inter-300.woff2") format("woff2");font-weight:300;font-style:normal;font-display:swap;}
+@font-face{font-family:"Inter";src:url("/fonts/inter-400.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap;}
+@font-face{font-family:"Inter";src:url("/fonts/inter-500.woff2") format("woff2");font-weight:500;font-style:normal;font-display:swap;}
+@font-face{font-family:"Inter";src:url("/fonts/inter-600.woff2") format("woff2");font-weight:600;font-style:normal;font-display:swap;}
+@font-face{font-family:"Inter";src:url("/fonts/inter-700.woff2") format("woff2");font-weight:700;font-style:normal;font-display:swap;}
+@font-face{font-family:"Inter";src:url("/fonts/inter-800.woff2") format("woff2");font-weight:800;font-style:normal;font-display:swap;}
+@font-face{font-family:"Inter";src:url("/fonts/inter-900.woff2") format("woff2");font-weight:900;font-style:normal;font-display:swap;}
+
 * {
   box-sizing: border-box;
 }
@@ -14,13 +33,13 @@ html {
 
 body {
   margin: 0;
-  background: #f7f7f5;
-  color: #0f172a;
+  background: #f2f2f2;
+  color: #05090a;
 }
 
 @theme inline {
-  --font-heading: var(--font-sans);
-  --font-sans: var(--font-sans);
+  --font-sans: "Inter", sans-serif;
+  --font-heading: "Aleo", serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -52,13 +71,14 @@ body {
   --color-card: var(--card);
   --color-foreground: var(--foreground);
   --color-background: var(--background);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  /* Flussgetränke: cards/images sharp (radius 0), buttons/badges pill (100px) */
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius-3xl: 0px;
+  --radius-4xl: 0px;
 }
 
 :root {
@@ -85,7 +105,7 @@ body {
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
+  --radius: 0px;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
@@ -140,6 +160,9 @@ body {
   html {
     @apply font-sans;
   }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: "Aleo", serif;
+  }
 }
 html,
 body {
@@ -155,4 +178,3 @@ textarea,
 select {
   font-size: 16px !important;
 }
-

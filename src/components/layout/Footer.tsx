@@ -77,18 +77,18 @@ fetch("/api/company-settings")
         };
 
   return (
-    <footer className="bg-slate-950 px-4 py-12 text-white lg:px-8">
-      <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[2.2fr_1fr]">
+    <footer className="bg-[#E8ECEF] px-4 py-12 text-[#05090A] lg:px-8">
+      <div className="mx-auto grid max-w-7xl gap-12 border-t border-[#05090a26] pt-12 lg:grid-cols-[2.2fr_1fr]">
 
         <div>
           <h3 className="font-black">{t.companyInfo}</h3>
 
-          <div className="mt-4 grid grid-cols-2 gap-x-10 gap-y-5 md:grid-cols-3 xl:grid-cols-4 text-sm text-slate-300">
+          <div className="mt-4 grid grid-cols-2 gap-x-10 gap-y-5 md:grid-cols-3 xl:grid-cols-4 text-sm text-[#505253]">
             {settings.legalForm && (
 
 <div>
-  <span className="text-[9px] uppercase tracking-wider text-slate-500">{t.companyType}:</span><br />
-  <span className="text-[13px] font-medium leading-tight text-white">{settings.legalForm}</span>
+  <span className="text-[9px] uppercase tracking-wider text-[#828484]">{t.companyType}:</span><br />
+  <span className="text-[13px] font-medium leading-tight text-[#05090A]">{settings.legalForm}</span>
 </div>
 
 )}
@@ -96,8 +96,8 @@ fetch("/api/company-settings")
             {settings.managingDirector && (
 
 <div>
-  <span className="text-[9px] uppercase tracking-wider text-slate-500">{t.managingDirector}:</span><br />
-  <span className="text-[13px] font-medium leading-tight text-white">{settings.managingDirector}</span>
+  <span className="text-[9px] uppercase tracking-wider text-[#828484]">{t.managingDirector}:</span><br />
+  <span className="text-[13px] font-medium leading-tight text-[#05090A]">{settings.managingDirector}</span>
 </div>
 
 )}
@@ -105,8 +105,8 @@ fetch("/api/company-settings")
             {settings.commercialRegister && (
 
 <div>
-  <span className="text-[9px] uppercase tracking-wider text-slate-500">{t.commercialRegister}:</span><br />
-  <span className="text-[13px] font-medium leading-tight text-white">{settings.commercialRegister}</span>
+  <span className="text-[9px] uppercase tracking-wider text-[#828484]">{t.commercialRegister}:</span><br />
+  <span className="text-[13px] font-medium leading-tight text-[#05090A]">{settings.commercialRegister}</span>
 </div>
 
 )}
@@ -114,8 +114,8 @@ fetch("/api/company-settings")
             {settings.registerCourt && (
 
 <div>
-  <span className="text-[9px] uppercase tracking-wider text-slate-500">{t.registerCourt}:</span><br />
-  <span className="text-[13px] font-medium leading-tight text-white">{settings.registerCourt}</span>
+  <span className="text-[9px] uppercase tracking-wider text-[#828484]">{t.registerCourt}:</span><br />
+  <span className="text-[13px] font-medium leading-tight text-[#05090A]">{settings.registerCourt}</span>
 </div>
 
 )}
@@ -123,8 +123,8 @@ fetch("/api/company-settings")
             {settings.taxNumber && (
 
 <div>
-  <span className="text-[9px] uppercase tracking-wider text-slate-500">{t.taxNumber}:</span><br />
-  <span className="text-[13px] font-medium leading-tight text-white">{settings.taxNumber}</span>
+  <span className="text-[9px] uppercase tracking-wider text-[#828484]">{t.taxNumber}:</span><br />
+  <span className="text-[13px] font-medium leading-tight text-[#05090A]">{settings.taxNumber}</span>
 </div>
 
 )}
@@ -132,37 +132,37 @@ fetch("/api/company-settings")
             {settings.vatId && (
 
 <div>
-  <span className="text-[9px] uppercase tracking-wider text-slate-500">{t.vatId}:</span><br />
-  <span className="text-[13px] font-medium leading-tight text-white">{settings.vatId}</span>
+  <span className="text-[9px] uppercase tracking-wider text-[#828484]">{t.vatId}:</span><br />
+  <span className="text-[13px] font-medium leading-tight text-[#05090A]">{settings.vatId}</span>
 </div>
 
 )}
           
             {settings.bankName && (
 <div>
-  <span className="text-[9px] uppercase tracking-wider text-slate-500">{t.bank}:</span><br />
-  <span className="text-[13px] font-medium leading-tight text-white">{settings.bankName}</span>
+  <span className="text-[9px] uppercase tracking-wider text-[#828484]">{t.bank}:</span><br />
+  <span className="text-[13px] font-medium leading-tight text-[#05090A]">{settings.bankName}</span>
 </div>
 )}
 
             {settings.accountHolder && (
 <div>
-  <span className="text-[9px] uppercase tracking-wider text-slate-500">{t.accountHolder}:</span><br />
-  <span className="text-[13px] font-medium leading-tight text-white">{settings.accountHolder}</span>
+  <span className="text-[9px] uppercase tracking-wider text-[#828484]">{t.accountHolder}:</span><br />
+  <span className="text-[13px] font-medium leading-tight text-[#05090A]">{settings.accountHolder}</span>
 </div>
 )}
 
             {settings.iban && (
 <div>
-  <span className="text-[9px] uppercase tracking-wider text-slate-500">{t.iban}:</span><br />
-  <span className="text-[13px] font-medium leading-tight text-white">{settings.iban}</span>
+  <span className="text-[9px] uppercase tracking-wider text-[#828484]">{t.iban}:</span><br />
+  <span className="text-[13px] font-medium leading-tight text-[#05090A]">{settings.iban}</span>
 </div>
 )}
 
             {settings.bic && (
 <div>
-  <span className="text-[9px] uppercase tracking-wider text-slate-500">{t.bic}:</span><br />
-  <span className="text-[13px] font-medium leading-tight text-white">{settings.bic}</span>
+  <span className="text-[9px] uppercase tracking-wider text-[#828484]">{t.bic}:</span><br />
+  <span className="text-[13px] font-medium leading-tight text-[#05090A]">{settings.bic}</span>
 </div>
 )}
 </div>
@@ -171,32 +171,32 @@ fetch("/api/company-settings")
         <div>
           <h3 className="font-black">{t.contact}</h3>
 
-          <div className="mt-4 space-y-4 text-sm text-slate-400">
+          <div className="mt-4 space-y-4 text-sm text-[#505253]">
             <div className="flex items-start gap-3">
-              <Phone size={18} className="text-sky-500" />
+              <Phone size={18} className="text-[#1B4965]" />
               <span>{settings.phone || "+49 000 000 00 00"}</span>
             </div>
 
             <div className="flex items-start gap-3">
-              <Mail size={18} className="text-sky-500" />
+              <Mail size={18} className="text-[#1B4965]" />
               <span>{settings.email || "info@firma.de"}</span>
             </div>
 
             {settings.whatsapp ? (
               <div className="flex items-start gap-3">
-                <MessageCircle size={18} className="text-green-500" />
+                <MessageCircle size={18} className="text-green-600" />
                 <span>{settings.whatsapp}</span>
               </div>
             ) : null}
 
             {settings.website ? (
               <div className="flex items-start gap-3">
-                <Globe size={18} className="text-sky-500" />
+                <Globe size={18} className="text-[#1B4965]" />
                 <a
                   href={settings.website}
                   target="_blank"
                   rel="noreferrer"
-                  className="hover:text-white"
+                  className="hover:text-[#1B4965]"
                 >
                   {settings.website}
                 </a>
@@ -205,7 +205,7 @@ fetch("/api/company-settings")
 
             {(settings.address || settings.country) ? (
               <div className="flex items-start gap-3">
-                <MapPin size={18} className="text-sky-500" />
+                <MapPin size={18} className="text-[#1B4965]" />
                 <span>
                   {[settings.address, settings.country]
                     .filter(Boolean)
@@ -225,7 +225,7 @@ fetch("/api/company-settings")
                     href={settings.instagram}
                     target="_blank"
                     rel="noreferrer"
-                    className="rounded-full border border-slate-700 px-3 py-1.5 text-xs font-bold hover:border-sky-500 hover:text-white"
+                    className="rounded-full border border-[#05090a26] px-3 py-1.5 text-xs font-bold hover:border-[#1B4965] hover:text-[#1B4965]"
                   >
                     Instagram
                   </a>
@@ -236,7 +236,7 @@ fetch("/api/company-settings")
                     href={settings.facebook}
                     target="_blank"
                     rel="noreferrer"
-                    className="rounded-full border border-slate-700 px-3 py-1.5 text-xs font-bold hover:border-sky-500 hover:text-white"
+                    className="rounded-full border border-[#05090a26] px-3 py-1.5 text-xs font-bold hover:border-[#1B4965] hover:text-[#1B4965]"
                   >
                     Facebook
                   </a>
@@ -247,7 +247,7 @@ fetch("/api/company-settings")
                     href={settings.linkedin}
                     target="_blank"
                     rel="noreferrer"
-                    className="rounded-full border border-slate-700 px-3 py-1.5 text-xs font-bold hover:border-sky-500 hover:text-white"
+                    className="rounded-full border border-[#05090a26] px-3 py-1.5 text-xs font-bold hover:border-[#1B4965] hover:text-[#1B4965]"
                   >
                     LinkedIn
                   </a>
@@ -258,7 +258,7 @@ fetch("/api/company-settings")
                     href={settings.tiktok}
                     target="_blank"
                     rel="noreferrer"
-                    className="rounded-full border border-slate-700 px-3 py-1.5 text-xs font-bold hover:border-sky-500 hover:text-white"
+                    className="rounded-full border border-[#05090a26] px-3 py-1.5 text-xs font-bold hover:border-[#1B4965] hover:text-[#1B4965]"
                   >
                     TikTok
                   </a>
@@ -269,7 +269,7 @@ fetch("/api/company-settings")
                     href={settings.twitter}
                     target="_blank"
                     rel="noreferrer"
-                    className="rounded-full border border-slate-700 px-3 py-1.5 text-xs font-bold hover:border-sky-500 hover:text-white"
+                    className="rounded-full border border-[#05090a26] px-3 py-1.5 text-xs font-bold hover:border-[#1B4965] hover:text-[#1B4965]"
                   >
                     X
                   </a>
@@ -280,15 +280,15 @@ fetch("/api/company-settings")
         </div>
       </div>
 
-      <div className="mx-auto mt-10 flex max-w-7xl flex-col gap-3 border-t border-slate-800 pt-6 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mx-auto mt-10 flex max-w-7xl flex-col gap-3 border-t border-[#05090a26] pt-6 text-sm text-[#828484] sm:flex-row sm:items-center sm:justify-between">
         <p>{settings.copyrightText || `© 2026. ${t.rights}`}</p>
 
         <div className="flex gap-5">
-          <Link href="/impressum">{t.imprint}</Link>
+          <Link href="/impressum" className="hover:text-[#05090A]">{t.imprint}</Link>
 
-          <Link href="/privacy">{t.privacy}</Link>
+          <Link href="/privacy" className="hover:text-[#05090A]">{t.privacy}</Link>
 
-          <Link href="/terms">{t.terms}</Link>
+          <Link href="/terms" className="hover:text-[#05090A]">{t.terms}</Link>
         </div>
       </div>
     </footer>

@@ -211,12 +211,12 @@ export default function FeaturedProducts({
     <section className="bg-white px-4 py-12 lg:px-8 lg:py-16">
       <div className="mx-auto max-w-7xl">
         {loading ? (
-          <div className="flex min-h-64 items-center justify-center gap-3 font-bold text-slate-500">
+          <div className="flex min-h-64 items-center justify-center gap-3 font-bold text-[#505253]">
             <Loader2 className="animate-spin" />
             {t.loading}
           </div>
         ) : error ? (
-          <div className="rounded-2xl bg-red-50 p-5 font-bold text-red-600">
+          <div className="rounded-none bg-red-50 p-5 font-bold text-red-600">
             {error}
           </div>
         ) : (
@@ -224,13 +224,13 @@ export default function FeaturedProducts({
             {showOffers && offerProducts.length > 0 ? (
               <section className="mb-12">
                 <div className="mb-6">
-                  <p className="font-bold text-sky-500">{t.offersEyebrow}</p>
+                  <p className="font-bold text-[#1B4965]">{t.offersEyebrow}</p>
 
-                  <h2 className="mt-2 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
+                  <h2 className="mt-2 text-3xl font-medium tracking-tight text-[#05090A] sm:text-4xl">
                     {t.offersTitle}
                   </h2>
 
-                  <p className="mt-3 max-w-2xl text-slate-600">
+                  <p className="mt-3 max-w-2xl text-[#505253]">
                     {t.offersDescription}
                   </p>
                 </div>
@@ -243,11 +243,11 @@ export default function FeaturedProducts({
 
             <section id="home-products" className="scroll-mt-28">
               <div className="mb-8">
-                <h2 className="text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
+                <h2 className="text-3xl font-medium tracking-tight text-[#05090A] sm:text-4xl">
                   {t.allProductsTitle}
                 </h2>
 
-                <p className="mt-3 max-w-2xl text-slate-600">
+                <p className="mt-3 max-w-2xl text-[#505253]">
                   {t.allProductsDescription}
                 </p>
               </div>
@@ -259,7 +259,7 @@ export default function FeaturedProducts({
     data-home-product-category={group.slug}
     className="mb-10 scroll-mt-28"
   >
-    <h3 className="mb-4 text-2xl font-black">
+    <h3 className="mb-4 text-2xl font-medium text-[#05090A]">
       {language === "de"
         ? group.category.de
         : group.category.tr}

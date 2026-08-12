@@ -81,15 +81,15 @@ export default function BenefitsSection() {
   return (
     <section className="px-4 py-16 lg:px-8">
       <div className="mx-auto max-w-7xl">
-        <div className="rounded-[32px] bg-slate-950 px-6 py-10 sm:px-10 lg:px-12">
+        <div className="rounded-none border border-[#05090a26] bg-[#E8ECEF] px-6 py-10 sm:px-10 lg:px-12">
           <div className="mb-10">
-            <p className="font-bold text-sky-400">
+            <p className="font-bold text-[#1B4965]">
               {language === "de"
                 ? "Warum uns?"
                 : "Neden bizi tercih etmelisiniz?"}
             </p>
 
-            <h2 className="mt-2 max-w-2xl text-3xl font-black tracking-tight text-white sm:text-4xl">
+            <h2 className="mt-2 max-w-2xl text-3xl font-medium tracking-tight text-[#05090A] sm:text-4xl">
               {language === "de"
                 ? "Einfach einkaufen – von der Bestellung bis zur Lieferung"
                 : "Siparişten teslimata kadar kolay alışveriş deneyimi"}
@@ -103,17 +103,17 @@ export default function BenefitsSection() {
               return (
                 <div
                   key={benefit.title}
-                  className="rounded-2xl border border-slate-800 bg-slate-900 p-5"
+                  className="rounded-none border border-[#05090a26] bg-white p-5"
                 >
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-sky-500 text-white">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#1B4965] text-white">
                     <Icon size={23} />
                   </div>
 
-                  <h3 className="mt-5 text-lg font-black text-white">
+                  <h3 className="mt-5 text-lg font-medium text-[#05090A]">
                     {benefit.title}
                   </h3>
 
-                  <p className="mt-2 text-sm leading-6 text-slate-400">
+                  <p className="mt-2 text-sm leading-6 text-[#505253]">
                     {benefit.description}
                   </p>
                 </div>

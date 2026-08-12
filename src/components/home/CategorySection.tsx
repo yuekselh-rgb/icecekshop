@@ -233,7 +233,7 @@ export default function CategorySection({
 
       <section
         ref={categoryBarRef}
-        className={`border-y border-slate-200 bg-white/95 shadow-md backdrop-blur-md ${
+        className={`border-y border-[#05090a26] bg-white/95 shadow-md backdrop-blur-md ${
           isPinned
             ? "fixed inset-x-0 top-0 z-[9999] w-full"
             : "relative z-[100] w-full"
@@ -259,17 +259,17 @@ export default function CategorySection({
               );
             }}
             aria-pressed={activeCategory === "all"}
-            className={`group flex shrink-0 items-center gap-2.5 rounded-2xl border px-4 py-3 transition ${
+            className={`group flex shrink-0 items-center gap-2.5 rounded-full border px-4 py-3 transition ${
               activeCategory === "all"
-                ? "border-sky-500 bg-sky-500 text-white shadow-md"
-                : "border-slate-200 bg-white text-slate-800 hover:border-sky-400 hover:bg-sky-50"
+                ? "border-[#1B4965] bg-[#1B4965] text-white shadow-md"
+                : "border-[#05090a26] bg-white text-[#05090A] hover:border-[#1B4965] hover:bg-[#E8ECEF]"
             }`}
           >
             <span
-              className={`flex h-9 w-9 items-center justify-center rounded-xl ${
+              className={`flex h-9 w-9 items-center justify-center rounded-full ${
                 activeCategory === "all"
                   ? "bg-white/20 text-white"
-                  : "bg-sky-50 text-sky-500"
+                  : "bg-[#E8ECEF] text-[#1B4965]"
               }`}
             >
               <ShoppingBasket size={19} />
@@ -315,17 +315,17 @@ export default function CategorySection({
                   });
                 }}
                 aria-pressed={isActive}
-                className={`group flex shrink-0 items-center gap-2.5 rounded-2xl border px-4 py-3 transition ${
+                className={`group flex shrink-0 items-center gap-2.5 rounded-full border px-4 py-3 transition ${
                   isActive
-                    ? "border-sky-500 bg-sky-500 text-white shadow-md"
-                    : "border-slate-200 bg-white text-slate-800 hover:border-sky-400 hover:bg-sky-50"
+                    ? "border-[#1B4965] bg-[#1B4965] text-white shadow-md"
+                    : "border-[#05090a26] bg-white text-[#05090A] hover:border-[#1B4965] hover:bg-[#E8ECEF]"
                 }`}
               >
                 <span
-                  className={`flex h-9 w-9 items-center justify-center rounded-xl transition ${
+                  className={`flex h-9 w-9 items-center justify-center rounded-full transition ${
                     isActive
                       ? "bg-white/20 text-white"
-                      : "bg-sky-50 text-sky-500 group-hover:bg-sky-500 group-hover:text-white"
+                      : "bg-[#E8ECEF] text-[#1B4965] group-hover:bg-[#1B4965] group-hover:text-white"
                   }`}
                 >
                   <Icon size={19} />
