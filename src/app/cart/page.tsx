@@ -95,6 +95,10 @@ export default function CartPage() {
     {},
   );
 
+  const [pfandQuantityInputs, setPfandQuantityInputs] = useState<
+    Record<string, string>
+  >({});
+
   const [showPfandForm, setShowPfandForm] = useState(false);
 
   const [pfandError, setPfandError] = useState("");
@@ -133,6 +137,32 @@ export default function CartPage() {
       },
     },
   ] as const;
+
+  function applyPfandQuantity(
+    canonicalName: string,
+    unitAmount: number,
+    nextQuantity: number,
+  ) {
+    const existing = pfandItems.find((item) => item.name === canonicalName);
+
+    if (nextQuantity <= 0) {
+      if (existing) {
+        removePfandItem(existing.id);
+      }
+
+      return;
+    }
+
+    if (existing) {
+      removePfandItem(existing.id);
+    }
+
+    addPfandItem({
+      name: canonicalName,
+      quantity: nextQuantity,
+      unitAmount,
+    });
+  }
 
   return (
     <main className="min-h-screen bg-[#f7f7f5]">
@@ -368,64 +398,84 @@ export default function CartPage() {
                                 </p>
                               </div>
 
-                              <label>
+                              <div>
                                 <span className="text-[10px] font-bold uppercase text-slate-400">
                                   {t.quantity}
                                 </span>
 
-                                <input
-                                  min="0"
-                                  type="number"
-                                  value={
-                                    currentItem
-                                      ? String(currentItem.quantity)
-                                      : ""
-                                  }
-                                  onChange={(event) => {
-                                    const rawValue = event.target.value;
+                                <div className="mt-1 flex items-center rounded-lg border border-slate-200">
+                                  <button
+                                    type="button"
+                                    aria-label={t.decrease}
+                                    disabled={quantity <= 0}
+                                    onClick={() =>
+                                      applyPfandQuantity(
+                                        canonicalName,
+                                        option.unitAmount,
+                                        quantity - 1,
+                                      )
+                                    }
+                                    className="p-2 disabled:cursor-not-allowed disabled:opacity-30"
+                                  >
+                                    <Minus size={14} />
+                                  </button>
 
-                                    const existing = pfandItems.find(
-                                      (item) => item.name === canonicalName,
-                                    );
+                                  <input
+                                    type="text"
+                                    inputMode="numeric"
+                                    pattern="[0-9]*"
+                                    aria-label={t.quantity}
+                                    value={
+                                      pfandQuantityInputs[option.key] ??
+                                      String(quantity)
+                                    }
+                                    onChange={(event) => {
+                                      const raw = event.target.value;
 
-                                    if (rawValue === "") {
-                                      if (existing) {
-                                        removePfandItem(existing.id);
+                                      if (raw === "" || /^[0-9]+$/.test(raw)) {
+                                        setPfandQuantityInputs((current) => ({
+                                          ...current,
+                                          [option.key]: raw,
+                                        }));
+                                      }
+                                    }}
+                                    onBlur={() => {
+                                      const raw =
+                                        pfandQuantityInputs[option.key];
+
+                                      if (raw !== undefined) {
+                                        applyPfandQuantity(
+                                          canonicalName,
+                                          option.unitAmount,
+                                          raw === "" ? 0 : Number(raw),
+                                        );
                                       }
 
-                                      return;
+                                      setPfandQuantityInputs((current) => {
+                                        const next = { ...current };
+                                        delete next[option.key];
+                                        return next;
+                                      });
+                                    }}
+                                    className="min-w-0 flex-1 border-0 bg-transparent px-1 py-2 text-center text-sm font-bold outline-none"
+                                  />
+
+                                  <button
+                                    type="button"
+                                    aria-label={t.increase}
+                                    onClick={() =>
+                                      applyPfandQuantity(
+                                        canonicalName,
+                                        option.unitAmount,
+                                        quantity + 1,
+                                      )
                                     }
-
-                                    const nextQuantity = Number(rawValue);
-
-                                    if (
-                                      !Number.isInteger(nextQuantity) ||
-                                      nextQuantity < 0
-                                    ) {
-                                      return;
-                                    }
-
-                                    if (nextQuantity === 0) {
-                                      if (existing) {
-                                        removePfandItem(existing.id);
-                                      }
-
-                                      return;
-                                    }
-
-                                    if (existing) {
-                                      removePfandItem(existing.id);
-                                    }
-
-                                    addPfandItem({
-                                      name: canonicalName,
-                                      quantity: nextQuantity,
-                                      unitAmount: option.unitAmount,
-                                    });
-                                  }}
-                                  className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-orange-500"
-                                />
-                              </label>
+                                    className="p-2"
+                                  >
+                                    <Plus size={14} />
+                                  </button>
+                                </div>
+                              </div>
 
                               <div>
                                 <p className="text-[10px] font-bold uppercase text-slate-400">
