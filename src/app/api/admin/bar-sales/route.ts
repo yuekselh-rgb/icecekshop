@@ -2,6 +2,7 @@ import { getAdminWithPermissions } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
 import { getRequestLanguage } from "@/lib/request-language";
 import { withTenant } from "@/lib/tenant";
+import { isPlaceholderEmail } from "@/lib/utils";
 import bcrypt from "bcryptjs";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -506,7 +507,7 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
             selectedCustomer?.phone
               ? `Müşteri telefonu: ${selectedCustomer.phone}`
               : null,
-            selectedCustomer?.email
+            selectedCustomer?.email && !isPlaceholderEmail(selectedCustomer.email)
               ? `Müşteri e-posta: ${selectedCustomer.email}`
               : null,
             `Ödeme: ${paymentLabel}`,

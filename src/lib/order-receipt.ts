@@ -67,8 +67,18 @@ const receiptStatusLabels: Record<ReceiptOrderStatus, { de: string; tr: string }
   CANCELLED: { de: "Storniert", tr: "İptal Edildi" },
 };
 
-function isBarSaleOrder(order: { orderNumber: string }) {
-  return order.orderNumber.startsWith("BAR-");
+/*
+ * Bar-Satışı-Bestellungen ohne echte Lieferadresse (Verkauf direkt an
+ * der Theke) markieren deliveryAddress mit diesem Platzhalter-Präfix.
+ * Offene Bar-Verkäufe MIT echter Lieferadresse (z. B. an ein
+ * Restaurant/einen Imbiss) sollen aber navigierbar bleiben.
+ */
+function isPlaceholderDeliveryAddress(deliveryAddress: string) {
+  return (
+    deliveryAddress.startsWith("Barverkauf") ||
+    deliveryAddress.startsWith("Bar Satışı") ||
+    deliveryAddress.startsWith("DEPODAN TESLİM")
+  );
 }
 
 export function hasNavigableDeliveryAddress(order: {
@@ -76,7 +86,8 @@ export function hasNavigableDeliveryAddress(order: {
   deliveryAddress: string;
 }) {
   return (
-    !isBarSaleOrder(order) && !order.deliveryAddress.startsWith("DEPODAN TESLİM")
+    Boolean(order.deliveryAddress) &&
+    !isPlaceholderDeliveryAddress(order.deliveryAddress)
   );
 }
 

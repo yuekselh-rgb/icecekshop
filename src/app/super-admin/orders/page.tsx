@@ -888,10 +888,17 @@ export default function SuperAdminOrdersPage() {
     return order.orderNumber.startsWith("BAR-");
   }
 
+  /*
+   * Bar-Satışı-Bestellungen ohne echte Lieferadresse (Verkauf direkt
+   * an der Theke) markieren deliveryAddress mit diesem Platzhalter-
+   * Präfix. Offene Bar-Verkäufe MIT echter Lieferadresse sollen aber
+   * navigierbar bleiben (z. B. Lieferung an ein Restaurant/Imbiss).
+   */
   function hasNavigableDeliveryAddress(order: Order) {
     return (
-      !isBarSale(order) &&
       Boolean(order.deliveryAddress) &&
+      !order.deliveryAddress.startsWith("Barverkauf") &&
+      !order.deliveryAddress.startsWith("Bar Satışı") &&
       !order.deliveryAddress.startsWith("DEPODAN TESLİM")
     );
   }
