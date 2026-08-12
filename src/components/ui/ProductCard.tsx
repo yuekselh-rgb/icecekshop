@@ -64,8 +64,10 @@ export default function ProductCard({
   badge,
   inStock = true,
 }: ProductCardProps) {
-  const [quantity, setQuantity] = useState(1);
+  const [quantityInput, setQuantityInput] = useState("1");
   const [added, setAdded] = useState(false);
+
+  const quantity = Math.max(1, parseInt(quantityInput, 10) || 1);
 
   const { addToCart } = useCart();
 
@@ -84,6 +86,7 @@ export default function ProductCard({
           outOfStock: "Nicht verfügbar",
           addToCart: "In den Warenkorb",
           pfand: "Pfand",
+          quantity: "Menge",
           decreaseQuantity: "Menge verringern",
           increaseQuantity: "Menge erhöhen",
         }
@@ -92,16 +95,19 @@ export default function ProductCard({
           outOfStock: "Stokta Yok",
           addToCart: "Sepete Ekle",
           pfand: "Pfand",
+          quantity: "Adet",
           decreaseQuantity: "Adedi azalt",
           increaseQuantity: "Adedi artır",
         };
 
   function decreaseQuantity() {
-    setQuantity((current) => Math.max(1, current - 1));
+    setQuantityInput((current) =>
+      String(Math.max(1, (parseInt(current, 10) || 1) - 1)),
+    );
   }
 
   function increaseQuantity() {
-    setQuantity((current) => current + 1);
+    setQuantityInput((current) => String((parseInt(current, 10) || 1) + 1));
   }
 
   function handleAddToCart() {
@@ -121,7 +127,7 @@ export default function ProductCard({
       quantity,
     );
 
-    setQuantity(1);
+    setQuantityInput("1");
 
     setAdded(true);
 
@@ -218,9 +224,25 @@ export default function ProductCard({
                 <Minus size={14} />
               </button>
 
-              <span className="min-w-6 text-center text-xs font-bold">
-                {quantity}
-              </span>
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                disabled={!inStock}
+                value={quantityInput}
+                onChange={(event) => {
+                  const raw = event.target.value;
+
+                  if (raw === "" || /^[0-9]+$/.test(raw)) {
+                    setQuantityInput(raw);
+                  }
+                }}
+                onBlur={() => {
+                  setQuantityInput(String(quantity));
+                }}
+                aria-label={t.quantity}
+                className="min-w-6 w-8 border-0 bg-transparent text-center text-xs font-bold outline-none disabled:text-[#D9DADA]"
+              />
 
               <button
                 type="button"
