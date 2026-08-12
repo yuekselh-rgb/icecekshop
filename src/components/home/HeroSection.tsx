@@ -1,6 +1,7 @@
 "use client";
 
 import { useLanguage } from "@/context/LanguageContext";
+import { aleo } from "@/lib/fonts";
 import { ArrowRight, Check, Home, Store } from "lucide-react";
 import Link from "next/link";
 
@@ -60,25 +61,29 @@ export default function HeroSection() {
 
   return (
     <section className="px-4 pb-8 pt-0 lg:px-8 lg:pb-12 lg:pt-0">
+      <div className="mx-auto grid max-w-7xl overflow-hidden rounded-[24px] bg-biscay-darkest lg:grid-cols-[1.1fr_0.9fr]">
+        <div className="relative flex flex-col justify-center overflow-hidden px-6 py-10 sm:px-8 lg:px-12 lg:py-14">
+          <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-raw-sienna/10" />
+          <div className="pointer-events-none absolute -bottom-32 right-0 h-80 w-80 rounded-full bg-fountain-blue/10" />
 
-      <div className="mx-auto grid max-w-7xl overflow-hidden rounded-[24px] bg-slate-950 lg:grid-cols-[1.1fr_0.9fr]">
-        <div className="flex flex-col justify-center px-6 py-8 sm:px-8 lg:px-10 lg:py-10">
-          <span className="mb-5 w-fit rounded-full bg-sky-500/15 px-4 py-2 text-sm font-bold text-sky-400">
+          <span className="relative mb-5 w-fit rounded-full bg-raw-sienna/15 px-4 py-2 text-sm font-bold text-raw-sienna-light">
             {t.badge}
           </span>
 
-          <h1 className="max-w-2xl text-4xl font-black leading-tight text-white sm:text-5xl lg:text-6xl">
+          <h1
+            className={`${aleo.className} relative max-w-2xl text-4xl font-semibold leading-tight text-white sm:text-5xl lg:text-6xl`}
+          >
             {t.title}
           </h1>
 
-          <p className="mt-6 max-w-xl text-base leading-7 text-slate-300 sm:text-lg">
+          <p className="relative mt-6 max-w-xl text-base leading-7 text-biscay-lighter sm:text-lg">
             {t.description}
           </p>
 
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          <div className="relative mt-8 flex flex-col gap-3 sm:flex-row">
             <Link
               href="/products"
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-sky-500 px-6 py-3.5 font-bold text-white transition hover:bg-sky-600"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-raw-sienna px-6 py-3.5 font-bold text-white transition hover:bg-raw-sienna-dark"
             >
               {t.shop}
               <ArrowRight size={19} />
@@ -86,85 +91,83 @@ export default function HeroSection() {
 
             <Link
               href="/login"
-              className="inline-flex items-center justify-center rounded-xl border border-slate-700 px-6 py-3.5 font-bold text-white transition hover:border-white"
+              className="inline-flex items-center justify-center rounded-full border border-white/20 px-6 py-3.5 font-bold text-white transition hover:border-white"
             >
               {t.login}
             </Link>
           </div>
 
-          <div className="mt-8 flex flex-wrap gap-5 text-sm text-slate-300">
+          <div className="relative mt-8 flex flex-wrap gap-5 text-sm text-biscay-lighter">
             <span className="flex items-center gap-2">
-              <Check size={17} className="text-sky-400" />
+              <Check size={17} className="text-fountain-blue" />
               {t.fastDelivery}
             </span>
 
             <span className="flex items-center gap-2">
-              <Check size={17} className="text-sky-400" />
+              <Check size={17} className="text-fountain-blue" />
               {t.secureOrder}
             </span>
 
             <span className="flex items-center gap-2">
-              <Check size={17} className="text-sky-400" />
+              <Check size={17} className="text-fountain-blue" />
               {t.pfandTracking}
             </span>
           </div>
         </div>
 
-        <div className="relative flex min-h-[250px] items-center justify-center overflow-hidden bg-sky-500 p-3 sm:p-4">
+        <div className="relative flex min-h-[250px] items-center justify-center overflow-hidden bg-fountain-blue p-3 sm:p-4">
           <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-white/10" />
-          <div className="absolute -bottom-24 -left-20 h-72 w-72 rounded-full bg-slate-950/10" />
+          <div className="absolute -bottom-24 -left-20 h-72 w-72 rounded-full bg-biscay-darkest/10" />
 
           <div className="relative w-full max-w-sm">
             <div className="rounded-3xl bg-white p-4 shadow-2xl">
-              <p className="text-sm font-bold text-sky-500">
+              <p className="text-sm font-bold text-fountain-blue-dark">
                 {t.deliveryOptions}
               </p>
 
-              <h2 className="mt-2 text-2xl font-black text-slate-950">
+              <h2
+                className={`${aleo.className} mt-2 text-2xl font-semibold text-biscay-darkest`}
+              >
                 {t.chooseDelivery}
               </h2>
 
               <div className="mt-4 space-y-3">
-                <div className="flex items-center gap-4 rounded-2xl border border-slate-200 p-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-500">
+                <div className="flex items-center gap-4 rounded-2xl border border-neutral-lighter p-4">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-fountain-blue-lightest text-fountain-blue-dark">
                     <Home size={24} />
                   </div>
 
                   <div>
-                    <h3 className="font-black text-slate-950">
+                    <h3 className="font-black text-biscay-darkest">
                       {t.homeDelivery}
                     </h3>
-                    <p className="mt-1 text-sm text-slate-500">
+                    <p className="mt-1 text-sm text-neutral-dark">
                       {t.homeDeliveryDescription}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4 rounded-2xl border border-slate-200 p-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-950">
+                <div className="flex items-center gap-4 rounded-2xl border border-neutral-lighter p-4">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-raw-sienna-lightest text-raw-sienna-dark">
                     <Store size={24} />
                   </div>
 
                   <div>
-                    <h3 className="font-black text-slate-950">
+                    <h3 className="font-black text-biscay-darkest">
                       {t.businessDelivery}
                     </h3>
-                    <p className="mt-1 text-sm text-slate-500">
+                    <p className="mt-1 text-sm text-neutral-dark">
                       {t.businessDeliveryDescription}
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="mt-2 rounded-2xl bg-slate-950 px-3 py-1 text-white">
-                <p className="text-xs text-slate-400">
-                  {t.orderStatus}
-                </p>
+              <div className="mt-2 rounded-2xl bg-biscay-darkest px-3 py-1 text-white">
+                <p className="text-xs text-biscay-lighter">{t.orderStatus}</p>
 
                 <div className="mt-1 flex items-center justify-between gap-2">
-                  <span className="text-sm font-bold">
-                    {t.doorDelivery}
-                  </span>
+                  <span className="text-sm font-bold">{t.doorDelivery}</span>
 
                   <span className="rounded-full bg-green-500/20 px-3 py-1 text-xs font-bold text-green-300">
                     {t.active}
@@ -173,13 +176,9 @@ export default function HeroSection() {
               </div>
             </div>
 
-            <div className="mt-2 rounded-2xl bg-slate-950 px-3 py-1.5 text-white shadow-xl">
-              <p className="text-xs text-slate-400">
-                {t.pfand}
-              </p>
-              <p className="mt-0.5 text-sm font-bold">
-                {t.trackReturns}
-              </p>
+            <div className="mt-2 rounded-2xl bg-biscay-darkest px-3 py-1.5 text-white shadow-xl">
+              <p className="text-xs text-biscay-lighter">{t.pfand}</p>
+              <p className="mt-0.5 text-sm font-bold">{t.trackReturns}</p>
             </div>
           </div>
         </div>

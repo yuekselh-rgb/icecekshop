@@ -1,7 +1,10 @@
 import BenefitsSection from "@/components/home/BenefitsSection";
+import CtaSection from "@/components/home/CtaSection";
 import FeaturedProducts from "@/components/home/FeaturedProducts";
 import CategorySection from "@/components/home/CategorySection";
+import GastroFeatureSection from "@/components/home/GastroFeatureSection";
 import HeroSection from "@/components/home/HeroSection";
+import PfandFeatureSection from "@/components/home/PfandFeatureSection";
 import CompanyBrand from "@/components/company/CompanyBrand";
 import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
@@ -77,11 +80,14 @@ export default async function HomePage() {
       </div>
 
       <HeroSection />
+      <BenefitsSection />
+      <PfandFeatureSection />
+      <GastroFeatureSection />
       <FeaturedProducts
         initialProducts={products}
         initialShowOffers={companySetting?.showOffers !== false}
       />
-      <BenefitsSection />
+      <CtaSection />
       <Footer initialSettings={initialSettings} />
     </main>
   );

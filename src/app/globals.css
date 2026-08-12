@@ -18,6 +18,30 @@ body {
   color: #0f172a;
 }
 
+@theme {
+  --color-biscay-lightest: #e8ecef;
+  --color-biscay-lighter: #d1dae0;
+  --color-biscay-light: #5f7f93;
+  --color-biscay: #1b4965;
+  --color-biscay-dark: #153a50;
+  --color-biscay-darker: #0a1d28;
+  --color-biscay-darkest: #08151e;
+  --color-raw-sienna-lightest: #faf3ec;
+  --color-raw-sienna-lighter: #f6e8d9;
+  --color-raw-sienna-light: #e2ae7c;
+  --color-raw-sienna: #d68c45;
+  --color-raw-sienna-dark: #ab7037;
+  --color-raw-sienna-darker: #55381b;
+  --color-raw-sienna-darkest: #402a14;
+  --color-fountain-blue-lightest: #eff7f9;
+  --color-fountain-blue-lighter: #dff0f4;
+  --color-fountain-blue-light: #91cbda;
+  --color-fountain-blue: #62b6cb;
+  --color-fountain-blue-dark: #4e91a2;
+  --color-fountain-blue-darker: #274851;
+  --color-fountain-blue-darkest: #1d363c;
+}
+
 @theme inline {
   --font-heading: var(--font-sans);
   --font-sans: var(--font-sans);
