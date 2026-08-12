@@ -1,6 +1,7 @@
 "use client";
 
 import { useLanguage } from "@/context/LanguageContext";
+import { isPlaceholderEmail } from "@/lib/utils";
 
 import {
   ArrowLeft,
@@ -500,7 +501,8 @@ export default function BarSalesReportPage() {
                                 </p>
                               ) : null}
 
-                              {sale.customer.email ? (
+                              {sale.customer.email &&
+                              !isPlaceholderEmail(sale.customer.email) ? (
                                 <p className="mt-1 text-xs text-slate-500">
                                   {sale.customer.email}
                                 </p>

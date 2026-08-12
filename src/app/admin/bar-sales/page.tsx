@@ -2,6 +2,7 @@
 
 import { useLanguage } from "@/context/LanguageContext";
 import { escapeHtml } from "@/lib/html-escape";
+import { isPlaceholderEmail } from "@/lib/utils";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -1908,9 +1909,11 @@ const adminName =
                                 {getCustomerName(customer)}
                               </p>
 
-                              <p className="mt-1 truncate text-xs text-slate-500">
-                                {customer.email}
-                              </p>
+                              {!isPlaceholderEmail(customer.email) ? (
+                                <p className="mt-1 truncate text-xs text-slate-500">
+                                  {customer.email}
+                                </p>
+                              ) : null}
 
                               {customer.phone ? (
                                 <p className="mt-1 text-xs font-bold text-slate-600">
