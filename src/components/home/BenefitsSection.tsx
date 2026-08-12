@@ -1,7 +1,6 @@
 "use client";
 
 import { useLanguage } from "@/context/LanguageContext";
-import { aleo } from "@/lib/fonts";
 import {
   Clock3,
   Headphones,
@@ -82,17 +81,15 @@ export default function BenefitsSection() {
   return (
     <section className="px-4 py-16 lg:px-8">
       <div className="mx-auto max-w-7xl">
-        <div className="rounded-[32px] bg-biscay-darkest px-6 py-10 sm:px-10 lg:px-12">
+        <div className="rounded-[32px] bg-slate-950 px-6 py-10 sm:px-10 lg:px-12">
           <div className="mb-10">
-            <p className="font-bold text-fountain-blue">
+            <p className="font-bold text-sky-400">
               {language === "de"
                 ? "Warum uns?"
                 : "Neden bizi tercih etmelisiniz?"}
             </p>
 
-            <h2
-              className={`${aleo.className} mt-2 max-w-2xl text-3xl font-semibold tracking-tight text-white sm:text-4xl`}
-            >
+            <h2 className="mt-2 max-w-2xl text-3xl font-black tracking-tight text-white sm:text-4xl">
               {language === "de"
                 ? "Einfach einkaufen – von der Bestellung bis zur Lieferung"
                 : "Siparişten teslimata kadar kolay alışveriş deneyimi"}
@@ -106,9 +103,9 @@ export default function BenefitsSection() {
               return (
                 <div
                   key={benefit.title}
-                  className="rounded-2xl border border-white/10 bg-white/5 p-5"
+                  className="rounded-2xl border border-slate-800 bg-slate-900 p-5"
                 >
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-fountain-blue text-biscay-darkest">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-sky-500 text-white">
                     <Icon size={23} />
                   </div>
 
@@ -116,7 +113,7 @@ export default function BenefitsSection() {
                     {benefit.title}
                   </h3>
 
-                  <p className="mt-2 text-sm leading-6 text-biscay-lighter">
+                  <p className="mt-2 text-sm leading-6 text-slate-400">
                     {benefit.description}
                   </p>
                 </div>
