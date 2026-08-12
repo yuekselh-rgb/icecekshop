@@ -1238,7 +1238,7 @@ const adminName =
           </div>
         ) : null}
 
-        <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
+        <div className="grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
           <section className="flex h-[calc(100vh-120px)] min-w-0 flex-col rounded-[28px] bg-white p-3 shadow-sm sm:p-5">
             <div className="relative">
               <Search
