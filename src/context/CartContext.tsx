@@ -41,6 +41,8 @@ type CartContextValue = {
 
   decreaseQuantity: (id: string) => void;
 
+  setItemQuantity: (id: string, quantity: number) => void;
+
   removeFromCart: (id: string) => void;
 
   addPfandItem: (item: Omit<PfandCartItem, "id">) => void;
@@ -174,6 +176,21 @@ export function CartProvider({ children }: CartProviderProps) {
     );
   }
 
+  function setItemQuantity(id: string, quantity: number) {
+    const clamped = Math.max(1, Math.floor(quantity) || 1);
+
+    setItems((currentItems) =>
+      currentItems.map((item) =>
+        item.id === id
+          ? {
+              ...item,
+              quantity: clamped,
+            }
+          : item,
+      ),
+    );
+  }
+
   function removeFromCart(id: string) {
     setItems((currentItems) => currentItems.filter((item) => item.id !== id));
   }
@@ -258,6 +275,7 @@ export function CartProvider({ children }: CartProviderProps) {
         addToCart,
         increaseQuantity,
         decreaseQuantity,
+        setItemQuantity,
         removeFromCart,
         addPfandItem,
         updatePfandItem,

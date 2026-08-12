@@ -18,6 +18,7 @@ export default function CartPage() {
     pfandReturnTotal,
     increaseQuantity,
     decreaseQuantity,
+    setItemQuantity,
     removeFromCart,
     addPfandItem,
     removePfandItem,
@@ -89,6 +90,10 @@ export default function CartPage() {
         ? "Pfand pro Stück"
         : "adet başına Pfand",
   };
+
+  const [quantityInputs, setQuantityInputs] = useState<Record<string, string>>(
+    {},
+  );
 
   const [showPfandForm, setShowPfandForm] = useState(false);
 
@@ -225,9 +230,37 @@ export default function CartPage() {
                             <Minus size={16} />
                           </button>
 
-                          <span className="min-w-10 text-center font-black">
-                            {item.quantity}
-                          </span>
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            aria-label={t.quantity}
+                            value={quantityInputs[item.id] ?? String(item.quantity)}
+                            onChange={(event) => {
+                              const raw = event.target.value;
+
+                              if (raw === "" || /^[0-9]+$/.test(raw)) {
+                                setQuantityInputs((current) => ({
+                                  ...current,
+                                  [item.id]: raw,
+                                }));
+                              }
+                            }}
+                            onBlur={() => {
+                              const raw = quantityInputs[item.id];
+
+                              if (raw !== undefined && raw !== "") {
+                                setItemQuantity(item.id, Number(raw));
+                              }
+
+                              setQuantityInputs((current) => {
+                                const next = { ...current };
+                                delete next[item.id];
+                                return next;
+                              });
+                            }}
+                            className="min-w-10 border-0 bg-transparent text-center font-black outline-none"
+                          />
 
                           <button
                             type="button"
