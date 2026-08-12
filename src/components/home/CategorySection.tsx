@@ -231,9 +231,10 @@ export default function CategorySection({
 
   return (    <>
       <div
+        id="produkte"
         ref={sentinelRef}
         aria-hidden="true"
-        className="h-px w-full"
+        className="h-px w-full scroll-mt-24"
       />
 
       {isPinned ? (

@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { useLanguage } from "@/context/LanguageContext";
 import CompanyBrand from "@/components/company/CompanyBrand";
@@ -31,6 +31,15 @@ import {
 
 export default function Header() {
   const router = useRouter();
+
+  const pathname = usePathname();
+
+  /*
+   * Auf der Homepage zeigt der Produktkatalog bereits dort, im
+   * Header-Link dann nur dorthin scrollen statt zur separaten
+   * /products-Seite zu navigieren.
+   */
+  const productsHref = pathname === "/" ? "/#produkte" : "/products";
 
   const { totalItems, clearCart } = useCart();
 
@@ -363,7 +372,7 @@ export default function Header() {
       <span>{t.home}</span>
     </Link>
 
-    <Link href="/products" className="flex items-center gap-3 rounded-none px-4 py-3 font-semibold transition hover:bg-[#E8ECEF] hover:text-[#1B4965]">
+    <Link href={productsHref} className="flex items-center gap-3 rounded-none px-4 py-3 font-semibold transition hover:bg-[#E8ECEF] hover:text-[#1B4965]">
       <Package size={20}/>
       <span>{t.products}</span>
     </Link>
@@ -435,7 +444,7 @@ export default function Header() {
           </Sheet>
 
           <nav className="hidden items-center gap-1 lg:flex">
-            <Link href="/products" className="rounded-full px-4 py-2 font-semibold text-[#05090A] transition hover:bg-[#E8ECEF]">
+            <Link href={productsHref} className="rounded-full px-4 py-2 font-semibold text-[#05090A] transition hover:bg-[#E8ECEF]">
               {t.products}
             </Link>
             <Link href="/pfand" className="rounded-full px-4 py-2 font-semibold text-[#05090A] transition hover:bg-[#E8ECEF]">

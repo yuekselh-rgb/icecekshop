@@ -29,10 +29,10 @@ export default function CtaSection() {
           <h2 className="text-3xl font-medium sm:text-4xl">{t.home.title}</h2>
           <p className="mt-4 text-[#05090A]">{t.home.text}</p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
-            <Link href="/products" className="rounded-full bg-[#1B4965] px-6 py-2.5 font-bold text-white transition hover:bg-[#153A50]">
+            <Link href="/#produkte" className="rounded-full bg-[#1B4965] px-6 py-2.5 font-bold text-white transition hover:bg-[#153A50]">
               {t.home.cta}
             </Link>
-            <Link href="/products" className="rounded-full border border-[#05090a26] px-6 py-2.5 font-bold text-[#05090A]">
+            <Link href="/#produkte" className="rounded-full border border-[#05090a26] px-6 py-2.5 font-bold text-[#05090A]">
               {t.home.more}
             </Link>
           </div>
