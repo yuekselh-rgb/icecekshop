@@ -198,7 +198,7 @@ export default function Header() {
                 <button
                   type="button"
                   aria-label={t.menu}
-                  className="rounded-full border border-[#05090a26] p-2.5 transition hover:border-[#1B4965] hover:text-[#1B4965]"
+                  className="rounded-full border border-[#05090a26] p-2.5 transition hover:border-[#1B4965] hover:text-[#1B4965] lg:hidden"
                 />
               }
             >
@@ -427,6 +427,19 @@ export default function Header() {
               </div>
             </SheetContent>
           </Sheet>
+
+          <nav className="hidden items-center gap-1 lg:flex">
+            <Link href="/products" className="rounded-full px-4 py-2 font-semibold text-[#05090A] transition hover:bg-[#E8ECEF]">
+              {t.products}
+            </Link>
+            <Link href="/pfand" className="rounded-full px-4 py-2 font-semibold text-[#05090A] transition hover:bg-[#E8ECEF]">
+              {t.pfand}
+            </Link>
+            <Link href="/register" className="rounded-full px-4 py-2 font-semibold text-[#05090A] transition hover:bg-[#E8ECEF]">
+              {language === "de" ? "Gastro" : "İşletmeler"}
+            </Link>
+          </nav>
+
           <div className="flex items-center gap-2">
             <div className="flex items-center rounded-full border border-[#05090a26] p-1">
               <button

@@ -1,4 +1,8 @@
 import BenefitsSection from "@/components/home/BenefitsSection";
+import PfandSection from "@/components/home/PfandSection";
+import GastroSection from "@/components/home/GastroSection";
+import TestimonialsSection from "@/components/home/TestimonialsSection";
+import CtaSection from "@/components/home/CtaSection";
 import FeaturedProducts from "@/components/home/FeaturedProducts";
 import CategorySection from "@/components/home/CategorySection";
 import HeroSection from "@/components/home/HeroSection";
@@ -63,10 +67,16 @@ export default async function HomePage() {
         logoHeight: 120,
       };
 
+  // Section order matches the Relume sitemap 1:1:
+  // Navbar, Hero, Features Liste, Feature/Pfand, Feature/Gastro,
+  // Produkte, Testimonial, CTA, Footer.
   return (
-    // bg: Flussgetränke Scheme 3 background (neutral-lightest #F2F2F2)
     <main className="min-h-screen bg-[#F2F2F2]">
       <Header />
+      <HeroSection />
+      <BenefitsSection />
+      <PfandSection />
+      <GastroSection />
       <CategorySection initialCategories={categories} />
 
       {/* card: Flussgetränke "default" card style — sharp corners (radiusLarge 0px),
@@ -79,12 +89,12 @@ export default async function HomePage() {
 
       </div>
 
-      <HeroSection />
       <FeaturedProducts
         initialProducts={products}
         initialShowOffers={companySetting?.showOffers !== false}
       />
-      <BenefitsSection />
+      <TestimonialsSection />
+      <CtaSection />
       <Footer initialSettings={initialSettings} />
     </main>
   );
