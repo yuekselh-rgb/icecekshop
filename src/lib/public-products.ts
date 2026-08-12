@@ -15,6 +15,15 @@ export async function getPublicProducts() {
       stock: {
         gt: 0,
       },
+      /*
+       * Ein Preis von 0 € ist praktisch immer eine noch nicht
+       * gepflegte Preisangabe, kein echtes Gratisprodukt — solche
+       * Produkte werden im Shop ausgeblendet, bis ein echter Preis
+       * eingetragen ist.
+       */
+      price: {
+        gt: 0,
+      },
     },
     include: {
       category: true,

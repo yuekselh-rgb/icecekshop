@@ -20,6 +20,9 @@ export const GET = withTenant(async (
       where: {
         id,
         active: true,
+        price: {
+          gt: 0,
+        },
       },
       include: {
         category: true,
@@ -42,6 +45,9 @@ export const GET = withTenant(async (
       where: {
         active: true,
         categoryId: product.categoryId,
+        price: {
+          gt: 0,
+        },
         id: {
           not: product.id,
         },
