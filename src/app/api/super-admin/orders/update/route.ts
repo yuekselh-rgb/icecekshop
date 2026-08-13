@@ -91,6 +91,9 @@ export const PATCH = withTenant(async (
           ).trim()
         : undefined;
 
+    const manuallyConfirm =
+      body.manuallyConfirm === true;
+
     if (!orderId) {
       return NextResponse.json(
         {
@@ -115,6 +118,8 @@ export const PATCH = withTenant(async (
           id: true,
           status: true,
           driverId: true,
+          confirmationToken: true,
+          confirmedAt: true,
         },
       });
 
@@ -132,13 +137,43 @@ export const PATCH = withTenant(async (
       );
     }
 
+    const awaitingCustomerConfirmation =
+      order.confirmationToken !== null &&
+      order.confirmedAt === null;
+
+    if (
+      awaitingCustomerConfirmation &&
+      !manuallyConfirm &&
+      (status !== undefined || driverId !== undefined)
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            language === "de"
+              ? "Diese Bestellung wartet noch auf Kundenbestätigung."
+              : "Bu sipariş henüz müşteri onayı bekliyor.",
+        },
+        {
+          status: 409,
+        }
+      );
+    }
+
     const data: {
       status?: AllowedStatus;
       driverId?: string | null;
       assignedAt?: Date | null;
       deliveredAt?: Date | null;
       outForDeliveryAt?: Date | null;
+      confirmedAt?: Date;
     } = {};
+
+    if (
+      awaitingCustomerConfirmation &&
+      manuallyConfirm
+    ) {
+      data.confirmedAt = new Date();
+    }
 
     if (
       status !== undefined

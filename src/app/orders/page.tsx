@@ -32,6 +32,8 @@ type Order = {
   totalAmount: number;
   openPaymentAmount: number;
   items: OrderItem[];
+  confirmationToken: string | null;
+  confirmedAt: string | null;
 };
 
 const statusLabels: Record<OrderStatus, { tr: string; de: string }> = {
@@ -198,6 +200,14 @@ export default function MyOrdersPage() {
                       {statusLabels[order.status][language]}
                     </span>
                   </div>
+
+                  {order.confirmationToken && !order.confirmedAt ? (
+                    <p className="mt-3 inline-flex rounded-full bg-amber-100 px-3 py-1.5 text-xs font-black text-amber-800">
+                      {language === "de"
+                        ? "Wartet auf Ihre Bestätigung per E-Mail-Link"
+                        : "E-posta ile onayınızı bekliyor"}
+                    </p>
+                  ) : null}
 
                   <div className="mt-5 space-y-2 border-t border-slate-100 pt-4">
                     {order.items.map((item) => (

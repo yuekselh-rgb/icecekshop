@@ -180,6 +180,7 @@ export default function CheckoutPage() {
   const [completedOrder, setCompletedOrder] = useState<{
     orderNumber: string;
     totalAmount: number;
+    requiresConfirmation: boolean;
   } | null>(null);
 
   /*
@@ -354,6 +355,7 @@ export default function CheckoutPage() {
       setCompletedOrder({
         orderNumber: data.order.orderNumber,
         totalAmount: data.order.totalAmount,
+        requiresConfirmation: Boolean(data.requiresConfirmation),
       });
 
       clearCart();
@@ -403,6 +405,14 @@ export default function CheckoutPage() {
             <p className="mt-4 text-lg font-bold text-slate-950">
               {completedOrder.totalAmount.toFixed(2)} €
             </p>
+
+            {completedOrder.requiresConfirmation ? (
+              <p className="mx-auto mt-6 max-w-md rounded-2xl bg-amber-50 p-4 text-sm font-bold text-amber-800">
+                {language === "de"
+                  ? "Bitte bestätigen Sie Ihre Bestellung über den Link, den wir Ihnen per E-Mail geschickt haben."
+                  : "Lütfen siparişinizi, e-posta ile gönderdiğimiz bağlantı üzerinden onaylayın."}
+              </p>
+            ) : null}
 
             <div className="mt-8 flex flex-wrap justify-center gap-3">
               <Link

@@ -98,6 +98,8 @@ type Order = {
   driver: Driver | null;
   paymentStatus: "OPEN" | "PAID";
   paidAt: string | null;
+  confirmationToken: string | null;
+  confirmedAt: string | null;
 
   driverPaymentReportedAt: string | null;
   driverPaymentReportedAmount: number | null;
@@ -743,6 +745,63 @@ export default function AdminOrdersPage() {
         language === "de"
           ? "Fehler beim Aktualisieren des Zahlungsstatus."
           : "Ödeme durumu güncellenirken hata oluştu.",
+      );
+    } finally {
+      setUpdatingOrderId(null);
+    }
+  }
+
+  function isAwaitingConfirmation(order: Order) {
+    return order.confirmationToken !== null && order.confirmedAt === null;
+  }
+
+  async function manuallyConfirmOrder(order: Order) {
+    setUpdatingOrderId(order.id);
+
+    setError("");
+    setSuccess("");
+
+    try {
+      const response = await fetch(`/api/admin/orders/${order.id}`, {
+        method: "PATCH",
+
+        headers: {
+          "Content-Type": "application/json",
+        },
+
+        body: JSON.stringify({
+          manuallyConfirm: true,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(
+          data.error ||
+            (language === "de"
+              ? "Bestellung konnte nicht bestätigt werden."
+              : "Sipariş onaylanamadı."),
+        );
+        return;
+      }
+
+      setOrders((current) =>
+        current.map((currentOrder) =>
+          currentOrder.id === order.id ? data.order : currentOrder,
+        ),
+      );
+
+      setSuccess(
+        language === "de"
+          ? "Bestellung wurde manuell bestätigt."
+          : "Sipariş manuel olarak onaylandı.",
+      );
+    } catch {
+      setError(
+        language === "de"
+          ? "Fehler beim Bestätigen der Bestellung."
+          : "Sipariş onaylanırken hata oluştu.",
       );
     } finally {
       setUpdatingOrderId(null);
@@ -2083,6 +2142,29 @@ export default function AdminOrdersPage() {
                                 : language === "de" ? "Nicht zugewiesen" : "Atanmadı"}
                             </span>
                           </p>
+
+                          {isAwaitingConfirmation(order) ? (
+                            <div className="mt-3 flex flex-wrap items-center gap-2">
+                              <span className="rounded-full bg-orange-100 px-3 py-1 text-xs font-black text-orange-700">
+                                {language === "de"
+                                  ? "Wartet auf Bestätigung"
+                                  : "Onay Bekliyor"}
+                              </span>
+
+                              {permissions?.updateOrder ? (
+                                <button
+                                  type="button"
+                                  onClick={() => manuallyConfirmOrder(order)}
+                                  disabled={updating}
+                                  className="rounded-full bg-slate-950 px-3 py-1 text-xs font-black text-white transition hover:bg-slate-800 disabled:cursor-wait disabled:opacity-60"
+                                >
+                                  {language === "de"
+                                    ? "Jetzt manuell bestätigen"
+                                    : "Şimdi manuel onayla"}
+                                </button>
+                              ) : null}
+                            </div>
+                          ) : null}
                         </div>
 
                         <div className="min-w-52">
@@ -2091,7 +2173,8 @@ export default function AdminOrdersPage() {
                           </p>
 
                           {permissions?.updateOrder &&
-                          order.status !== "DELIVERED" ? (
+                          order.status !== "DELIVERED" &&
+                          !isAwaitingConfirmation(order) ? (
                             <select
                               value={order.status}
                               disabled={updating}
@@ -2122,7 +2205,8 @@ export default function AdminOrdersPage() {
                           </p>
 
                           {permissions?.updateOrder &&
-                          order.status !== "DELIVERED" ? (
+                          order.status !== "DELIVERED" &&
+                          !isAwaitingConfirmation(order) ? (
                             <select
                               value={order.driverId || ""}
                               disabled={updating}

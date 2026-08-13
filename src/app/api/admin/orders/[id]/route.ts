@@ -322,6 +322,32 @@ export const PATCH = withTenant(async (
     const driverChanged =
       hasDriverId && existingOrder.driverId !== requestedDriverId;
 
+    const manuallyConfirm = body.manuallyConfirm === true;
+
+    const awaitingCustomerConfirmation =
+      existingOrder.confirmationToken !== null &&
+      existingOrder.confirmedAt === null;
+
+    if (
+      awaitingCustomerConfirmation &&
+      !manuallyConfirm &&
+      (statusChanged || driverChanged)
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            language === "de"
+              ? "Diese Bestellung wartet noch auf Kundenbestätigung."
+              : "Bu sipariş henüz müşteri onayı bekliyor.",
+        },
+        {
+          status: 409,
+        },
+      );
+    }
+
+    const shouldConfirmNow = awaitingCustomerConfirmation && manuallyConfirm;
+
     if (
       driverChanged &&
       existingOrder.status === "DELIVERED" &&
@@ -352,7 +378,7 @@ export const PATCH = withTenant(async (
       paymentChanged,
     });
 
-    if (!statusChanged && !driverChanged && !paymentChanged) {
+    if (!statusChanged && !driverChanged && !paymentChanged && !shouldConfirmNow) {
       return NextResponse.json({
         message:
           language === "de"
@@ -627,6 +653,12 @@ export const PATCH = withTenant(async (
             ? {
                 driverId: requestedDriverId,
                 assignedAt: requestedDriverId ? new Date() : null,
+              }
+            : {}),
+
+          ...(shouldConfirmNow
+            ? {
+                confirmedAt: new Date(),
               }
             : {}),
 

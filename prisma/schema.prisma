@@ -374,6 +374,12 @@ model Order {
   paymentStatus PaymentStatus @default(OPEN)
   paidAt        DateTime?
 
+  // Bestellbestätigung per E-Mail-Link (Schutz vor Spaß-/Fake-Bestellungen).
+  // Bei Bestellungen, die keine Bestätigung benötigen (z.B. Händler), wird
+  // confirmedAt direkt bei der Erstellung gesetzt und confirmationToken bleibt leer.
+  confirmationToken String?    @unique
+  confirmedAt       DateTime?
+
   // Şoför müşteriden ödemeyi aldığını bildirdiğinde doldurulur.
   // Bu aşamada ödeme henüz kesinleşmez ve Gerçek Kasa'ya girmez.
   driverPaymentReportedAt     DateTime?

@@ -69,6 +69,9 @@ type Order = {
   driverId: string | null;
   driver: Driver | null;
 
+  confirmationToken: string | null;
+  confirmedAt: string | null;
+
   user: {
     firstName: string | null;
     lastName: string | null;
@@ -342,6 +345,65 @@ export default function SuperAdminOrdersPage() {
         language === "de"
           ? "Fahrer konnte nicht geändert werden."
           : "Şoför değiştirilemedi.",
+      );
+    } finally {
+      updatingRef.current = false;
+
+      setUpdatingOrderId(null);
+    }
+  }
+
+  function isAwaitingConfirmation(order: Order) {
+    return order.confirmationToken !== null && order.confirmedAt === null;
+  }
+
+  async function manuallyConfirmOrder(order: Order) {
+    updatingRef.current = true;
+
+    setUpdatingOrderId(order.id);
+    setError("");
+
+    try {
+      const response = await fetch("/api/super-admin/orders/update", {
+        method: "PATCH",
+
+        headers: {
+          "Content-Type": "application/json",
+        },
+
+        body: JSON.stringify({
+          orderId: order.id,
+          manuallyConfirm: true,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(
+          data.error ||
+            (language === "de"
+              ? "Bestellung konnte nicht bestätigt werden."
+              : "Sipariş onaylanamadı."),
+        );
+        return;
+      }
+
+      setOrders((current) =>
+        current.map((currentOrder) =>
+          currentOrder.id === order.id
+            ? {
+                ...currentOrder,
+                ...data.order,
+              }
+            : currentOrder,
+        ),
+      );
+    } catch {
+      setError(
+        language === "de"
+          ? "Bestellung konnte nicht bestätigt werden."
+          : "Sipariş onaylanamadı.",
       );
     } finally {
       updatingRef.current = false;
@@ -2161,6 +2223,27 @@ export default function SuperAdminOrdersPage() {
                         <p className="mt-0.5 text-xs text-slate-500">
                           {new Date(order.createdAt).toLocaleString("de-DE")}
                         </p>
+
+                        {isAwaitingConfirmation(order) ? (
+                          <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                            <span className="rounded-full bg-orange-100 px-2.5 py-0.5 text-[10px] font-black text-orange-700">
+                              {language === "de"
+                                ? "Wartet auf Bestätigung"
+                                : "Onay Bekliyor"}
+                            </span>
+
+                            <button
+                              type="button"
+                              onClick={() => manuallyConfirmOrder(order)}
+                              disabled={updatingOrderId === order.id}
+                              className="rounded-full bg-slate-950 px-2.5 py-0.5 text-[10px] font-black text-white transition hover:bg-slate-800 disabled:cursor-wait disabled:opacity-60"
+                            >
+                              {language === "de"
+                                ? "Jetzt manuell bestätigen"
+                                : "Şimdi manuel onayla"}
+                            </button>
+                          </div>
+                        ) : null}
                       </div>
 
                       <div>
@@ -2168,25 +2251,31 @@ export default function SuperAdminOrdersPage() {
                           {language === "de" ? "Status" : "Durum"}
                         </p>
 
-                        <select
-                          value={order.status}
-                          disabled={updatingOrderId === order.id}
-                          onChange={(event) =>
-                            changeStatus(
-                              order,
-                              event.target.value as OrderStatus,
-                            )
-                          }
-                          className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-sm font-bold text-slate-950 outline-none focus:border-orange-500 disabled:bg-slate-100"
-                        >
-                          {Object.entries(statusLabels).map(
-                            ([value, label]) => (
-                              <option key={value} value={value}>
-                                {label[language]}
-                              </option>
-                            ),
-                          )}
-                        </select>
+                        {isAwaitingConfirmation(order) ? (
+                          <p className="mt-1 text-sm font-black text-slate-950">
+                            {statusLabels[order.status][language]}
+                          </p>
+                        ) : (
+                          <select
+                            value={order.status}
+                            disabled={updatingOrderId === order.id}
+                            onChange={(event) =>
+                              changeStatus(
+                                order,
+                                event.target.value as OrderStatus,
+                              )
+                            }
+                            className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-sm font-bold text-slate-950 outline-none focus:border-orange-500 disabled:bg-slate-100"
+                          >
+                            {Object.entries(statusLabels).map(
+                              ([value, label]) => (
+                                <option key={value} value={value}>
+                                  {label[language]}
+                                </option>
+                              ),
+                            )}
+                          </select>
+                        )}
                       </div>
 
                       <div>
@@ -2195,23 +2284,29 @@ export default function SuperAdminOrdersPage() {
                           {language === "de" ? "Fahrer" : "Şoför"}
                         </p>
 
-                        <select
-                          value={order.driverId || ""}
-                          disabled={updatingOrderId === order.id}
-                          onChange={(event) =>
-                            assignDriver(order, event.target.value)
-                          }
-                          className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-sm font-bold text-slate-950 outline-none focus:border-orange-500 disabled:bg-slate-100"
-                        >
-                          <option value="">{language === "de" ? "Kein Fahrer zugewiesen" : "Şoför atanmadı"}</option>
+                        {isAwaitingConfirmation(order) ? (
+                          <p className="mt-1 text-sm font-black text-slate-950">
+                            {driver}
+                          </p>
+                        ) : (
+                          <select
+                            value={order.driverId || ""}
+                            disabled={updatingOrderId === order.id}
+                            onChange={(event) =>
+                              assignDriver(order, event.target.value)
+                            }
+                            className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-sm font-bold text-slate-950 outline-none focus:border-orange-500 disabled:bg-slate-100"
+                          >
+                            <option value="">{language === "de" ? "Kein Fahrer zugewiesen" : "Şoför atanmadı"}</option>
 
-                          {drivers.map((driver) => (
-                            <option key={driver.id} value={driver.id}>
-                              {`${driver.firstName || ""} ${driver.lastName || ""}`.trim() ||
-                                driver.email}
-                            </option>
-                          ))}
-                        </select>
+                            {drivers.map((driver) => (
+                              <option key={driver.id} value={driver.id}>
+                                {`${driver.firstName || ""} ${driver.lastName || ""}`.trim() ||
+                                  driver.email}
+                              </option>
+                            ))}
+                          </select>
+                        )}
                       </div>
 
                       <div>

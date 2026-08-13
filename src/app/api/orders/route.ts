@@ -1,4 +1,6 @@
+import { randomBytes } from "node:crypto";
 import { getSession } from "@/lib/session";
+import { sendOrderConfirmationEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
 import { withTenant } from "@/lib/tenant";
 import { NextRequest, NextResponse } from "next/server";
@@ -503,6 +505,17 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
 
     const orderNumber = createOrderNumber();
 
+    /*
+     * Bestellbestätigung per E-Mail-Link (Schutz vor Spaß-/Fake-Bestellungen):
+     * Kundenbestellungen brauchen einen Bestätigungsklick, bevor Personal sie
+     * bearbeiten kann. Händler sind bereits von der Firma geprüfte Konten,
+     * daher werden ihre Bestellungen direkt als bestätigt angelegt.
+     */
+    const requiresConfirmation = session.role === "CUSTOMER";
+    const confirmationToken = requiresConfirmation
+      ? randomBytes(32).toString("hex")
+      : null;
+
     const order = await prisma.$transaction(async (tx) => {
       for (const item of preparedItems) {
         const updated = await tx.product.updateMany({
@@ -555,6 +568,8 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
           totalAmount,
           deliveryAddress,
           customerNote: customerNote || null,
+          confirmationToken,
+          confirmedAt: requiresConfirmation ? null : new Date(),
 
           items: {
             create: preparedItems.map((item) => ({
@@ -611,12 +626,27 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
       return createdOrder;
     });
 
+    if (requiresConfirmation && confirmationToken) {
+      try {
+        const confirmUrl = `${request.nextUrl.protocol}//${request.nextUrl.host}/orders/confirm?token=${confirmationToken}`;
+
+        await sendOrderConfirmationEmail(
+          session.email,
+          order.orderNumber,
+          confirmUrl,
+        );
+      } catch (err) {
+        console.error("ORDER_CONFIRMATION_EMAIL_ERROR", err);
+      }
+    }
+
     return NextResponse.json(
       {
         message:
           language === "de"
             ? "Ihre Bestellung wurde erfolgreich aufgegeben."
             : "Siparişiniz başarıyla oluşturuldu.",
+        requiresConfirmation,
         order: {
           id: order.id,
           orderNumber: order.orderNumber,
