@@ -1,6 +1,7 @@
 import { getAdminWithPermissions } from "@/lib/admin-auth";
 import {
   House,
+  ArrowLeft,
   Boxes,
   ClipboardList,
   FileBarChart,
@@ -140,6 +141,17 @@ export default async function AdminPage() {
     <main className="min-h-screen bg-slate-100 p-6 lg:p-10">
       <div className="mx-auto max-w-7xl">
         <div className="mb-4 flex justify-end gap-3">
+          {admin.user.role === "SUPER_ADMIN" ||
+          admin.user.role === "PLATFORM_OWNER" ? (
+            <Link
+              href="/super-admin"
+              className="inline-flex items-center gap-2 rounded-xl bg-orange-500 px-4 py-2 font-semibold text-white shadow transition hover:bg-orange-600"
+            >
+              <ArrowLeft size={18} />
+              {lang === "de" ? "Zurück zu Super-Admin" : "Süper Admin'e Dön"}
+            </Link>
+          ) : null}
+
           <Link
             href="/"
             className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 font-semibold text-slate-900 shadow transition hover:bg-slate-100"
