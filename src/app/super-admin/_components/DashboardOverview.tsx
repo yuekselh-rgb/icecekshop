@@ -17,7 +17,7 @@ export type DashboardStats = {
   totalOrders: number;
   pfandReturnsCount: number;
   pfandReturnsAmount: number;
-  dailyRevenue: { date: string; amount: number }[];
+  dailyRevenue: { date: string; cost: number; revenue: number }[];
   categoryBreakdown: { label: { de: string; tr: string }; amount: number }[];
   cityBreakdown: { city: string; amount: number }[];
   customerTypeBreakdown: { private: number; business: number };
@@ -72,6 +72,8 @@ export default function DashboardOverview({
           pfandReturns: "Pfand-Rückgaben",
           revenueOverTime: "Umsatz-Verlauf",
           revenueOverTimeSubtitle: "Letzte 14 Tage",
+          purchasePrice: "Einkaufspreis",
+          salePrice: "Verkaufspreis",
           salesByCategory: "Umsatz nach Kategorie",
           salesByCategorySubtitle: "Letzte 30 Tage",
           salesByCity: "Umsatz nach Stadt",
@@ -93,6 +95,8 @@ export default function DashboardOverview({
           pfandReturns: "Pfand İadeleri",
           revenueOverTime: "Ciro Grafiği",
           revenueOverTimeSubtitle: "Son 14 gün",
+          purchasePrice: "Alış Fiyatı",
+          salePrice: "Satış Fiyatı",
           salesByCategory: "Kategoriye Göre Satış",
           salesByCategorySubtitle: "Son 30 gün",
           salesByCity: "Şehre Göre Satış",
@@ -128,7 +132,10 @@ export default function DashboardOverview({
     },
   ];
 
-  const maxDailyRevenue = Math.max(1, ...stats.dailyRevenue.map((day) => day.amount));
+  const maxDailyRevenue = Math.max(
+    1,
+    ...stats.dailyRevenue.map((day) => Math.max(day.cost, day.revenue)),
+  );
 
   const categoryTotal = stats.categoryBreakdown.reduce(
     (sum, entry) => sum + entry.amount,
@@ -208,24 +215,43 @@ export default function DashboardOverview({
       </div>
 
       <div className="rounded-3xl bg-white p-6 shadow-sm sm:p-8">
-        <div className="flex items-baseline justify-between">
-          <h2 className="text-lg font-black text-slate-950">
-            {t.revenueOverTime}
-          </h2>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-black text-slate-950">
+              {t.revenueOverTime}
+            </h2>
 
-          <span className="text-xs font-bold text-slate-400">
-            {t.revenueOverTimeSubtitle}
-          </span>
+            <span className="text-xs font-bold text-slate-400">
+              {t.revenueOverTimeSubtitle}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <span className="flex items-center gap-1.5 text-xs font-bold text-slate-500">
+              <span className="h-2.5 w-2.5 rounded-full bg-sky-500" />
+              {t.purchasePrice}
+            </span>
+
+            <span className="flex items-center gap-1.5 text-xs font-bold text-slate-500">
+              <span className="h-2.5 w-2.5 rounded-full bg-orange-500" />
+              {t.salePrice}
+            </span>
+          </div>
         </div>
 
-        {stats.dailyRevenue.every((day) => day.amount === 0) ? (
+        {stats.dailyRevenue.every((day) => day.cost === 0 && day.revenue === 0) ? (
           <p className="mt-8 text-sm font-bold text-slate-400">{t.noData}</p>
         ) : (
           <div className="mt-8 flex h-48 items-stretch gap-2 sm:gap-3">
             {stats.dailyRevenue.map((day) => {
-              const heightPercent = Math.max(
-                4,
-                (day.amount / maxDailyRevenue) * 100,
+              const costHeightPercent = Math.max(
+                2,
+                (day.cost / maxDailyRevenue) * 100,
+              );
+
+              const revenueHeightPercent = Math.max(
+                2,
+                (day.revenue / maxDailyRevenue) * 100,
               );
 
               return (
@@ -233,13 +259,17 @@ export default function DashboardOverview({
                   key={day.date}
                   className="flex flex-1 flex-col items-center gap-2"
                 >
-                  <div
-                    title={formatEuro(day.amount)}
-                    className="flex w-full flex-1 items-end"
-                  >
+                  <div className="flex w-full flex-1 items-end justify-center gap-1">
                     <div
-                      style={{ height: `${heightPercent}%` }}
-                      className="w-full rounded-t-md bg-orange-500 transition-all"
+                      title={`${t.purchasePrice}: ${formatEuro(day.cost)}`}
+                      style={{ height: `${costHeightPercent}%` }}
+                      className="w-2.5 rounded-t-md bg-sky-500 transition-all sm:w-3"
+                    />
+
+                    <div
+                      title={`${t.salePrice}: ${formatEuro(day.revenue)}`}
+                      style={{ height: `${revenueHeightPercent}%` }}
+                      className="w-2.5 rounded-t-md bg-orange-500 transition-all sm:w-3"
                     />
                   </div>
 

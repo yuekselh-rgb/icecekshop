@@ -31,7 +31,7 @@ async function loadDashboardStats(tenantId: string): Promise<DashboardStats> {
     revenueAgg,
     totalOrders,
     pfandAgg,
-    recentOrdersForChart,
+    recentItemsForChart,
     recentItemsForCategory,
     recentOrdersForCityAndType,
   ] = await Promise.all([
@@ -54,13 +54,20 @@ async function loadDashboardStats(tenantId: string): Promise<DashboardStats> {
       _sum: { approvedAmount: true },
     }),
 
-    prisma.order.findMany({
+    prisma.orderItem.findMany({
       where: {
-        tenantId,
-        status: { not: "CANCELLED" },
-        createdAt: { gte: fourteenDaysAgo },
+        order: {
+          tenantId,
+          status: { not: "CANCELLED" },
+          createdAt: { gte: fourteenDaysAgo },
+        },
       },
-      select: { createdAt: true, totalAmount: true },
+      select: {
+        price: true,
+        quantity: true,
+        order: { select: { createdAt: true } },
+        product: { select: { purchasePrice: true } },
+      },
     }),
 
     prisma.orderItem.findMany({
@@ -108,24 +115,32 @@ async function loadDashboardStats(tenantId: string): Promise<DashboardStats> {
 
   // Umsatz-Verlauf: letzte 14 Tage, tageweise aufsummiert (kein
   // datenbankübergreifend sicheres groupBy-nach-Tag in Prisma, daher
-  // Bucketing hier im Code).
-  const dailyBuckets = new Map<string, number>();
+  // Bucketing hier im Code). Einkaufspreis kommt aus Product.purchasePrice
+  // zum aktuellen Stand (kein historischer Einkaufspreis-Snapshot pro
+  // Bestellung vorhanden).
+  const dailyBuckets = new Map<string, { cost: number; revenue: number }>();
 
   for (let i = 0; i < 14; i += 1) {
     const day = new Date(fourteenDaysAgo);
     day.setDate(fourteenDaysAgo.getDate() + i);
-    dailyBuckets.set(dateKey(day), 0);
+    dailyBuckets.set(dateKey(day), { cost: 0, revenue: 0 });
   }
 
-  for (const order of recentOrdersForChart) {
-    const key = dateKey(order.createdAt);
-    dailyBuckets.set(key, (dailyBuckets.get(key) ?? 0) + Number(order.totalAmount));
+  for (const item of recentItemsForChart) {
+    const key = dateKey(item.order.createdAt);
+    const bucket = dailyBuckets.get(key);
+
+    if (!bucket) {
+      continue;
+    }
+
+    bucket.revenue += Number(item.price) * item.quantity;
+    bucket.cost += Number(item.product.purchasePrice) * item.quantity;
   }
 
-  const dailyRevenue = Array.from(dailyBuckets.entries()).map(([date, amount]) => ({
-    date,
-    amount,
-  }));
+  const dailyRevenue = Array.from(dailyBuckets.entries()).map(
+    ([date, { cost, revenue }]) => ({ date, cost, revenue }),
+  );
 
   // Umsatz nach Kategorie (letzte 30 Tage).
   const categoryTotals = new Map<
