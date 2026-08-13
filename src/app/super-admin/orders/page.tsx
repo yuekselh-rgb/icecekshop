@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  ArrowLeft,
   ChevronDown,
   Loader2,
   PackageCheck,
@@ -1455,27 +1454,18 @@ export default function SuperAdminOrdersPage() {
 
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-slate-100">
+      <div className="flex min-h-[60vh] items-center justify-center">
         <div className="flex items-center gap-3 font-bold text-slate-600">
           <Loader2 className="animate-spin" />
           {language === "de" ? "Bestellungen werden geladen..." : "Siparişler yükleniyor..."}
         </div>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-slate-100 p-4 sm:p-6 lg:p-10">
-      <div className="mx-auto max-w-7xl">
-        <Link
-          href="/super-admin"
-          className="inline-flex items-center gap-2 font-bold text-slate-600 hover:text-orange-500"
-        >
-          <ArrowLeft size={18} />
-          Super Admin
-        </Link>
-
-        <section className="mt-6 rounded-[32px] bg-slate-950 p-7 text-white sm:p-10">
+    <div className="mx-auto max-w-7xl">
+      <section className="rounded-[32px] bg-slate-950 p-7 text-white sm:p-10">
           <PackageCheck size={30} className="text-orange-400" />
 
           <h1 className="mt-4 text-4xl font-black">{language === "de" ? "Alle Bestellungen" : "Tüm Siparişler"}</h1>
@@ -2429,6 +2419,5 @@ export default function SuperAdminOrdersPage() {
           )}
         </section>
       </div>
-    </main>
   );
 }

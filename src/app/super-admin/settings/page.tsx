@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  ArrowLeft,
   Building2,
   ImageIcon,
   Loader2,
@@ -9,7 +8,6 @@ import {
   Trash2,
   Upload,
 } from "lucide-react";
-import Link from "next/link";
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 
@@ -495,29 +493,20 @@ export default function CompanySettingsPage() {
 
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-slate-100">
+      <div className="flex min-h-[60vh] items-center justify-center">
         <div className="flex items-center gap-3 font-bold text-slate-600">
           <Loader2 className="animate-spin" />
           {language === "de"
             ? "Firmeneinstellungen werden geladen..."
             : "Firma ayarları yükleniyor..."}
         </div>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-slate-100 p-4 sm:p-6 lg:p-10">
-      <div className="mx-auto max-w-5xl">
-        <Link
-          href="/super-admin"
-          className="inline-flex items-center gap-2 font-bold text-slate-600 transition hover:text-orange-500"
-        >
-          <ArrowLeft size={18} />
-          {language === "de" ? "Super-Admin" : "Süper Admin"}
-        </Link>
-
-        <section className="mt-6 rounded-[32px] bg-slate-950 p-7 text-white sm:p-10">
+    <div className="mx-auto max-w-5xl">
+      <section className="rounded-[32px] bg-slate-950 p-7 text-white sm:p-10">
           <Building2 size={32} className="text-orange-400" />
 
           <p className="mt-5 font-bold text-orange-400">{language === "de" ? "Systemeinstellungen" : "Sistem Ayarları"}</p>
@@ -1365,6 +1354,5 @@ export default function CompanySettingsPage() {
           </button>
         </form>
       </div>
-    </main>
   );
 }

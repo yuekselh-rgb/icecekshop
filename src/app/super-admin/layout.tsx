@@ -1,6 +1,8 @@
 import { getAdminSession } from "@/lib/admin-auth";
 import { redirect } from "next/navigation";
 
+import SuperAdminSidebar from "./_components/SuperAdminSidebar";
+
 export const dynamic = "force-dynamic";
 
 export default async function SuperAdminLayout({
@@ -18,5 +20,5 @@ export default async function SuperAdminLayout({
     redirect("/");
   }
 
-  return children;
+  return <SuperAdminSidebar>{children}</SuperAdminSidebar>;
 }

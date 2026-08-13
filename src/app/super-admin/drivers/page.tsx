@@ -1,13 +1,11 @@
 "use client";
 
 import {
-  ArrowLeft,
   Loader2,
   Plus,
   Truck,
   UserRound,
 } from "lucide-react";
-import Link from "next/link";
 import {
   FormEvent,
   useEffect,
@@ -220,17 +218,8 @@ export default function DriverManagementPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-100 p-4 sm:p-6 lg:p-10">
-      <div className="mx-auto max-w-7xl">
-        <Link
-          href="/super-admin"
-          className="inline-flex items-center gap-2 font-bold text-slate-600 hover:text-orange-500"
-        >
-          <ArrowLeft size={18} />
-          {t.back}
-        </Link>
-
-        <div className="mt-6 rounded-[32px] bg-slate-950 p-7 text-white sm:p-10">
+    <div className="mx-auto max-w-7xl">
+      <div className="rounded-[32px] bg-slate-950 p-7 text-white sm:p-10">
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-500">
             <Truck size={28} />
           </div>
@@ -398,6 +387,5 @@ export default function DriverManagementPage() {
           </section>
         </div>
       </div>
-    </main>
   );
 }

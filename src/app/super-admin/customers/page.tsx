@@ -150,18 +150,17 @@ export default function MusterilerPage() {
 
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-slate-100">
+      <div className="flex min-h-[60vh] items-center justify-center">
         <div className="flex items-center gap-3 font-bold text-slate-600">
           <Loader2 className="animate-spin" />
           {t.loading}
         </div>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-slate-100 p-6">
-      <div className="mx-auto max-w-7xl">
+    <div className="mx-auto max-w-7xl">
         <div className="mb-6 flex items-center justify-between">
           <h1 className="text-4xl font-black">{t.title}</h1>
 
@@ -270,6 +269,5 @@ export default function MusterilerPage() {
           </div>
         )}
       </div>
-    </main>
   );
 }

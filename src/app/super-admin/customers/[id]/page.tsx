@@ -96,11 +96,11 @@ export default async function CustomerDetailPage({
 
   if (!customer) {
     return (
-      <main className="p-10">
+      <div>
         <h1 className="text-2xl font-black">
           {t.notFound}
         </h1>
-      </main>
+      </div>
     );
   }
 
@@ -125,8 +125,7 @@ export default async function CustomerDetailPage({
 
 
   return (
-    <main className="min-h-screen bg-slate-100 p-6">
-      <div className="mx-auto max-w-7xl space-y-6">
+    <div className="mx-auto max-w-7xl space-y-6">
 
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-black">
@@ -300,6 +299,5 @@ export default async function CustomerDetailPage({
         </div>
 
       </div>
-    </main>
   );
 }

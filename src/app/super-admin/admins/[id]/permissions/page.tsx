@@ -619,21 +619,20 @@ export default function AdminPermissionsPage() {
 
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-slate-100">
+      <div className="flex min-h-[60vh] items-center justify-center">
         <div className="flex items-center gap-3 font-bold text-slate-600">
           <Loader2 className="animate-spin" />
           {language === "de"
             ? "Berechtigungen werden geladen..."
             : "Yetkiler yükleniyor..."}
         </div>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-slate-100 p-4 sm:p-6 lg:p-10">
-      <div className="mx-auto max-w-7xl">
-        <Link
+    <div className="mx-auto max-w-7xl">
+      <Link
           href="/super-admin/admins"
           className="inline-flex items-center gap-2 font-bold text-slate-600 transition hover:text-orange-500"
         >
@@ -788,6 +787,5 @@ export default function AdminPermissionsPage() {
           </button>
         </div>
       </div>
-    </main>
   );
 }

@@ -392,7 +392,7 @@ export default function TrashPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-100 p-4 sm:p-6 lg:p-10">
+    <>
       <div className="mx-auto max-w-7xl">
         <Link
           href="/super-admin/orders"
@@ -698,6 +698,6 @@ export default function TrashPage() {
           </div>
         </div>
       ) : null}
-    </main>
+    </>
   );
 }

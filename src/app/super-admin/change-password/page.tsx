@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
 
 export default function SuperAdminChangePasswordPage() {
@@ -94,16 +93,8 @@ export default function SuperAdminChangePasswordPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-100 p-6 lg:p-10">
-      <div className="mx-auto max-w-xl">
-        <Link
-          href="/super-admin"
-          className="mb-6 inline-block font-bold text-sky-600"
-        >
-          ← {t.back}
-        </Link>
-
-        <div className="rounded-3xl bg-white p-8 shadow">
+    <div className="mx-auto max-w-xl">
+      <div className="rounded-3xl bg-white p-8 shadow">
           <h1 className="text-3xl font-black">
             🔐 {t.title}
           </h1>
@@ -161,6 +152,5 @@ export default function SuperAdminChangePasswordPage() {
           </form>
         </div>
       </div>
-    </main>
   );
 }

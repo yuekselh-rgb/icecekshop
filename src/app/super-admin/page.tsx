@@ -1,143 +1,217 @@
-"use client";
+import { prisma } from "@/lib/prisma";
+import { getCurrentTenant } from "@/lib/tenant";
 
-import { House, Lock } from "lucide-react";
+import DashboardOverview, {
+  type DashboardStats,
+} from "./_components/DashboardOverview";
 
-import ResetSalesButton from "./_components/ResetSalesButton";
-import Link from "next/link";
-import LogoutButton from "@/components/LogoutButton";
-import { useLanguage } from "@/context/LanguageContext";
+export const dynamic = "force-dynamic";
 
-export default function SuperAdminPage() {
-  const { language, setLanguage } = useLanguage();
+function startOfDay(date: Date) {
+  const copy = new Date(date);
+  copy.setHours(0, 0, 0, 0);
+  return copy;
+}
 
-  return (
-    <main className="min-h-screen bg-slate-100 p-6 lg:p-10">
-      <div className="mx-auto max-w-7xl">
-        <div className="mb-4 flex justify-end gap-3">
-          <div className="flex items-center rounded-full border border-slate-200 bg-white p-1">
-            <button
-              type="button"
-              onClick={() => setLanguage("de")}
-              className={`rounded-full px-3 py-1.5 text-xs font-black transition ${
-                language === "de"
-                  ? "bg-slate-950 text-white"
-                  : "text-slate-500 hover:text-slate-950"
-              }`}
-            >
-              DE
-            </button>
+function dateKey(date: Date) {
+  return date.toISOString().slice(0, 10);
+}
 
-            <button
-              type="button"
-              onClick={() => setLanguage("tr")}
-              className={`rounded-full px-3 py-1.5 text-xs font-black transition ${
-                language === "tr"
-                  ? "bg-slate-950 text-white"
-                  : "text-slate-500 hover:text-slate-950"
-              }`}
-            >
-              TR
-            </button>
-          </div>
+async function loadDashboardStats(tenantId: string): Promise<DashboardStats> {
+  const today = startOfDay(new Date());
 
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 font-semibold text-slate-900 shadow transition hover:bg-slate-100"
-          >
-            <House size={18} />
-            {language === "de" ? "Startseite" : "Ana Sayfa"}
-          </Link>
+  const fourteenDaysAgo = new Date(today);
+  fourteenDaysAgo.setDate(today.getDate() - 13);
 
-          <LogoutButton
-            label={language === "de" ? "Abmelden" : "Çıkış Yap"}
-          />
-        </div>
+  const thirtyDaysAgo = new Date(today);
+  thirtyDaysAgo.setDate(today.getDate() - 29);
 
+  const [
+    totalCustomers,
+    revenueAgg,
+    totalOrders,
+    pfandAgg,
+    recentOrdersForChart,
+    recentItemsForCategory,
+    recentOrdersForCityAndType,
+  ] = await Promise.all([
+    prisma.user.count({
+      where: { tenantId, role: "CUSTOMER" },
+    }),
 
-        <div className="relative rounded-3xl bg-slate-950 p-8 text-white lg:min-h-[260px] lg:pr-[420px]">
-          <p className="font-bold text-orange-400">{language === "de" ? "Systemverwaltung" : "Sistem Yönetimi"}</p>
+    prisma.order.aggregate({
+      where: { tenantId, status: { not: "CANCELLED" } },
+      _sum: { totalAmount: true },
+    }),
 
-          <h1 className="mt-2 text-4xl font-black">{language === "de" ? "Super-Administrator" : "Super Admin"}</h1>
+    prisma.order.count({
+      where: { tenantId, status: { not: "CANCELLED" } },
+    }),
 
-          <p className="mt-3 text-slate-400">
-            {language === "de"
-              ? "Systemverwaltung und alle Admin-Berechtigungen."
-              : "Sistem yönetimi ve tüm yönetici yetkileri."}
-          </p>
+    prisma.pfandReturn.aggregate({
+      where: { tenantId, status: { notIn: ["PENDING", "CANCELLED"] } },
+      _count: { _all: true },
+      _sum: { approvedAmount: true },
+    }),
 
+    prisma.order.findMany({
+      where: {
+        tenantId,
+        status: { not: "CANCELLED" },
+        createdAt: { gte: fourteenDaysAgo },
+      },
+      select: { createdAt: true, totalAmount: true },
+    }),
 
-        <ResetSalesButton />
+    prisma.orderItem.findMany({
+      where: {
+        order: {
+          tenantId,
+          status: { not: "CANCELLED" },
+          createdAt: { gte: thirtyDaysAgo },
+        },
+      },
+      select: {
+        price: true,
+        quantity: true,
+        product: {
+          select: {
+            category: {
+              select: { name: true, nameDe: true, nameTr: true },
+            },
+          },
+        },
+      },
+    }),
 
-        </div>
+    prisma.order.findMany({
+      where: {
+        tenantId,
+        status: { not: "CANCELLED" },
+        createdAt: { gte: thirtyDaysAgo },
+      },
+      select: {
+        totalAmount: true,
+        user: {
+          select: {
+            customerType: true,
+            addresses: {
+              where: { isDefault: true },
+              select: { city: true },
+              take: 1,
+            },
+          },
+        },
+      },
+    }),
+  ]);
 
-        <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          <Link
-            href="/admin"
-            className="rounded-3xl bg-orange-500 p-7 font-black text-white shadow-sm"
-          >
-            {language === "de" ? "Zum Admin-Panel" : "Admin Paneline Git"}
-          </Link>
+  // Umsatz-Verlauf: letzte 14 Tage, tageweise aufsummiert (kein
+  // datenbankübergreifend sicheres groupBy-nach-Tag in Prisma, daher
+  // Bucketing hier im Code).
+  const dailyBuckets = new Map<string, number>();
 
-          <Link
-            href="/super-admin/admins"
-            className="rounded-3xl bg-white p-7 font-black text-slate-950 shadow-sm"
-          >
-            {language === "de" ? "Admin-Verwaltung" : "Admin Yönetimi"}
-          </Link>
+  for (let i = 0; i < 14; i += 1) {
+    const day = new Date(fourteenDaysAgo);
+    day.setDate(fourteenDaysAgo.getDate() + i);
+    dailyBuckets.set(dateKey(day), 0);
+  }
 
-          <Link
-            href="/super-admin/stock"
-            className="rounded-3xl bg-white p-7 font-black text-slate-950 shadow-sm"
-          >
-            {language === "de" ? "Lagerverwaltung" : "Stok Yönetimi"}
-          </Link>
+  for (const order of recentOrdersForChart) {
+    const key = dateKey(order.createdAt);
+    dailyBuckets.set(key, (dailyBuckets.get(key) ?? 0) + Number(order.totalAmount));
+  }
 
-          <Link
-            href="/super-admin/customers"
-            className="rounded-3xl bg-white p-7 font-black text-slate-950 shadow-sm"
-          >
-            {language === "de" ? "Kundenverwaltung" : "Müşteri Yönetimi"}
-          </Link>
+  const dailyRevenue = Array.from(dailyBuckets.entries()).map(([date, amount]) => ({
+    date,
+    amount,
+  }));
 
-          <Link
-            href="/super-admin/drivers"
-            className="rounded-3xl bg-white p-7 font-black text-slate-950 shadow-sm"
-          >
-            {language === "de" ? "Fahrerverwaltung" : "Şoför Yönetimi"}
-          </Link>
+  // Umsatz nach Kategorie (letzte 30 Tage).
+  const categoryTotals = new Map<
+    string,
+    { name: string; nameDe: string; nameTr: string; amount: number }
+  >();
 
-          <Link
-            href="/admin/dealers"
-            className="rounded-3xl bg-white p-7 font-black text-slate-950 shadow-sm"
-          >
-            {language === "de" ? "Händlerverwaltung" : "Bayi Yönetimi"}
-          </Link>
+  for (const item of recentItemsForCategory) {
+    const category = item.product.category;
+    const key = category.name;
 
-          <Link
-            href="/super-admin/orders"
-            className="rounded-3xl bg-white p-7 font-black text-slate-950 shadow-sm"
-          >
-            {language === "de" ? "Alle Bestellungen" : "Tüm Siparişler"}
-          </Link>
+    const existing = categoryTotals.get(key);
+    const amount = Number(item.price) * item.quantity;
 
-          <Link
-            href="/super-admin/settings"
-            className="rounded-3xl bg-white p-7 font-black text-slate-950 shadow-sm"
-          >
-            {language === "de" ? "Firmen- und Systemeinstellungen" : "Firma ve Sistem Ayarları"}
-          </Link>
+    if (existing) {
+      existing.amount += amount;
+    } else {
+      categoryTotals.set(key, {
+        name: category.name,
+        nameDe: category.nameDe || category.name,
+        nameTr: category.nameTr || category.name,
+        amount,
+      });
+    }
+  }
 
+  const categoryBreakdown = Array.from(categoryTotals.values())
+    .map((entry) => ({
+      label: { de: entry.nameDe, tr: entry.nameTr },
+      amount: entry.amount,
+    }))
+    .sort((first, second) => second.amount - first.amount);
 
-          <Link
-            href="/super-admin/change-password"
-            className="flex items-center gap-2 rounded-3xl bg-white p-7 font-black text-slate-950 shadow-sm"
-          >
-            <Lock size={20} className="text-orange-500" />
-            {language === "de" ? "Passwort ändern" : "Şifre Değiştir"}
-          </Link>
-        </div>
-      </div>
-    
-</main>
-  );
+  // Umsatz nach Stadt (letzte 30 Tage). Nähert sich über die als
+  // Standard markierte Kundenadresse an, da die im Order gespeicherte
+  // deliveryAddress ein reiner Text-Snapshot ohne Stadt-Feld ist.
+  const cityTotals = new Map<string, number>();
+  const customerTypeTotals = { private: 0, business: 0 };
+
+  for (const order of recentOrdersForCityAndType) {
+    const amount = Number(order.totalAmount);
+    const city = order.user.addresses[0]?.city?.trim();
+    const cityKey = city && city.length > 0 ? city : "__unknown__";
+
+    cityTotals.set(cityKey, (cityTotals.get(cityKey) ?? 0) + amount);
+
+    if (order.user.customerType === "BUSINESS") {
+      customerTypeTotals.business += amount;
+    } else {
+      customerTypeTotals.private += amount;
+    }
+  }
+
+  const cityBreakdown = Array.from(cityTotals.entries())
+    .map(([city, amount]) => ({ city, amount }))
+    .sort((first, second) => second.amount - first.amount);
+
+  return {
+    totalCustomers,
+    totalRevenue: Number(revenueAgg._sum.totalAmount ?? 0),
+    totalOrders,
+    pfandReturnsCount: pfandAgg._count._all,
+    pfandReturnsAmount: Number(pfandAgg._sum.approvedAmount ?? 0),
+    dailyRevenue,
+    categoryBreakdown,
+    cityBreakdown,
+    customerTypeBreakdown: customerTypeTotals,
+  };
+}
+
+export default async function SuperAdminPage() {
+  const tenant = await getCurrentTenant();
+
+  const stats = tenant
+    ? await loadDashboardStats(tenant.id)
+    : {
+        totalCustomers: 0,
+        totalRevenue: 0,
+        totalOrders: 0,
+        pfandReturnsCount: 0,
+        pfandReturnsAmount: 0,
+        dailyRevenue: [],
+        categoryBreakdown: [],
+        cityBreakdown: [],
+        customerTypeBreakdown: { private: 0, business: 0 },
+      };
+
+  return <DashboardOverview stats={stats} />;
 }

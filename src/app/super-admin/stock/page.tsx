@@ -1,14 +1,12 @@
 "use client";
 
 import {
-  ArrowLeft,
   Boxes,
   Loader2,
   Minus,
   Plus,
   Search,
 } from "lucide-react";
-import Link from "next/link";
 import {
   FormEvent,
   Fragment,
@@ -968,31 +966,20 @@ export default function SuperAdminStockPage() {
 
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-slate-100">
+      <div className="flex min-h-[60vh] items-center justify-center">
         <div className="flex items-center gap-3 font-bold text-slate-600">
           <Loader2
             className="animate-spin"
           />
           {t.loadingStock}
         </div>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-slate-100 p-4 sm:p-6 lg:p-10">
-      <div className="mx-auto min-w-0 w-full max-w-full">
-        <Link
-          href="/super-admin"
-          className="inline-flex items-center gap-2 font-bold text-slate-600 transition hover:text-orange-500"
-        >
-          <ArrowLeft
-            size={18}
-          />
-          {t.backLink}
-        </Link>
-
-        <section className="mt-6 rounded-[32px] bg-slate-950 p-7 text-white sm:p-10">
+    <div className="mx-auto min-w-0 w-full max-w-full overflow-x-hidden">
+      <section className="rounded-[32px] bg-slate-950 p-7 text-white sm:p-10">
           <Boxes
             size={30}
             className="text-orange-400"
@@ -1875,6 +1862,5 @@ export default function SuperAdminStockPage() {
         ) : null}
 
       </div>
-    </main>
   );
 }
