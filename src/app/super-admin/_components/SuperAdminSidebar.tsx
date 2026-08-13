@@ -10,6 +10,7 @@ import {
   Menu,
   Package,
   Settings,
+  Shield,
   ShieldCheck,
   Store,
   Trash2,
@@ -37,6 +38,11 @@ const navItems: NavItem[] = [
     href: "/super-admin",
     label: { de: "Dashboard", tr: "Panel" },
     icon: LayoutDashboard,
+  },
+  {
+    href: "/admin",
+    label: { de: "Zum Admin-Panel", tr: "Admin Paneline Git" },
+    icon: Shield,
   },
   {
     href: "/super-admin/admins",
