@@ -466,7 +466,7 @@ export default function Header() {
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="flex items-center rounded-full border border-[#05090a26] p-1">
+            <div className="hidden items-center rounded-full border border-[#05090a26] p-1 sm:flex">
               <button
                 type="button"
                 onClick={() => setLanguage("de")}
