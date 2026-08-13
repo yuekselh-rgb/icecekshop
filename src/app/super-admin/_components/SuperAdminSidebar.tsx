@@ -54,7 +54,7 @@ const navItems: NavItem[] = [
     icon: Truck,
   },
   {
-    href: "/admin/dealers",
+    href: "/super-admin/dealers",
     label: { de: "Händlerverwaltung", tr: "Bayi Yönetimi" },
     icon: Store,
   },
