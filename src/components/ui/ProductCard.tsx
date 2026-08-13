@@ -259,11 +259,12 @@ export default function ProductCard({
               type="button"
               disabled={!inStock}
               onClick={handleAddToCart}
+              aria-label={added ? (language === 'de' ? 'Hinzugefügt' : 'Eklendi') : t.addToCart}
               className={`flex h-8 min-w-0 flex-1 items-center justify-center gap-1 rounded-full px-2 text-[10px] font-bold text-white transition ${added ? 'bg-[#1B4965]' : 'bg-[#05090A] hover:bg-[#1B4965]'} disabled:bg-[#B4B5B5]`}
             >
               {added ? <Check size={15} /> : <ShoppingCart size={15} />}
 
-              <span className="truncate">
+              <span className="hidden truncate sm:inline">
                 {added ? (language === 'de' ? 'Hinzugefügt' : 'Eklendi') : t.addToCart}
               </span>
             </button>
