@@ -250,7 +250,7 @@ export default function DashboardOverview({
         {stats.dailyRevenue.every((day) => day.cost === 0 && day.revenue === 0) ? (
           <p className="mt-8 text-sm font-bold text-slate-400">{t.noData}</p>
         ) : (
-          <div className="mt-8 flex h-48 items-stretch gap-2 sm:gap-3">
+          <div className="mt-12 flex h-48 items-stretch gap-2 sm:gap-3">
             {stats.dailyRevenue.map((day, index) => {
               const costHeightPercent = Math.max(
                 2,
@@ -284,54 +284,77 @@ export default function DashboardOverview({
                   ? ((hoveredValue - previousValue) / previousValue) * 100
                   : null;
 
+              // Klemmt die Tooltip-Position, damit sie bei sehr hohen
+              // Balken nicht in die Legende/Überschrift hineinragt.
+              const hoveredHeightPercent = hoveredBar
+                ? Math.min(
+                    hoveredBar.series === "cost"
+                      ? costHeightPercent
+                      : revenueHeightPercent,
+                    70,
+                  )
+                : 0;
+
+              const horizontalAnchor =
+                index <= 1
+                  ? "left-0"
+                  : index >= stats.dailyRevenue.length - 2
+                    ? "right-0"
+                    : "left-1/2 -translate-x-1/2";
+
               return (
                 <div
                   key={day.date}
-                  className="relative flex flex-1 flex-col items-center gap-2"
+                  className="flex flex-1 flex-col items-center gap-2"
                 >
-                  {isHoveredHere && hoveredBar ? (
-                    <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 w-max -translate-x-1/2 rounded-xl bg-white px-4 py-3 shadow-xl ring-1 ring-slate-900/10">
-                      <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500">
-                        <span
-                          className="h-2 w-2 rounded-full"
-                          style={{
-                            backgroundColor:
-                              hoveredBar.series === "cost"
-                                ? "#0ea5e9"
-                                : "#f97316",
-                          }}
-                        />
-                        {hoveredBar.series === "cost"
-                          ? t.purchasePrice
-                          : t.salePrice}
-                      </div>
-
-                      <div className="mt-1 flex items-center gap-2">
-                        <span className="text-base font-black text-slate-950">
-                          {formatEuro(hoveredValue)}
-                        </span>
-
-                        {trendPercent !== null ? (
+                  <div className="relative flex w-full flex-1 items-end justify-center gap-1">
+                    {isHoveredHere && hoveredBar ? (
+                      <div
+                        style={{
+                          bottom: `calc(${hoveredHeightPercent}% + 10px)`,
+                        }}
+                        className={`pointer-events-none absolute z-20 w-max max-w-[200px] rounded-xl bg-white px-4 py-3 shadow-xl ring-1 ring-slate-900/10 ${horizontalAnchor}`}
+                      >
+                        <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500">
                           <span
-                            className={`flex items-center gap-0.5 text-xs font-bold ${
-                              trendPercent >= 0
-                                ? "text-emerald-600"
-                                : "text-red-500"
-                            }`}
-                          >
-                            {trendPercent >= 0 ? (
-                              <ArrowUpRight size={13} />
-                            ) : (
-                              <ArrowDownRight size={13} />
-                            )}
-                            {Math.abs(trendPercent).toFixed(1)}%
-                          </span>
-                        ) : null}
-                      </div>
-                    </div>
-                  ) : null}
+                            className="h-2 w-2 rounded-full"
+                            style={{
+                              backgroundColor:
+                                hoveredBar.series === "cost"
+                                  ? "#0ea5e9"
+                                  : "#f97316",
+                            }}
+                          />
+                          {hoveredBar.series === "cost"
+                            ? t.purchasePrice
+                            : t.salePrice}
+                        </div>
 
-                  <div className="flex w-full flex-1 items-end justify-center gap-1">
+                        <div className="mt-1 flex items-center gap-2">
+                          <span className="text-base font-black text-slate-950">
+                            {formatEuro(hoveredValue)}
+                          </span>
+
+                          {trendPercent !== null ? (
+                            <span
+                              className={`flex items-center gap-0.5 text-xs font-bold ${
+                                trendPercent >= 0
+                                  ? "text-emerald-600"
+                                  : "text-red-500"
+                              }`}
+                            >
+                              {trendPercent >= 0 ? (
+                                <ArrowUpRight size={13} />
+                              ) : (
+                                <ArrowDownRight size={13} />
+                              )}
+                              {Math.abs(trendPercent).toFixed(1)}%
+                            </span>
+                          ) : null}
+                        </div>
+                      </div>
+                    ) : null}
+
                     <div
                       onMouseEnter={() =>
                         setHoveredBar({ date: day.date, series: "cost" })
