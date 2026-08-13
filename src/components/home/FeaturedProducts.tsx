@@ -2,16 +2,16 @@
 
 import ProductCard from "@/components/ui/ProductCard";
 import { useLanguage } from "@/context/LanguageContext";
-import { ArrowRight, Loader2 } from "lucide-react";
-import Link from "next/link";
+import { ChevronDown, ChevronUp, Loader2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 /*
- * Auf der Startseite wird pro Kategorie nur eine Vorschau gezeigt --
- * bei allen Produkten inline auf einer Seite wurde die Startseite so
- * hoch (30.000px+), dass sie in manchen Browsern/Geräten nicht mehr
- * vollständig gerendert wurde (GPU-Kompositions-Limit). Die vollständige,
- * filterbare Liste bleibt auf /products.
+ * Auf der Startseite wird pro Kategorie zunächst nur eine Vorschau
+ * gezeigt -- bei allen Produkten inline auf einer Seite wurde die
+ * Startseite so hoch (30.000px+), dass sie in manchen Browsern/Geräten
+ * nicht mehr vollständig gerendert wurde (GPU-Kompositions-Limit).
+ * "Alle anzeigen" blendet die restlichen Produkte der jeweiligen
+ * Kategorie direkt ein, statt auf /products zu verlinken.
  */
 const PREVIEW_COUNT = 8;
 
@@ -56,6 +56,24 @@ export default function FeaturedProducts({
   const [error, setError] = useState("");
   const [showOffers, setShowOffers] = useState(initialShowOffers);
 
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
+    new Set(),
+  );
+
+  function toggleCategoryExpanded(slug: string) {
+    setExpandedCategories((current) => {
+      const next = new Set(current);
+
+      if (next.has(slug)) {
+        next.delete(slug);
+      } else {
+        next.add(slug);
+      }
+
+      return next;
+    });
+  }
+
   const t =
     language === "de"
       ? {
@@ -71,6 +89,7 @@ export default function FeaturedProducts({
           loading: "Produkte werden geladen...",
           error: "Produkte konnten nicht geladen werden.",
           showAll: "Alle anzeigen",
+          showLess: "Weniger anzeigen",
         }
       : {
           offersEyebrow: "Güncel Kampanyalar",
@@ -85,6 +104,7 @@ export default function FeaturedProducts({
           loading: "Ürünler yükleniyor...",
           error: "Ürünler yüklenemedi.",
           showAll: "Tümünü gör",
+          showLess: "Daha az göster",
         };
 
   useEffect(() => {
@@ -270,8 +290,12 @@ export default function FeaturedProducts({
 
 
 {groupedProducts.map((group) => {
-  const visibleProducts = group.products.slice(0, PREVIEW_COUNT);
   const hasMore = group.products.length > PREVIEW_COUNT;
+  const isExpanded = expandedCategories.has(group.slug);
+  const visibleProducts =
+    isExpanded || !hasMore
+      ? group.products
+      : group.products.slice(0, PREVIEW_COUNT);
 
   return (
     <section
@@ -287,13 +311,18 @@ export default function FeaturedProducts({
         </h3>
 
         {hasMore ? (
-          <Link
-            href={`/products?category=${group.slug}`}
+          <button
+            type="button"
+            onClick={() => toggleCategoryExpanded(group.slug)}
             className="flex shrink-0 items-center gap-1.5 text-sm font-semibold text-[#1B4965] transition hover:text-[#05090A]"
           >
-            {t.showAll}
-            <ArrowRight size={16} />
-          </Link>
+            {isExpanded ? t.showLess : t.showAll}
+            {isExpanded ? (
+              <ChevronUp size={16} />
+            ) : (
+              <ChevronDown size={16} />
+            )}
+          </button>
         ) : null}
       </div>
 
