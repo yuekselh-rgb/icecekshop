@@ -1,11 +1,14 @@
 "use client";
 
 import {
+  ArrowDownRight,
+  ArrowUpRight,
   Banknote,
   PackageCheck,
   Recycle,
   Users,
 } from "lucide-react";
+import { useState } from "react";
 
 import { useLanguage } from "@/context/LanguageContext";
 
@@ -59,6 +62,11 @@ export default function DashboardOverview({
   stats: DashboardStats;
 }) {
   const { language } = useLanguage();
+
+  const [hoveredBar, setHoveredBar] = useState<{
+    date: string;
+    series: "cost" | "revenue";
+  } | null>(null);
 
   const t =
     language === "de"
@@ -243,7 +251,7 @@ export default function DashboardOverview({
           <p className="mt-8 text-sm font-bold text-slate-400">{t.noData}</p>
         ) : (
           <div className="mt-8 flex h-48 items-stretch gap-2 sm:gap-3">
-            {stats.dailyRevenue.map((day) => {
+            {stats.dailyRevenue.map((day, index) => {
               const costHeightPercent = Math.max(
                 2,
                 (day.cost / maxDailyRevenue) * 100,
@@ -254,22 +262,92 @@ export default function DashboardOverview({
                 (day.revenue / maxDailyRevenue) * 100,
               );
 
+              const previousDay = stats.dailyRevenue[index - 1];
+
+              const isHoveredHere =
+                hoveredBar !== null && hoveredBar.date === day.date;
+
+              const hoveredValue = hoveredBar
+                ? hoveredBar.series === "cost"
+                  ? day.cost
+                  : day.revenue
+                : 0;
+
+              const previousValue = hoveredBar
+                ? hoveredBar.series === "cost"
+                  ? previousDay?.cost
+                  : previousDay?.revenue
+                : undefined;
+
+              const trendPercent =
+                previousValue !== undefined && previousValue > 0
+                  ? ((hoveredValue - previousValue) / previousValue) * 100
+                  : null;
+
               return (
                 <div
                   key={day.date}
-                  className="flex flex-1 flex-col items-center gap-2"
+                  className="relative flex flex-1 flex-col items-center gap-2"
                 >
+                  {isHoveredHere && hoveredBar ? (
+                    <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 w-max -translate-x-1/2 rounded-xl bg-white px-4 py-3 shadow-xl ring-1 ring-slate-900/10">
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500">
+                        <span
+                          className="h-2 w-2 rounded-full"
+                          style={{
+                            backgroundColor:
+                              hoveredBar.series === "cost"
+                                ? "#0ea5e9"
+                                : "#f97316",
+                          }}
+                        />
+                        {hoveredBar.series === "cost"
+                          ? t.purchasePrice
+                          : t.salePrice}
+                      </div>
+
+                      <div className="mt-1 flex items-center gap-2">
+                        <span className="text-base font-black text-slate-950">
+                          {formatEuro(hoveredValue)}
+                        </span>
+
+                        {trendPercent !== null ? (
+                          <span
+                            className={`flex items-center gap-0.5 text-xs font-bold ${
+                              trendPercent >= 0
+                                ? "text-emerald-600"
+                                : "text-red-500"
+                            }`}
+                          >
+                            {trendPercent >= 0 ? (
+                              <ArrowUpRight size={13} />
+                            ) : (
+                              <ArrowDownRight size={13} />
+                            )}
+                            {Math.abs(trendPercent).toFixed(1)}%
+                          </span>
+                        ) : null}
+                      </div>
+                    </div>
+                  ) : null}
+
                   <div className="flex w-full flex-1 items-end justify-center gap-1">
                     <div
-                      title={`${t.purchasePrice}: ${formatEuro(day.cost)}`}
+                      onMouseEnter={() =>
+                        setHoveredBar({ date: day.date, series: "cost" })
+                      }
+                      onMouseLeave={() => setHoveredBar(null)}
                       style={{ height: `${costHeightPercent}%` }}
-                      className="w-2.5 rounded-t-md bg-sky-500 transition-all sm:w-3"
+                      className="w-2.5 rounded-t-md bg-sky-500 transition-all hover:brightness-110 sm:w-3"
                     />
 
                     <div
-                      title={`${t.salePrice}: ${formatEuro(day.revenue)}`}
+                      onMouseEnter={() =>
+                        setHoveredBar({ date: day.date, series: "revenue" })
+                      }
+                      onMouseLeave={() => setHoveredBar(null)}
                       style={{ height: `${revenueHeightPercent}%` }}
-                      className="w-2.5 rounded-t-md bg-orange-500 transition-all sm:w-3"
+                      className="w-2.5 rounded-t-md bg-orange-500 transition-all hover:brightness-110 sm:w-3"
                     />
                   </div>
 
