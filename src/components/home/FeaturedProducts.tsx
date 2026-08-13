@@ -2,8 +2,18 @@
 
 import ProductCard from "@/components/ui/ProductCard";
 import { useLanguage } from "@/context/LanguageContext";
-import { Loader2 } from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+
+/*
+ * Auf der Startseite wird pro Kategorie nur eine Vorschau gezeigt --
+ * bei allen Produkten inline auf einer Seite wurde die Startseite so
+ * hoch (30.000px+), dass sie in manchen Browsern/Geräten nicht mehr
+ * vollständig gerendert wurde (GPU-Kompositions-Limit). Die vollständige,
+ * filterbare Liste bleibt auf /products.
+ */
+const PREVIEW_COUNT = 8;
 
 type LocalizedText = {
   tr: string;
@@ -60,6 +70,7 @@ export default function FeaturedProducts({
           noProducts: "In dieser Kategorie sind noch keine Produkte vorhanden.",
           loading: "Produkte werden geladen...",
           error: "Produkte konnten nicht geladen werden.",
+          showAll: "Alle anzeigen",
         }
       : {
           offersEyebrow: "Güncel Kampanyalar",
@@ -73,6 +84,7 @@ export default function FeaturedProducts({
           noProducts: "Bu kategoride henüz ürün bulunmuyor.",
           loading: "Ürünler yükleniyor...",
           error: "Ürünler yüklenemedi.",
+          showAll: "Tümünü gör",
         };
 
   useEffect(() => {
@@ -256,24 +268,41 @@ export default function FeaturedProducts({
                 </p>
               </div>
 
-              
-{groupedProducts.map((group) => (
-  <section
-    key={group.slug}
-    data-home-product-category={group.slug}
-    className="mb-10 scroll-mt-28"
-  >
-    <h3 className="mb-4 text-2xl font-medium text-[#05090A]">
-      {language === "de"
-        ? group.category.de
-        : group.category.tr}
-    </h3>
 
-    <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-      {group.products.map(renderProductCard)}
-    </div>
-  </section>
-))}
+{groupedProducts.map((group) => {
+  const visibleProducts = group.products.slice(0, PREVIEW_COUNT);
+  const hasMore = group.products.length > PREVIEW_COUNT;
+
+  return (
+    <section
+      key={group.slug}
+      data-home-product-category={group.slug}
+      className="mb-10 scroll-mt-28"
+    >
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <h3 className="text-2xl font-medium text-[#05090A]">
+          {language === "de"
+            ? group.category.de
+            : group.category.tr}
+        </h3>
+
+        {hasMore ? (
+          <Link
+            href={`/products?category=${group.slug}`}
+            className="flex shrink-0 items-center gap-1.5 text-sm font-semibold text-[#1B4965] transition hover:text-[#05090A]"
+          >
+            {t.showAll}
+            <ArrowRight size={16} />
+          </Link>
+        ) : null}
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        {visibleProducts.map(renderProductCard)}
+      </div>
+    </section>
+  );
+})}
 
             </section>
           </div>
