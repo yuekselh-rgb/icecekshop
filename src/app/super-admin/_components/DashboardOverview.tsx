@@ -250,7 +250,8 @@ export default function DashboardOverview({
         {stats.dailyRevenue.every((day) => day.cost === 0 && day.revenue === 0) ? (
           <p className="mt-8 text-sm font-bold text-slate-400">{t.noData}</p>
         ) : (
-          <div className="mt-12 flex h-48 items-stretch gap-2 sm:gap-3">
+          <div className="mt-12 overflow-x-auto">
+          <div className="flex h-48 min-w-[700px] items-stretch gap-2 sm:gap-3">
             {stats.dailyRevenue.map((day, index) => {
               const costHeightPercent = Math.max(
                 2,
@@ -380,6 +381,7 @@ export default function DashboardOverview({
                 </div>
               );
             })}
+          </div>
           </div>
         )}
       </div>
