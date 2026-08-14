@@ -198,6 +198,10 @@ export default function AdminProductsPage() {
 
   const [saving, setSaving] = useState(false);
 
+  const [autoSaveStatus, setAutoSaveStatus] = useState<
+    "idle" | "saving" | "saved" | "error"
+  >("idle");
+
   const [imageUploading, setImageUploading] = useState(false);
 
   const [imageUploadError, setImageUploadError] = useState("");
@@ -243,6 +247,20 @@ export default function AdminProductsPage() {
       });
     }
   }, [showCategoryForm, editingCategory?.id]);
+
+  useEffect(() => {
+    if (autoSaveStatus !== "saved" && autoSaveStatus !== "error") {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      setAutoSaveStatus("idle");
+    }, 2500);
+
+    return () => {
+      window.clearTimeout(timeout);
+    };
+  }, [autoSaveStatus]);
 
   const [showStockUnitForm, setShowStockUnitForm] = useState(false);
 
@@ -581,6 +599,7 @@ export default function AdminProductsPage() {
     setPfandEnabled(false);
     setShowCategoryForm(false);
     setShowProductForm(true);
+    setAutoSaveStatus("idle");
     setError("");
     setSuccess("");
   }
@@ -641,6 +660,7 @@ export default function AdminProductsPage() {
 
     setShowCategoryForm(false);
     setShowProductForm(true);
+    setAutoSaveStatus("idle");
     setError("");
     setSuccess("");
   }
@@ -1080,6 +1100,76 @@ export default function AdminProductsPage() {
     }
   }
 
+  async function handleProductFieldBlur() {
+    if (!editingProduct) {
+      return;
+    }
+
+    setAutoSaveStatus("saving");
+
+    try {
+      const response = await fetch(
+        `/api/admin/products/${editingProduct.id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            ...form,
+
+            price: form.price === "" ? undefined : Number(form.price),
+
+            oldPrice: form.oldPrice === "" ? null : Number(form.oldPrice),
+
+            pfandAmount: pfandEnabled ? Number(form.pfandAmount || 0) : 0,
+
+            stock: Number(form.stock || 0),
+
+            stockUnit: form.stockUnit,
+
+            unitsPerPackage: Math.max(1, Number(form.unitsPerPackage || 1)),
+
+            minStock: Number(form.minStock || 0),
+
+            packageInfo: form.packageInfo.trim(),
+          }),
+        },
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setAutoSaveStatus("error");
+
+        setError(
+          data.error ||
+            (language === "de"
+              ? "Änderung konnte nicht gespeichert werden."
+              : "Değişiklik kaydedilemedi."),
+        );
+
+        return;
+      }
+
+      setProducts((current) =>
+        current.map((product) =>
+          product.id === data.product.id ? data.product : product,
+        ),
+      );
+
+      setAutoSaveStatus("saved");
+    } catch {
+      setAutoSaveStatus("error");
+
+      setError(
+        language === "de"
+          ? "Beim Speichern ist ein Fehler aufgetreten."
+          : "Kaydedilirken hata oluştu.",
+      );
+    }
+  }
+
   async function toggleProductOffer(product: Product) {
     if (!permissions?.manageOffers) {
       setError(
@@ -1259,15 +1349,43 @@ export default function AdminProductsPage() {
             className="mt-6 rounded-[24px] bg-white p-5 shadow-sm"
           >
             <div className="flex items-center justify-between gap-4">
-              <h2 className="text-2xl font-black text-slate-950">
-                {editingProduct
-                  ? language === "de"
-                    ? "Produkt bearbeiten"
-                    : "Ürünü Düzenle"
-                  : language === "de"
-                    ? "Neues Produkt hinzufügen"
-                    : "Yeni Ürün Ekle"}
-              </h2>
+              <div>
+                <h2 className="text-2xl font-black text-slate-950">
+                  {editingProduct
+                    ? language === "de"
+                      ? "Produkt bearbeiten"
+                      : "Ürünü Düzenle"
+                    : language === "de"
+                      ? "Neues Produkt hinzufügen"
+                      : "Yeni Ürün Ekle"}
+                </h2>
+
+                {editingProduct ? (
+                  <p className="mt-1 text-xs font-bold">
+                    {autoSaveStatus === "saving" ? (
+                      <span className="text-slate-400">
+                        {language === "de" ? "Wird gespeichert…" : "Kaydediliyor…"}
+                      </span>
+                    ) : autoSaveStatus === "saved" ? (
+                      <span className="text-green-600">
+                        {language === "de" ? "Gespeichert" : "Kaydedildi"}
+                      </span>
+                    ) : autoSaveStatus === "error" ? (
+                      <span className="text-red-500">
+                        {language === "de"
+                          ? "Speichern fehlgeschlagen"
+                          : "Kaydetme başarısız"}
+                      </span>
+                    ) : (
+                      <span className="text-slate-400">
+                        {language === "de"
+                          ? "Änderungen werden beim Verlassen eines Feldes automatisch gespeichert"
+                          : "Değişiklikler bir alandan çıkıldığında otomatik kaydedilir"}
+                      </span>
+                    )}
+                  </p>
+                ) : null}
+              </div>
 
               <button
                 type="button"
@@ -1280,6 +1398,7 @@ export default function AdminProductsPage() {
 
             <form
               onSubmit={handleProductSubmit}
+              onBlur={editingProduct ? handleProductFieldBlur : undefined}
               className="mt-5 grid gap-4 sm:grid-cols-2"
             >
               <Input
@@ -2061,7 +2180,13 @@ export default function AdminProductsPage() {
                   ) : (
                     <Save size={15} />
                   )}
-                  {language === "de" ? "Produkt speichern" : "Ürünü Kaydet"}
+                  {editingProduct
+                    ? language === "de"
+                      ? "Fertig"
+                      : "Bitti"
+                    : language === "de"
+                      ? "Produkt speichern"
+                      : "Ürünü Kaydet"}
                 </button>
               </div>
             </form>
