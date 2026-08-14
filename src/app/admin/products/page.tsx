@@ -19,7 +19,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import Link from "next/link";
-import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import { getCategoryTheme } from "@/lib/category-theme";
 
@@ -212,6 +212,10 @@ export default function AdminProductsPage() {
 
   const [showCategoryForm, setShowCategoryForm] = useState(false);
 
+  const productFormRef = useRef<HTMLElement | null>(null);
+
+  const categoryFormRef = useRef<HTMLElement | null>(null);
+
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   const [form, setForm] = useState(emptyProductForm);
@@ -221,6 +225,24 @@ export default function AdminProductsPage() {
   const [categoryForm, setCategoryForm] = useState(emptyCategoryForm);
 
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+
+  useEffect(() => {
+    if (showProductForm) {
+      productFormRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  }, [showProductForm, editingProduct?.id]);
+
+  useEffect(() => {
+    if (showCategoryForm) {
+      categoryFormRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  }, [showCategoryForm, editingCategory?.id]);
 
   const [showStockUnitForm, setShowStockUnitForm] = useState(false);
 
@@ -1284,7 +1306,10 @@ export default function AdminProductsPage() {
         ) : null}
 
         {showCategoryForm ? (
-          <section className="mt-8 rounded-[28px] bg-white p-6 shadow-sm">
+          <section
+            ref={categoryFormRef}
+            className="mt-8 rounded-[28px] bg-white p-6 shadow-sm"
+          >
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-black">{editingCategory ? (language === "de" ? "Kategorie bearbeiten" : "Kategori Düzenle") : (language === "de" ? "Neue Kategorie hinzufügen" : "Yeni Kategori Ekle")}</h2>
 
@@ -1370,7 +1395,10 @@ export default function AdminProductsPage() {
         ) : null}
 
         {showProductForm ? (
-          <section className="mt-6 rounded-[24px] bg-white p-5 shadow-sm">
+          <section
+            ref={productFormRef}
+            className="mt-6 rounded-[24px] bg-white p-5 shadow-sm"
+          >
             <div className="flex items-center justify-between gap-4">
               <h2 className="text-2xl font-black text-slate-950">
                 {editingProduct
