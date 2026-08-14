@@ -31,6 +31,24 @@ export const GET = withTenant(async () => {
       include: {
         items: true,
 
+        driver: {
+          select: {
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
+
+        user: {
+          select: {
+            email: true,
+            firstName: true,
+            lastName: true,
+            companyName: true,
+            phone: true,
+          },
+        },
+
         pfandReturns: {
           orderBy: {
             createdAt: "desc",
@@ -42,6 +60,18 @@ export const GET = withTenant(async () => {
             totalAmount: true,
             approvedAmount: true,
             status: true,
+
+            items: {
+              select: {
+                id: true,
+                name: true,
+                quantity: true,
+                originalQuantity: true,
+                unitAmount: true,
+                totalAmount: true,
+                originalTotal: true,
+              },
+            },
           },
         },
 
@@ -105,6 +135,31 @@ export const GET = withTenant(async () => {
           Math.max(0, effectiveTotal - approvedPaymentAmount).toFixed(2),
         );
 
+        const pfandReturnItems =
+          order.pfandReturns.length > 0
+            ? order.pfandReturns[0].items.map((item) => ({
+                id: item.id,
+                name: item.name,
+                quantity: item.quantity,
+
+                originalQuantity: item.originalQuantity ?? item.quantity,
+
+                quantityDifference:
+                  item.quantity - (item.originalQuantity ?? item.quantity),
+
+                unitAmount: Number(item.unitAmount),
+
+                totalAmount: Number(item.totalAmount),
+
+                amountDifference: Number(
+                  (
+                    Number(item.totalAmount) -
+                    Number(item.originalTotal ?? item.totalAmount)
+                  ).toFixed(2),
+                ),
+              }))
+            : [];
+
         return {
           ...order,
 
@@ -114,6 +169,7 @@ export const GET = withTenant(async () => {
 
           totalAmount: effectiveTotal,
           pfandReturnAmount,
+          pfandReturnItems,
 
           approvedPaymentAmount,
           pendingPaymentAmount,

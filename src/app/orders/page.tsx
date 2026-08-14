@@ -3,7 +3,12 @@
 import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
 import { useLanguage } from "@/context/LanguageContext";
-import { Loader2, Package } from "lucide-react";
+import {
+  buildOrderReceiptHtml,
+  getDeliveryQrCode,
+  hasNavigableDeliveryAddress,
+} from "@/lib/order-receipt";
+import { FileDown, Loader2, Package } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -29,11 +34,44 @@ type Order = {
   orderNumber: string;
   status: OrderStatus;
   createdAt: string;
+  subtotal: number;
+  deliveryFee: number;
+  pfandAmount: number;
   totalAmount: number;
   openPaymentAmount: number;
-  items: OrderItem[];
+  deliveryAddress: string;
+  customerNote: string | null;
   confirmationToken: string | null;
   confirmedAt: string | null;
+
+  pfandReturnAmount: number;
+
+  pfandReturnItems: Array<{
+    id: string;
+    name: string;
+    quantity: number;
+    originalQuantity: number;
+    quantityDifference: number;
+    unitAmount: number;
+    totalAmount: number;
+    amountDifference: number;
+  }>;
+
+  driver: {
+    firstName: string | null;
+    lastName: string | null;
+    email: string;
+  } | null;
+
+  user: {
+    email: string;
+    firstName: string | null;
+    lastName: string | null;
+    companyName: string | null;
+    phone: string | null;
+  };
+
+  items: OrderItem[];
 };
 
 const statusLabels: Record<OrderStatus, { tr: string; de: string }> = {
@@ -69,6 +107,13 @@ export default function MyOrdersPage() {
           total: "Gesamt",
           openAmount: "Offener Betrag",
           goToLogin: "Jetzt anmelden",
+          openInvoicesTitle: "Offene Rechnungen",
+          openInvoicesTotal: "Offener Gesamtbetrag",
+          openInvoicesCount: (n: number) =>
+            n === 1 ? "1 offene Bestellung" : `${n} offene Bestellungen`,
+          downloadInvoice: "Rechnung herunterladen",
+          popupBlocked:
+            "Das Rechnungsfenster konnte nicht geöffnet werden. Bitte Popup-Blocker des Browsers prüfen.",
         }
       : {
           eyebrow: "Hesabım",
@@ -84,6 +129,13 @@ export default function MyOrdersPage() {
           total: "Toplam",
           openAmount: "Açık Tutar",
           goToLogin: "Şimdi Giriş Yap",
+          openInvoicesTitle: "Açık Faturalar",
+          openInvoicesTotal: "Toplam Açık Tutar",
+          openInvoicesCount: (n: number) =>
+            n === 1 ? "1 açık sipariş" : `${n} açık sipariş`,
+          downloadInvoice: "Faturayı indir",
+          popupBlocked:
+            "Fatura penceresi açılamadı. Lütfen tarayıcı popup engelleyicisini kontrol edin.",
         };
 
   const [unauthorized, setUnauthorized] = useState(false);
@@ -115,6 +167,36 @@ export default function MyOrdersPage() {
     loadOrders();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const openOrders = orders.filter((order) => order.openPaymentAmount > 0.009);
+
+  const totalOpenAmount = Number(
+    openOrders
+      .reduce((sum, order) => sum + order.openPaymentAmount, 0)
+      .toFixed(2),
+  );
+
+  async function downloadInvoice(order: Order) {
+    const popup = window.open("", "_blank", "width=900,height=700");
+
+    if (!popup) {
+      setError(t.popupBlocked);
+      return;
+    }
+
+    const deliveryQrCode = hasNavigableDeliveryAddress(order)
+      ? await getDeliveryQrCode(order)
+      : null;
+
+    popup.document.write(buildOrderReceiptHtml(order, deliveryQrCode, language));
+
+    popup.document.close();
+    popup.focus();
+
+    setTimeout(() => {
+      popup.print();
+    }, 250);
+  }
 
   return (
     <main className="min-h-screen bg-[#f7f7f5]">
@@ -167,92 +249,161 @@ export default function MyOrdersPage() {
               </Link>
             </div>
           ) : (
-            <div className="space-y-4">
-              {orders.map((order) => (
-                <div
-                  key={order.id}
-                  className="rounded-[28px] bg-white p-6 shadow-sm sm:p-8"
-                >
-                  <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="space-y-8">
+              {openOrders.length > 0 ? (
+                <div className="rounded-[28px] bg-red-50 p-6 sm:p-8">
+                  <p className="text-xs font-black uppercase tracking-wide text-red-600">
+                    {t.openInvoicesTitle}
+                  </p>
+
+                  <div className="mt-2 flex flex-wrap items-end justify-between gap-3">
                     <div>
-                      <p className="text-xs font-bold uppercase text-slate-400">
-                        {t.orderNumber}
+                      <p className="text-3xl font-black text-red-700">
+                        {totalOpenAmount.toFixed(2)} €
                       </p>
 
-                      <p className="mt-1 text-lg font-black text-slate-950">
-                        {order.orderNumber}
-                      </p>
-
-                      <p className="mt-1 text-sm text-slate-500">
-                        {new Date(order.createdAt).toLocaleString("de-DE")}
+                      <p className="mt-1 text-sm font-bold text-red-600">
+                        {t.openInvoicesCount(openOrders.length)}
                       </p>
                     </div>
-
-                    <span
-                      className={`rounded-full px-3 py-1.5 text-xs font-black ${
-                        order.status === "DELIVERED"
-                          ? "bg-green-100 text-green-700"
-                          : order.status === "CANCELLED"
-                            ? "bg-red-100 text-red-600"
-                            : "bg-orange-100 text-orange-700"
-                      }`}
-                    >
-                      {statusLabels[order.status][language]}
-                    </span>
                   </div>
 
-                  {order.confirmationToken && !order.confirmedAt ? (
-                    <p className="mt-3 inline-flex rounded-full bg-amber-100 px-3 py-1.5 text-xs font-black text-amber-800">
-                      {language === "de"
-                        ? "Wartet auf Ihre Bestätigung per E-Mail-Link"
-                        : "E-posta ile onayınızı bekliyor"}
-                    </p>
-                  ) : null}
-
-                  <div className="mt-5 space-y-2 border-t border-slate-100 pt-4">
-                    {order.items.map((item) => (
+                  <div className="mt-4 space-y-2">
+                    {openOrders.map((order) => (
                       <div
-                        key={item.id}
-                        className="flex justify-between text-sm text-slate-600"
+                        key={order.id}
+                        className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-white px-4 py-3"
                       >
-                        <span>
-                          {item.quantity} × {item.name}
-                        </span>
+                        <div>
+                          <p className="font-black text-slate-950">
+                            {order.orderNumber}
+                          </p>
 
-                        <span>
-                          {(item.price * item.quantity).toFixed(2)} €
-                        </span>
+                          <p className="text-xs text-slate-500">
+                            {new Date(order.createdAt).toLocaleDateString(
+                              "de-DE",
+                            )}
+                          </p>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <p className="font-black text-red-600">
+                            {order.openPaymentAmount.toFixed(2)} €
+                          </p>
+
+                          <button
+                            type="button"
+                            onClick={() => downloadInvoice(order)}
+                            className="inline-flex items-center gap-1.5 rounded-lg bg-slate-950 px-3 py-2 text-xs font-black text-white transition hover:bg-slate-800"
+                          >
+                            <FileDown size={14} />
+                            {t.downloadInvoice}
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
+                </div>
+              ) : null}
 
-                  <div className="mt-5 flex flex-wrap items-center justify-between gap-4 border-t border-slate-100 pt-4">
-                    {order.openPaymentAmount > 0 ? (
+              <div className="space-y-4">
+                {orders.map((order) => (
+                  <div
+                    key={order.id}
+                    className="rounded-[28px] bg-white p-6 shadow-sm sm:p-8"
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-4">
                       <div>
-                        <p className="text-xs font-bold uppercase text-red-500">
-                          {t.openAmount}
+                        <p className="text-xs font-bold uppercase text-slate-400">
+                          {t.orderNumber}
                         </p>
 
-                        <p className="font-black text-red-600">
-                          {order.openPaymentAmount.toFixed(2)} €
+                        <p className="mt-1 text-lg font-black text-slate-950">
+                          {order.orderNumber}
+                        </p>
+
+                        <p className="mt-1 text-sm text-slate-500">
+                          {new Date(order.createdAt).toLocaleString("de-DE")}
                         </p>
                       </div>
-                    ) : (
-                      <span />
-                    )}
 
-                    <div className="text-right">
-                      <p className="text-xs font-bold uppercase text-slate-400">
-                        {t.total}
-                      </p>
+                      <span
+                        className={`rounded-full px-3 py-1.5 text-xs font-black ${
+                          order.status === "DELIVERED"
+                            ? "bg-green-100 text-green-700"
+                            : order.status === "CANCELLED"
+                              ? "bg-red-100 text-red-600"
+                              : "bg-orange-100 text-orange-700"
+                        }`}
+                      >
+                        {statusLabels[order.status][language]}
+                      </span>
+                    </div>
 
-                      <p className="text-xl font-black text-slate-950">
-                        {order.totalAmount.toFixed(2)} €
+                    {order.confirmationToken && !order.confirmedAt ? (
+                      <p className="mt-3 inline-flex rounded-full bg-amber-100 px-3 py-1.5 text-xs font-black text-amber-800">
+                        {language === "de"
+                          ? "Wartet auf Ihre Bestätigung per E-Mail-Link"
+                          : "E-posta ile onayınızı bekliyor"}
                       </p>
+                    ) : null}
+
+                    <div className="mt-5 space-y-2 border-t border-slate-100 pt-4">
+                      {order.items.map((item) => (
+                        <div
+                          key={item.id}
+                          className="flex justify-between text-sm text-slate-600"
+                        >
+                          <span>
+                            {item.quantity} × {item.name}
+                          </span>
+
+                          <span>
+                            {(item.price * item.quantity).toFixed(2)} €
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="mt-5 flex flex-wrap items-center justify-between gap-4 border-t border-slate-100 pt-4">
+                      {order.openPaymentAmount > 0 ? (
+                        <div>
+                          <p className="text-xs font-bold uppercase text-red-500">
+                            {t.openAmount}
+                          </p>
+
+                          <p className="font-black text-red-600">
+                            {order.openPaymentAmount.toFixed(2)} €
+                          </p>
+                        </div>
+                      ) : (
+                        <span />
+                      )}
+
+                      <div className="text-right">
+                        <p className="text-xs font-bold uppercase text-slate-400">
+                          {t.total}
+                        </p>
+
+                        <p className="text-xl font-black text-slate-950">
+                          {order.totalAmount.toFixed(2)} €
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 flex justify-end border-t border-slate-100 pt-4">
+                      <button
+                        type="button"
+                        onClick={() => downloadInvoice(order)}
+                        className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-3 py-2 text-xs font-black text-slate-700 transition hover:bg-slate-200"
+                      >
+                        <FileDown size={14} />
+                        {t.downloadInvoice}
+                      </button>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           )}
         </div>
