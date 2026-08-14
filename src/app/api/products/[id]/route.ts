@@ -110,6 +110,12 @@ export const GET = withTenant(async (
         stock: item.stock,
         soldOut: item.soldOut,
         inStock: item.stock > 0 && !item.soldOut,
+
+        sellByCarton: item.sellByCarton,
+        unitsPerCarton: item.unitsPerCarton,
+
+        cartonPrice:
+          item.cartonPrice !== null ? Number(item.cartonPrice) : null,
       };
     }
 

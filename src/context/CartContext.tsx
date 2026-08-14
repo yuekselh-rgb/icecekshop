@@ -9,8 +9,20 @@ import {
   useState,
 } from "react";
 
+/*
+ * `id` ist der Warenkorb-Zeilen-Schlüssel: für Stück-Käufe die reine
+ * productId, für Karton-Käufe `${productId}::CARTON` — damit landen
+ * Stück- und Karton-Käufe desselben Produkts in getrennten Zeilen
+ * statt zusammengeführt zu werden. `productId` ist immer die echte
+ * Produkt-ID, unabhängig vom Warenkorb-Schlüssel.
+ */
+export type CartUnit = "PIECE" | "CARTON";
+
 export type CartItem = {
   id: string;
+  productId: string;
+  unit: CartUnit;
+  unitsPerCarton?: number;
   name: string;
   price: number;
   pfandAmount: number;
@@ -88,6 +100,8 @@ export function CartProvider({ children }: CartProviderProps) {
           Array.isArray(parsedItems)
             ? parsedItems.map((item) => ({
                 ...item,
+                productId: item.productId || item.id,
+                unit: item.unit === "CARTON" ? "CARTON" : "PIECE",
                 price: Number(item.price || 0),
                 pfandAmount: Number(item.pfandAmount || 0),
                 quantity: Number(item.quantity || 0),

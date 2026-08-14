@@ -42,6 +42,9 @@ type PublicProduct = {
   badge?: LocalizedText;
   stock: number;
   inStock: boolean;
+  sellByCarton?: boolean;
+  unitsPerCarton?: number | null;
+  cartonPrice?: number | null;
 };
 
 export default function ProductDetailPage() {
@@ -292,6 +295,9 @@ export default function ProductDetailPage() {
                 image={product.image}
                 packageInfo={product.packageInfo}
                 inStock={product.inStock}
+                sellByCarton={product.sellByCarton}
+                unitsPerCarton={product.unitsPerCarton}
+                cartonPrice={product.cartonPrice}
               />
 
               <div className="mt-6 flex items-start gap-3 rounded-2xl border border-orange-100 bg-orange-50 p-4">
@@ -344,6 +350,9 @@ export default function ProductDetailPage() {
                   imagePositionY={item.imagePositionY}
                   badge={item.badge}
                   inStock={item.inStock}
+                  sellByCarton={item.sellByCarton}
+                  unitsPerCarton={item.unitsPerCarton}
+                  cartonPrice={item.cartonPrice}
                 />
               ))}
             </div>

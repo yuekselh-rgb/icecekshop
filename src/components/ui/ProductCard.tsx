@@ -36,6 +36,10 @@ type ProductCardProps = {
   };
 
   inStock?: boolean;
+
+  sellByCarton?: boolean;
+  unitsPerCarton?: number | null;
+  cartonPrice?: number | null;
 };
 
 function isImageSource(value: string) {
@@ -63,9 +67,20 @@ export default function ProductCard({
   imagePositionY = 0,
   badge,
   inStock = true,
+  sellByCarton = false,
+  unitsPerCarton,
+  cartonPrice,
 }: ProductCardProps) {
   const [quantityInput, setQuantityInput] = useState("1");
   const [added, setAdded] = useState(false);
+
+  const canSellByCarton = Boolean(
+    sellByCarton && unitsPerCarton && cartonPrice !== null && cartonPrice !== undefined,
+  );
+
+  const [selectedUnit, setSelectedUnit] = useState<"PIECE" | "CARTON">(
+    "PIECE",
+  );
 
   const quantity = Math.max(1, parseInt(quantityInput, 10) || 1);
 
@@ -89,6 +104,8 @@ export default function ProductCard({
           quantity: "Menge",
           decreaseQuantity: "Menge verringern",
           increaseQuantity: "Menge erhöhen",
+          piece: "Stück",
+          carton: "Karton",
         }
       : {
           inStock: "Stokta",
@@ -98,7 +115,19 @@ export default function ProductCard({
           quantity: "Adet",
           decreaseQuantity: "Adedi azalt",
           increaseQuantity: "Adedi artır",
+          piece: "Adet",
+          carton: "Karton",
         };
+
+  const effectiveUnit = canSellByCarton ? selectedUnit : "PIECE";
+
+  const effectivePrice =
+    effectiveUnit === "CARTON" ? Number(cartonPrice) : price;
+
+  const effectivePfand =
+    effectiveUnit === "CARTON"
+      ? pfandAmount * Number(unitsPerCarton)
+      : pfandAmount;
 
   function decreaseQuantity() {
     setQuantityInput((current) =>
@@ -117,10 +146,17 @@ export default function ProductCard({
 
     addToCart(
       {
-        id,
-        name: localizedName,
-        price,
-        pfandAmount,
+        id: effectiveUnit === "CARTON" ? `${id}::CARTON` : id,
+        productId: id,
+        unit: effectiveUnit,
+        unitsPerCarton:
+          effectiveUnit === "CARTON" ? Number(unitsPerCarton) : undefined,
+        name:
+          effectiveUnit === "CARTON"
+            ? `${localizedName} (${t.carton})`
+            : localizedName,
+        price: effectivePrice,
+        pfandAmount: effectivePfand,
         image,
         packageInfo,
       },
@@ -192,21 +228,50 @@ export default function ProductCard({
         </p>
 
         <div className="mt-auto pt-2">
+          {canSellByCarton ? (
+            <div className="mb-1.5 flex gap-1 rounded-full border border-[#05090a26] p-0.5 text-[10px] font-bold">
+              <button
+                type="button"
+                onClick={() => setSelectedUnit("PIECE")}
+                className={`flex-1 rounded-full py-1 transition ${
+                  selectedUnit === "PIECE"
+                    ? "bg-[#05090A] text-white"
+                    : "text-[#505253]"
+                }`}
+              >
+                {t.piece}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSelectedUnit("CARTON")}
+                className={`flex-1 rounded-full py-1 transition ${
+                  selectedUnit === "CARTON"
+                    ? "bg-[#05090A] text-white"
+                    : "text-[#505253]"
+                }`}
+              >
+                {t.carton} ({unitsPerCarton}×)
+              </button>
+            </div>
+          ) : null}
+
           <div className="flex items-center gap-2">
             <div className="min-w-0 flex-1">
               <span className="text-sm font-bold text-[#05090A]">
-                {(price + pfandAmount).toFixed(2)} €
+                {(effectivePrice + effectivePfand).toFixed(2)} €
               </span>
 
-              {oldPrice ? (
+              {oldPrice && effectiveUnit === "PIECE" ? (
                 <span className="ml-1.5 text-[10px] text-[#828484] line-through">
                   {(oldPrice + pfandAmount).toFixed(2)} €
                 </span>
               ) : null}
 
-              {pfandAmount > 0 ? (
+              {effectivePfand > 0 ? (
                 <p className="mt-0.5 text-[9px] font-bold text-[#1B4965]">
-                  {price.toFixed(2)} € + {pfandAmount.toFixed(2)} € {t.pfand}
+                  {effectivePrice.toFixed(2)} € + {effectivePfand.toFixed(2)} €{" "}
+                  {t.pfand}
                 </p>
               ) : null}
             </div>

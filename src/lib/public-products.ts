@@ -94,6 +94,12 @@ export async function getPublicProducts() {
     soldOut: product.soldOut,
     stock: product.stock,
     createdAt: product.createdAt.toISOString(),
+
+    sellByCarton: product.sellByCarton,
+    unitsPerCarton: product.unitsPerCarton,
+
+    cartonPrice:
+      product.cartonPrice !== null ? Number(product.cartonPrice) : null,
   }));
 }
 

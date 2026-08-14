@@ -198,6 +198,20 @@ export const PATCH = withTenant(async (
         String(body.stockUnit) !== String(existing.stockUnit)) ||
       (hasOwn("unitsPerPackage") &&
         Number(body.unitsPerPackage) !== existing.unitsPerPackage) ||
+      (hasOwn("sellByCarton") &&
+        Boolean(body.sellByCarton) !== existing.sellByCarton) ||
+      (hasOwn("unitsPerCarton") &&
+        (body.unitsPerCarton === null || body.unitsPerCarton === undefined
+          ? null
+          : Math.round(Number(body.unitsPerCarton))) !==
+          existing.unitsPerCarton) ||
+      (hasOwn("cartonPrice") &&
+        (body.cartonPrice === null || body.cartonPrice === undefined
+          ? null
+          : Number(body.cartonPrice)) !==
+          (existing.cartonPrice === null
+            ? null
+            : Number(existing.cartonPrice))) ||
       (hasOwn("packageInfo") &&
         stringValue(body.packageInfo) !== stringValue(existing.packageInfo)) ||
       (hasOwn("imageUrl") &&
@@ -452,6 +466,31 @@ export const PATCH = withTenant(async (
                 1,
                 Math.round(Number(body.unitsPerPackage)),
               ),
+            }
+          : {}),
+
+        ...(hasOwn("sellByCarton")
+          ? {
+              sellByCarton: Boolean(body.sellByCarton),
+            }
+          : {}),
+
+        ...(hasOwn("unitsPerCarton")
+          ? {
+              unitsPerCarton:
+                body.unitsPerCarton === null ||
+                body.unitsPerCarton === undefined
+                  ? null
+                  : Math.max(1, Math.round(Number(body.unitsPerCarton))),
+            }
+          : {}),
+
+        ...(hasOwn("cartonPrice")
+          ? {
+              cartonPrice:
+                body.cartonPrice === null || body.cartonPrice === undefined
+                  ? null
+                  : Math.max(0, Number(body.cartonPrice)),
             }
           : {}),
 

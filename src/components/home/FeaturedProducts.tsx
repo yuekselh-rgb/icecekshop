@@ -38,6 +38,9 @@ type PublicProduct = {
   badge?: LocalizedText;
   inStock: boolean;
   stock: number;
+  sellByCarton?: boolean;
+  unitsPerCarton?: number | null;
+  cartonPrice?: number | null;
 };
 
 export default function FeaturedProducts({
@@ -234,6 +237,9 @@ export default function FeaturedProducts({
           imagePositionY={product.imagePositionY}
           badge={product.badge}
           inStock={product.inStock}
+          sellByCarton={product.sellByCarton}
+          unitsPerCarton={product.unitsPerCarton}
+          cartonPrice={product.cartonPrice}
         />
       </div>
     );

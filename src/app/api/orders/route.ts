@@ -5,9 +5,12 @@ import { prisma } from "@/lib/prisma";
 import { withTenant } from "@/lib/tenant";
 import { NextRequest, NextResponse } from "next/server";
 
+type RequestedUnit = "PIECE" | "CARTON";
+
 type RequestedItem = {
   productId: string;
   quantity: number;
+  unit: RequestedUnit;
 };
 
 function createOrderNumber() {
@@ -103,7 +106,11 @@ function normalizeItems(value: unknown): RequestedItem[] {
     return [];
   }
 
-  const quantityByProduct = new Map<string, number>();
+  /*
+   * Dieselbe Produkt-ID kann zweimal vorkommen: einmal stückweise,
+   * einmal im Karton. Der Dedup-Schlüssel enthält deshalb die Einheit.
+   */
+  const quantityByKey = new Map<string, RequestedItem>();
 
   for (const rawItem of value) {
     if (!rawItem || typeof rawItem !== "object") {
@@ -126,6 +133,14 @@ function normalizeItems(value: unknown): RequestedItem[] {
       ).quantity,
     );
 
+    const rawUnit = (
+      rawItem as {
+        unit?: unknown;
+      }
+    ).unit;
+
+    const unit: RequestedUnit = rawUnit === "CARTON" ? "CARTON" : "PIECE";
+
     if (
       !productId ||
       !Number.isInteger(quantity) ||
@@ -135,18 +150,18 @@ function normalizeItems(value: unknown): RequestedItem[] {
       continue;
     }
 
-    quantityByProduct.set(
+    const key = `${productId}::${unit}`;
+
+    const existing = quantityByKey.get(key);
+
+    quantityByKey.set(key, {
       productId,
-      (quantityByProduct.get(productId) || 0) + quantity,
-    );
+      unit,
+      quantity: (existing?.quantity || 0) + quantity,
+    });
   }
 
-  return Array.from(quantityByProduct.entries()).map(
-    ([productId, quantity]) => ({
-      productId,
-      quantity,
-    }),
-  );
+  return Array.from(quantityByKey.values());
 }
 
 export const POST = withTenant(async (request: NextRequest, _context, tenant) => {
@@ -298,7 +313,9 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
       );
     }
 
-    const productIds = items.map((item) => item.productId);
+    const productIds = Array.from(
+      new Set(items.map((item) => item.productId)),
+    );
 
     const products = await prisma.product.findMany({
       where: {
@@ -317,6 +334,9 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
         price: true,
         pfandAmount: true,
         stock: true,
+        sellByCarton: true,
+        unitsPerCarton: true,
+        cartonPrice: true,
       },
     });
 
@@ -375,17 +395,34 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
         throw new Error("PRODUCT_NOT_FOUND");
       }
 
-      if (product.stock < item.quantity) {
+      const isCarton = item.unit === "CARTON";
+
+      if (
+        isCarton &&
+        (!product.sellByCarton ||
+          !product.unitsPerCarton ||
+          product.cartonPrice === null)
+      ) {
+        throw new Error(`CARTON_NOT_AVAILABLE:${product.name}`);
+      }
+
+      const unitsPerCarton = isCarton ? Number(product.unitsPerCarton) : 1;
+
+      const stockDeduction = item.quantity * unitsPerCarton;
+
+      if (product.stock < stockDeduction) {
         throw new Error(`INSUFFICIENT_STOCK:${product.name}:${product.stock}`);
       }
 
-      const normalPrice = Number(product.price);
+      const normalPrice = isCarton
+        ? Number(product.cartonPrice)
+        : Number(product.price);
 
-      const price = isDealer
+      const price = !isCarton && isDealer
         ? (dealerPriceMap.get(product.id) ?? normalPrice)
         : normalPrice;
 
-      const unitPfand = Number(product.pfandAmount);
+      const unitPfand = Number(product.pfandAmount) * unitsPerCarton;
 
       subtotal += price * item.quantity;
 
@@ -400,6 +437,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
         quantity: item.quantity,
 
         pfand: unitPfand,
+
+        stockDeduction,
+
+        unitLabel: isCarton ? "Karton" : null,
       };
     });
 
@@ -525,13 +566,13 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
             active: true,
 
             stock: {
-              gte: item.quantity,
+              gte: item.stockDeduction,
             },
           },
 
           data: {
             stock: {
-              decrement: item.quantity,
+              decrement: item.stockDeduction,
             },
           },
         });
@@ -546,7 +587,7 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
 
             productId: item.productId,
 
-            amount: -item.quantity,
+            amount: -item.stockDeduction,
 
             reason:
               language === "de"
@@ -578,6 +619,7 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
               price: item.price,
               quantity: item.quantity,
               pfand: item.pfand,
+              unitLabel: item.unitLabel,
             })),
           },
         },
@@ -690,6 +732,22 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
             language === "de"
               ? `Nicht genügend Lagerbestand für ${productName}. Verfügbar: ${stock}.`
               : `${productName} için yeterli stok yok. Mevcut stok: ${stock}.`,
+        },
+        {
+          status: 409,
+        },
+      );
+    }
+
+    if (message.startsWith("CARTON_NOT_AVAILABLE:")) {
+      const productName = message.split(":")[1];
+
+      return NextResponse.json(
+        {
+          error:
+            language === "de"
+              ? `${productName} kann derzeit nicht im Karton bestellt werden. Bitte prüfen Sie Ihren Warenkorb.`
+              : `${productName} şu anda karton olarak sipariş edilemiyor. Sepetinizi kontrol edin.`,
         },
         {
           status: 409,

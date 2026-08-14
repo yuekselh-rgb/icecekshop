@@ -320,6 +320,14 @@ model Product {
   minStock        Int          @default(0)
   stockUnit       String       @default("ADET")
   unitsPerPackage Int          @default(1)
+
+  // Karton-Verkauf: Lagerbestand bleibt immer in Stück (siehe `stock`).
+  // Beim Kauf eines Kartons werden `unitsPerCarton` Stück auf einmal
+  // abgebucht, zum Bündelpreis `cartonPrice`.
+  sellByCarton   Boolean  @default(false)
+  unitsPerCarton Int?
+  cartonPrice    Decimal? @db.Decimal(10, 2)
+
   packageInfo     String?
   packageCount    Int?
   unitAmount      Decimal?     @db.Decimal(10, 3)
@@ -417,6 +425,9 @@ model OrderItem {
   price     Decimal @db.Decimal(10, 2)
   quantity  Int
   pfand     Decimal @default(0) @db.Decimal(10, 2)
+
+  // Bei Karton-Käufen z.B. "Karton" (24 Stück je Karton), sonst null.
+  unitLabel String?
 
   order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id])

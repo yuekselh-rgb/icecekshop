@@ -30,6 +30,9 @@ type PublicProduct = {
   inStock: boolean;
   stock: number;
   createdAt: string;
+  sellByCarton?: boolean;
+  unitsPerCarton?: number | null;
+  cartonPrice?: number | null;
 };
 
 export default function ProductsPage() {
@@ -363,6 +366,9 @@ export default function ProductsPage() {
                       imagePositionY={product.imagePositionY}
                       badge={product.badge}
                       inStock={product.inStock}
+                      sellByCarton={product.sellByCarton}
+                      unitsPerCarton={product.unitsPerCarton}
+                      cartonPrice={product.cartonPrice}
                     />
                   ))}
                 </div>

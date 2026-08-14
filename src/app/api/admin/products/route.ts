@@ -317,6 +317,24 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
 
         minStock: Number(body.minStock || 0),
 
+        sellByCarton: Boolean(body.sellByCarton),
+
+        unitsPerCarton:
+          body.sellByCarton &&
+          body.unitsPerCarton !== null &&
+          body.unitsPerCarton !== undefined &&
+          body.unitsPerCarton !== ""
+            ? Math.max(1, Math.round(Number(body.unitsPerCarton)))
+            : null,
+
+        cartonPrice:
+          body.sellByCarton &&
+          body.cartonPrice !== null &&
+          body.cartonPrice !== undefined &&
+          body.cartonPrice !== ""
+            ? Math.max(0, Number(body.cartonPrice))
+            : null,
+
         packageCount: null,
         unitAmount: null,
         unitType: null,

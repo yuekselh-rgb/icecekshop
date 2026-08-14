@@ -333,8 +333,9 @@ export default function CheckoutPage() {
           ...form,
 
           items: items.map((item) => ({
-            productId: item.id,
+            productId: item.productId,
             quantity: item.quantity,
+            unit: item.unit,
           })),
 
           pfandItems: pfandItems.map((item) => ({

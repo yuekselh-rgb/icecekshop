@@ -54,6 +54,9 @@ type Product = {
   stockUnit: "KASA" | "KARTON" | "PAKET" | "ADET";
   unitsPerPackage: number;
   minStock: number;
+  sellByCarton: boolean;
+  unitsPerCarton: number | null;
+  cartonPrice: string | number | null;
   packageInfo: string | null;
   packageCount: number | null;
   unitAmount: string | number | null;
@@ -108,6 +111,9 @@ const emptyProductForm = {
   stockUnit: "ADET",
   unitsPerPackage: "1",
   minStock: "0",
+  sellByCarton: false,
+  unitsPerCarton: "",
+  cartonPrice: "",
   packageInfo: "",
   imageUrl: "",
   imageScale: "1",
@@ -649,6 +655,11 @@ export default function AdminProductsPage() {
       stockUnit: product.stockUnit || "ADET",
       unitsPerPackage: String(product.unitsPerPackage || 1),
       minStock: String(product.minStock),
+      sellByCarton: product.sellByCarton,
+      unitsPerCarton:
+        product.unitsPerCarton !== null ? String(product.unitsPerCarton) : "",
+      cartonPrice:
+        product.cartonPrice !== null ? String(product.cartonPrice) : "",
       packageInfo: product.packageInfo || "",
       imageUrl: product.imageUrl || "",
       imageScale: String(product.imageScale ?? 1),
@@ -1060,6 +1071,18 @@ export default function AdminProductsPage() {
 
             minStock: Number(form.minStock || 0),
 
+            sellByCarton: form.sellByCarton,
+
+            unitsPerCarton:
+              form.sellByCarton && form.unitsPerCarton !== ""
+                ? Math.max(1, Number(form.unitsPerCarton))
+                : null,
+
+            cartonPrice:
+              form.sellByCarton && form.cartonPrice !== ""
+                ? Number(form.cartonPrice)
+                : null,
+
             packageInfo: form.packageInfo.trim(),
           }),
         },
@@ -1150,6 +1173,18 @@ export default function AdminProductsPage() {
             ),
 
             minStock: Number(effectiveForm.minStock || 0),
+
+            sellByCarton: effectiveForm.sellByCarton,
+
+            unitsPerCarton:
+              effectiveForm.sellByCarton && effectiveForm.unitsPerCarton !== ""
+                ? Math.max(1, Number(effectiveForm.unitsPerCarton))
+                : null,
+
+            cartonPrice:
+              effectiveForm.sellByCarton && effectiveForm.cartonPrice !== ""
+                ? Number(effectiveForm.cartonPrice)
+                : null,
 
             packageInfo: effectiveForm.packageInfo.trim(),
           }),
@@ -1628,6 +1663,85 @@ export default function AdminProductsPage() {
                       : "Pfand devre dışı. Bu ürün için Pfand hesaplanmaz."}
                   </p>
                 )}
+              </div>
+
+              <div className="sm:col-span-2 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setForm((current) => ({
+                      ...current,
+                      sellByCarton: !current.sellByCarton,
+                    }));
+                  }}
+                  className={`flex w-full items-center justify-between gap-4 rounded-xl border px-4 py-3 text-left transition ${
+                    form.sellByCarton
+                      ? "border-orange-300 bg-orange-50"
+                      : "border-slate-200 bg-white"
+                  }`}
+                >
+                  <div>
+                    <p className="text-sm font-black text-slate-950">
+                      {language === "de"
+                        ? "Auch im Karton verkaufen"
+                        : "Karton olarak da sat"}
+                    </p>
+
+                    <p className="mt-1 text-xs text-slate-500">
+                      {language === "de"
+                        ? "Der Lagerbestand bleibt in Stück. Beim Kauf eines Kartons werden mehrere Stück auf einmal abgebucht, zum Bündelpreis."
+                        : "Stok her zaman adet olarak tutulur. Karton satın alındığında birden fazla adet birlikte düşülür, paket fiyatıyla."}
+                    </p>
+                  </div>
+
+                  <span
+                    className={`relative h-7 w-12 shrink-0 rounded-full transition ${
+                      form.sellByCarton ? "bg-orange-500" : "bg-slate-300"
+                    }`}
+                  >
+                    <span
+                      className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition ${
+                        form.sellByCarton ? "left-6" : "left-1"
+                      }`}
+                    />
+                  </span>
+                </button>
+
+                {form.sellByCarton ? (
+                  <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                    <Input
+                      label={
+                        language === "de"
+                          ? "Stück pro Karton"
+                          : "Karton başına adet"
+                      }
+                      type="number"
+                      step="1"
+                      value={form.unitsPerCarton}
+                      onChange={(value) =>
+                        updateProductForm("unitsPerCarton", value)
+                      }
+                    />
+
+                    <Input
+                      label={
+                        language === "de" ? "Kartonpreis" : "Karton fiyatı"
+                      }
+                      type="number"
+                      step="0.01"
+                      value={form.cartonPrice}
+                      onChange={(value) =>
+                        updateProductForm("cartonPrice", value)
+                      }
+                    />
+
+                    <p className="sm:col-span-2 text-xs font-semibold text-orange-600">
+                      {language === "de"
+                        ? "Beispiel: 1 Stück 1,50 €, 24 Stück pro Karton, Kartonpreis 30,00 € (statt 36,00 €)."
+                        : "Örnek: 1 adet 1,50 €, kartonda 24 adet, karton fiyatı 30,00 € (36,00 € yerine)."}
+                    </p>
+                  </div>
+                ) : null}
               </div>
 
               <div className="block">
@@ -2614,6 +2728,26 @@ export default function AdminProductsPage() {
                               },
                             )}{" "}
                             € Pfand
+                          </p>
+                        ) : null}
+
+                        {product.sellByCarton &&
+                        product.unitsPerCarton &&
+                        product.cartonPrice !== null ? (
+                          <p className="mt-1 text-xs font-bold text-blue-600">
+                            {language === "de"
+                              ? `Auch als Karton: ${product.unitsPerCarton} Stück für ${Number(
+                                  product.cartonPrice,
+                                ).toLocaleString("de-DE", {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                })} €`
+                              : `Karton olarak da: ${product.unitsPerCarton} adet, ${Number(
+                                  product.cartonPrice,
+                                ).toLocaleString("de-DE", {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                })} €`}
                           </p>
                         ) : null}
                       </div>
