@@ -19,7 +19,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import Link from "next/link";
-import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { ChangeEvent, Fragment, FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import { getCategoryTheme } from "@/lib/category-theme";
 
@@ -1244,157 +1244,7 @@ export default function AdminProductsPage() {
     );
   }
 
-  return (
-    <main className="min-h-screen bg-slate-100 p-4 sm:p-6 lg:p-10">
-      <div className="mx-auto max-w-7xl">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <Link
-            href="/admin"
-            className="inline-flex items-center gap-2 font-bold text-slate-600 transition hover:text-orange-500"
-          >
-            <ArrowLeft size={18} />
-            {language === "de" ? "Admin-Panel" : "Admin Paneli"}
-          </Link>
-
-          <div className="flex flex-wrap gap-3">
-            {permissions?.createCategory ? (
-              <button
-                type="button"
-                onClick={openCategoryForm}
-                className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 font-black text-slate-900 shadow-sm transition hover:text-orange-500"
-              >
-                <FolderPlus size={19} />
-                {language === "de" ? "Neue Kategorie" : "Yeni Kategori"}
-              </button>
-            ) : null}
-
-            {permissions?.createProduct ? (
-              <button
-                type="button"
-                onClick={openCreateProductForm}
-                className="inline-flex items-center gap-2 rounded-xl bg-orange-500 px-5 py-3 font-black text-white transition hover:bg-orange-600"
-              >
-                <Plus size={19} />
-                {language === "de" ? "Neues Produkt" : "Yeni Ürün"}
-              </button>
-            ) : null}
-          </div>
-        </div>
-
-        <section className="mt-6 rounded-[32px] bg-slate-950 p-7 text-white sm:p-10">
-          <PackagePlus size={30} className="text-orange-400" />
-
-          <h1 className="mt-4 text-4xl font-black">{language === "de" ? "Produktverwaltung" : "Ürün Yönetimi"}</h1>
-
-          <p className="mt-3 text-slate-400">
-            {language === "de"
-              ? "Verwalten Sie Produkte nach Kategorien und bearbeiten Sie Verpackungs- und Mengeneinheiten."
-              : "Ürünleri kategorilere göre yönetebilir, ambalaj ve miktar birimlerini düzenleyebilirsiniz."}
-          </p>
-        </section>
-
-        {error ? (
-          <div className="mt-6 rounded-2xl bg-red-50 p-4 font-bold text-red-600">
-            {error}
-          </div>
-        ) : null}
-
-        {success ? (
-          <div className="mt-6 rounded-2xl bg-green-50 p-4 font-bold text-green-700">
-            {success}
-          </div>
-        ) : null}
-
-        {showCategoryForm ? (
-          <section
-            ref={categoryFormRef}
-            className="mt-8 rounded-[28px] bg-white p-6 shadow-sm"
-          >
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-black">{editingCategory ? (language === "de" ? "Kategorie bearbeiten" : "Kategori Düzenle") : (language === "de" ? "Neue Kategorie hinzufügen" : "Yeni Kategori Ekle")}</h2>
-
-              <button
-                type="button"
-                onClick={() => setShowCategoryForm(false)}
-                className="rounded-xl bg-slate-100 p-2"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            <form
-              onSubmit={handleCategorySubmit}
-              className="mt-6 grid gap-5 sm:grid-cols-2"
-            >
-              <Input
-                label={
-                  language === "de"
-                    ? "Türkischer Kategoriename *"
-                    : "Türkçe Kategori Adı *"
-                }
-                value={categoryForm.nameTr}
-                onChange={handleCategoryNameTr}
-              />
-
-              <Input
-                label={
-                  language === "de"
-                    ? "Deutscher Kategoriename *"
-                    : "Almanca Kategori Adı *"
-                }
-                value={categoryForm.nameDe}
-                onChange={(value) => updateCategoryForm("nameDe", value)}
-              />
-
-              <Input
-                label="Slug *"
-                value={categoryForm.slug}
-                onChange={(value) => updateCategoryForm("slug", value)}
-              />
-
-              <label className="block">
-                <span className="text-sm font-bold text-slate-700">
-                  {language === "de" ? "Kategorietyp *" : "Kategori Türü *"}
-                </span>
-
-                <select
-                  value={categoryForm.type}
-                  onChange={(event) =>
-                    updateCategoryForm("type", event.target.value)
-                  }
-                  className="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-orange-500"
-                >
-                  {Object.entries(categoryTypeLabels).map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {language === "de" ? label.de : label.tr}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <button
-                type="submit"
-                disabled={categorySaving}
-                className="flex items-center justify-center gap-2 rounded-xl bg-orange-500 px-5 py-4 font-black text-white sm:col-span-2"
-              >
-                {categorySaving ? (
-                  <Loader2 className="animate-spin" />
-                ) : (
-                  <Save size={19} />
-                )}
-                {editingCategory
-                  ? language === "de"
-                    ? "Kategorie aktualisieren"
-                    : "Kategoriyi Güncelle"
-                  : language === "de"
-                    ? "Kategorie speichern"
-                    : "Kategoriyi Kaydet"}
-              </button>
-            </form>
-          </section>
-        ) : null}
-
-        {showProductForm ? (
+  const productFormBlock = showProductForm ? (
           <section
             ref={productFormRef}
             className="mt-6 rounded-[24px] bg-white p-5 shadow-sm"
@@ -2207,7 +2057,159 @@ export default function AdminProductsPage() {
               </div>
             </form>
           </section>
+  ) : null;
+
+  return (
+    <main className="min-h-screen bg-slate-100 p-4 sm:p-6 lg:p-10">
+      <div className="mx-auto max-w-7xl">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <Link
+            href="/admin"
+            className="inline-flex items-center gap-2 font-bold text-slate-600 transition hover:text-orange-500"
+          >
+            <ArrowLeft size={18} />
+            {language === "de" ? "Admin-Panel" : "Admin Paneli"}
+          </Link>
+
+          <div className="flex flex-wrap gap-3">
+            {permissions?.createCategory ? (
+              <button
+                type="button"
+                onClick={openCategoryForm}
+                className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 font-black text-slate-900 shadow-sm transition hover:text-orange-500"
+              >
+                <FolderPlus size={19} />
+                {language === "de" ? "Neue Kategorie" : "Yeni Kategori"}
+              </button>
+            ) : null}
+
+            {permissions?.createProduct ? (
+              <button
+                type="button"
+                onClick={openCreateProductForm}
+                className="inline-flex items-center gap-2 rounded-xl bg-orange-500 px-5 py-3 font-black text-white transition hover:bg-orange-600"
+              >
+                <Plus size={19} />
+                {language === "de" ? "Neues Produkt" : "Yeni Ürün"}
+              </button>
+            ) : null}
+          </div>
+        </div>
+
+        <section className="mt-6 rounded-[32px] bg-slate-950 p-7 text-white sm:p-10">
+          <PackagePlus size={30} className="text-orange-400" />
+
+          <h1 className="mt-4 text-4xl font-black">{language === "de" ? "Produktverwaltung" : "Ürün Yönetimi"}</h1>
+
+          <p className="mt-3 text-slate-400">
+            {language === "de"
+              ? "Verwalten Sie Produkte nach Kategorien und bearbeiten Sie Verpackungs- und Mengeneinheiten."
+              : "Ürünleri kategorilere göre yönetebilir, ambalaj ve miktar birimlerini düzenleyebilirsiniz."}
+          </p>
+        </section>
+
+        {error ? (
+          <div className="mt-6 rounded-2xl bg-red-50 p-4 font-bold text-red-600">
+            {error}
+          </div>
         ) : null}
+
+        {success ? (
+          <div className="mt-6 rounded-2xl bg-green-50 p-4 font-bold text-green-700">
+            {success}
+          </div>
+        ) : null}
+
+        {showCategoryForm ? (
+          <section
+            ref={categoryFormRef}
+            className="mt-8 rounded-[28px] bg-white p-6 shadow-sm"
+          >
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-black">{editingCategory ? (language === "de" ? "Kategorie bearbeiten" : "Kategori Düzenle") : (language === "de" ? "Neue Kategorie hinzufügen" : "Yeni Kategori Ekle")}</h2>
+
+              <button
+                type="button"
+                onClick={() => setShowCategoryForm(false)}
+                className="rounded-xl bg-slate-100 p-2"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form
+              onSubmit={handleCategorySubmit}
+              className="mt-6 grid gap-5 sm:grid-cols-2"
+            >
+              <Input
+                label={
+                  language === "de"
+                    ? "Türkischer Kategoriename *"
+                    : "Türkçe Kategori Adı *"
+                }
+                value={categoryForm.nameTr}
+                onChange={handleCategoryNameTr}
+              />
+
+              <Input
+                label={
+                  language === "de"
+                    ? "Deutscher Kategoriename *"
+                    : "Almanca Kategori Adı *"
+                }
+                value={categoryForm.nameDe}
+                onChange={(value) => updateCategoryForm("nameDe", value)}
+              />
+
+              <Input
+                label="Slug *"
+                value={categoryForm.slug}
+                onChange={(value) => updateCategoryForm("slug", value)}
+              />
+
+              <label className="block">
+                <span className="text-sm font-bold text-slate-700">
+                  {language === "de" ? "Kategorietyp *" : "Kategori Türü *"}
+                </span>
+
+                <select
+                  value={categoryForm.type}
+                  onChange={(event) =>
+                    updateCategoryForm("type", event.target.value)
+                  }
+                  className="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-orange-500"
+                >
+                  {Object.entries(categoryTypeLabels).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {language === "de" ? label.de : label.tr}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <button
+                type="submit"
+                disabled={categorySaving}
+                className="flex items-center justify-center gap-2 rounded-xl bg-orange-500 px-5 py-4 font-black text-white sm:col-span-2"
+              >
+                {categorySaving ? (
+                  <Loader2 className="animate-spin" />
+                ) : (
+                  <Save size={19} />
+                )}
+                {editingCategory
+                  ? language === "de"
+                    ? "Kategorie aktualisieren"
+                    : "Kategoriyi Güncelle"
+                  : language === "de"
+                    ? "Kategorie speichern"
+                    : "Kategoriyi Kaydet"}
+              </button>
+            </form>
+          </section>
+        ) : null}
+
+        {!editingProduct ? productFormBlock : null}
 
         <div className="mt-8 space-y-7">
           {groupedProducts.map((group) => {
@@ -2322,8 +2324,8 @@ export default function AdminProductsPage() {
                 </div>
                 <div className="space-y-3 px-6 pb-6">
                   {group.products.map((product) => (
+                    <Fragment key={product.id}>
                     <div
-                      key={product.id}
                       onDragOver={(e) => {
                         e.preventDefault();
                         if (draggedProductId && draggedProductId !== product.id) {
@@ -2505,6 +2507,11 @@ export default function AdminProductsPage() {
                         ) : null}
                       </div>
                     </div>
+
+                    {editingProduct?.id === product.id
+                      ? productFormBlock
+                      : null}
+                    </Fragment>
                   ))}
                 </div>
               </section>
