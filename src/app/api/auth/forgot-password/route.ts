@@ -67,9 +67,23 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
         },
       });
 
+      const companySettings = await prisma.companySetting.findUnique({
+        where: {
+          tenantId: tenant.id,
+        },
+        select: {
+          logoUrl: true,
+          companyName: true,
+        },
+      });
+
       await sendPasswordResetCode(
         user.email,
         code,
+        {
+          logoUrl: companySettings?.logoUrl,
+          companyName: companySettings?.companyName,
+        },
       );
     }
 

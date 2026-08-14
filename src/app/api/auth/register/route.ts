@@ -272,9 +272,23 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     });
 
     try {
+      const companySettings = await prisma.companySetting.findUnique({
+        where: {
+          tenantId: tenant.id,
+        },
+        select: {
+          logoUrl: true,
+          companyName: true,
+        },
+      });
+
       await sendVerificationCode(
         user.email,
         code,
+        {
+          logoUrl: companySettings?.logoUrl,
+          companyName: companySettings?.companyName,
+        },
       );
     } catch (emailError) {
       console.error(

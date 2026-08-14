@@ -70,7 +70,20 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
         },
       });
 
-      await sendVerificationCode(user.email, code);
+      const companySettings = await prisma.companySetting.findUnique({
+        where: {
+          tenantId: tenant.id,
+        },
+        select: {
+          logoUrl: true,
+          companyName: true,
+        },
+      });
+
+      await sendVerificationCode(user.email, code, {
+        logoUrl: companySettings?.logoUrl,
+        companyName: companySettings?.companyName,
+      });
     }
 
     return NextResponse.json({

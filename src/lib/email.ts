@@ -28,21 +28,21 @@ function renderEmailLayout({
   intro,
   code,
   note,
+  logoUrl,
+  companyName,
 }: {
   title: string;
   intro: string;
   code: string;
   note: string;
+  logoUrl?: string | null;
+  companyName?: string | null;
 }) {
   return `
     <div style="margin:0;padding:32px 16px;background-color:#f7f7f5;font-family:'Segoe UI',Roboto,Arial,sans-serif;">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;margin:0 auto;background-color:#ffffff;border-radius:24px;overflow:hidden;box-shadow:0 4px 24px rgba(15,23,42,0.08);">
         <tr>
-          <td style="background-color:#0f172a;padding:28px 32px;text-align:center;">
-            <span style="font-size:22px;font-weight:900;color:#ffffff;letter-spacing:0.5px;">
-              Fluss <span style="color:#f97316;">Getränke</span>
-            </span>
-          </td>
+          ${renderBrandHeader({ logoUrl, companyName })}
         </tr>
 
         <tr>
@@ -82,12 +82,40 @@ function renderEmailLayout({
         <tr>
           <td style="padding:20px 32px;background-color:#f8fafc;text-align:center;border-top:1px solid #f1f5f9;">
             <p style="margin:0;font-size:12px;color:#cbd5e1;">
-              © ${new Date().getFullYear()} Fluss Getränke
+              © ${new Date().getFullYear()} ${companyName || "Fluss Getränke"}
             </p>
           </td>
         </tr>
       </table>
     </div>
+  `;
+}
+
+function renderBrandHeader({
+  logoUrl,
+  companyName,
+}: {
+  logoUrl?: string | null;
+  companyName?: string | null;
+}) {
+  if (logoUrl) {
+    return `
+      <td style="background-color:#0f172a;padding:20px 32px;text-align:center;">
+        <img
+          src="${logoUrl}"
+          alt="${companyName || "Fluss Getränke"}"
+          style="max-height:52px;max-width:220px;object-fit:contain;"
+        />
+      </td>
+    `;
+  }
+
+  return `
+    <td style="background-color:#0f172a;padding:28px 32px;text-align:center;">
+      <span style="font-size:22px;font-weight:900;color:#ffffff;letter-spacing:0.5px;">
+        Fluss <span style="color:#f97316;">Getränke</span>
+      </span>
+    </td>
   `;
 }
 
@@ -97,22 +125,22 @@ function renderEmailLayoutWithButton({
   buttonText,
   buttonUrl,
   note,
+  logoUrl,
+  companyName,
 }: {
   title: string;
   intro: string;
   buttonText: string;
   buttonUrl: string;
   note: string;
+  logoUrl?: string | null;
+  companyName?: string | null;
 }) {
   return `
     <div style="margin:0;padding:32px 16px;background-color:#f7f7f5;font-family:'Segoe UI',Roboto,Arial,sans-serif;">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;margin:0 auto;background-color:#ffffff;border-radius:24px;overflow:hidden;box-shadow:0 4px 24px rgba(15,23,42,0.08);">
         <tr>
-          <td style="background-color:#0f172a;padding:28px 32px;text-align:center;">
-            <span style="font-size:22px;font-weight:900;color:#ffffff;letter-spacing:0.5px;">
-              Fluss <span style="color:#f97316;">Getränke</span>
-            </span>
-          </td>
+          ${renderBrandHeader({ logoUrl, companyName })}
         </tr>
 
         <tr>
@@ -146,7 +174,7 @@ function renderEmailLayoutWithButton({
         <tr>
           <td style="padding:20px 32px;background-color:#f8fafc;text-align:center;border-top:1px solid #f1f5f9;">
             <p style="margin:0;font-size:12px;color:#cbd5e1;">
-              © ${new Date().getFullYear()} Fluss Getränke
+              © ${new Date().getFullYear()} ${companyName || "Fluss Getränke"}
             </p>
           </td>
         </tr>
@@ -155,20 +183,30 @@ function renderEmailLayoutWithButton({
   `;
 }
 
+type Branding = {
+  logoUrl?: string | null;
+  companyName?: string | null;
+};
+
 export async function sendOrderConfirmationEmail(
   to: string,
   orderNumber: string,
   confirmUrl: string,
+  branding: Branding = {},
 ) {
+  const companyName = branding.companyName || "Fluss Getränke";
+
   await sendMail(
     to,
-    `Fluss Getränke - Bitte bestätigen Sie Ihre Bestellung ${orderNumber}`,
+    `${companyName} - Bitte bestätigen Sie Ihre Bestellung ${orderNumber}`,
     renderEmailLayoutWithButton({
       title: "Bestellung bestätigen",
       intro: `Vielen Dank für Ihre Bestellung ${orderNumber}. Bitte bestätigen Sie sie über den folgenden Button, damit wir mit der Vorbereitung beginnen können.`,
       buttonText: "Bestellung bestätigen",
       buttonUrl: confirmUrl,
       note: "Falls Sie diese Bestellung nicht aufgegeben haben, können Sie diese E-Mail einfach ignorieren.",
+      logoUrl: branding.logoUrl,
+      companyName,
     }),
   );
 }
@@ -176,15 +214,20 @@ export async function sendOrderConfirmationEmail(
 export async function sendVerificationCode(
   to: string,
   code: string,
+  branding: Branding = {},
 ) {
+  const companyName = branding.companyName || "Fluss Getränke";
+
   await sendMail(
     to,
-    "Fluss Getränke - E-Mail Bestätigung",
+    `${companyName} - E-Mail Bestätigung`,
     renderEmailLayout({
-      title: "Willkommen bei Fluss Getränke",
+      title: `Willkommen bei ${companyName}`,
       intro: "Bitte bestätigen Sie Ihre E-Mail-Adresse mit dem folgenden Code:",
       code,
       note: "Falls Sie sich nicht registriert haben, können Sie diese E-Mail einfach ignorieren.",
+      logoUrl: branding.logoUrl,
+      companyName,
     }),
   );
 }
@@ -192,15 +235,20 @@ export async function sendVerificationCode(
 export async function sendPasswordResetCode(
   to: string,
   code: string,
+  branding: Branding = {},
 ) {
+  const companyName = branding.companyName || "Fluss Getränke";
+
   await sendMail(
     to,
-    "Fluss Getränke - Passwort zurücksetzen",
+    `${companyName} - Passwort zurücksetzen`,
     renderEmailLayout({
       title: "Passwort zurücksetzen",
       intro: "Verwenden Sie den folgenden Code, um Ihr Passwort zurückzusetzen:",
       code,
       note: "Falls Sie das nicht angefordert haben, können Sie diese E-Mail einfach ignorieren.",
+      logoUrl: branding.logoUrl,
+      companyName,
     }),
   );
 }

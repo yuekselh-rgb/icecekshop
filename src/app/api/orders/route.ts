@@ -630,10 +630,24 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
       try {
         const confirmUrl = `${request.nextUrl.protocol}//${request.nextUrl.host}/orders/confirm?token=${confirmationToken}`;
 
+        const companySettings = await prisma.companySetting.findUnique({
+          where: {
+            tenantId: tenant.id,
+          },
+          select: {
+            logoUrl: true,
+            companyName: true,
+          },
+        });
+
         await sendOrderConfirmationEmail(
           session.email,
           order.orderNumber,
           confirmUrl,
+          {
+            logoUrl: companySettings?.logoUrl,
+            companyName: companySettings?.companyName,
+          },
         );
       } catch (err) {
         console.error("ORDER_CONFIRMATION_EMAIL_ERROR", err);
