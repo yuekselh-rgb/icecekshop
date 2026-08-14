@@ -1004,11 +1004,15 @@ export default function AdminProductsPage() {
         imageUrl: data.imageUrl,
       }));
 
-      setSuccess(
-        language === "de"
-          ? "Produktbild hochgeladen."
-          : "Ürün resmi yüklendi.",
-      );
+      if (editingProduct) {
+        await handleProductFieldBlur({ imageUrl: data.imageUrl });
+      } else {
+        setSuccess(
+          language === "de"
+            ? "Produktbild hochgeladen."
+            : "Ürün resmi yüklendi.",
+        );
+      }
     } catch {
       setImageUploadError(
         language === "de"
@@ -1100,10 +1104,14 @@ export default function AdminProductsPage() {
     }
   }
 
-  async function handleProductFieldBlur() {
+  async function handleProductFieldBlur(
+    overrides?: Partial<typeof form>,
+  ) {
     if (!editingProduct) {
       return;
     }
+
+    const effectiveForm = overrides ? { ...form, ...overrides } : form;
 
     setAutoSaveStatus("saving");
 
@@ -1116,23 +1124,34 @@ export default function AdminProductsPage() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            ...form,
+            ...effectiveForm,
 
-            price: form.price === "" ? undefined : Number(form.price),
+            price:
+              effectiveForm.price === ""
+                ? undefined
+                : Number(effectiveForm.price),
 
-            oldPrice: form.oldPrice === "" ? null : Number(form.oldPrice),
+            oldPrice:
+              effectiveForm.oldPrice === ""
+                ? null
+                : Number(effectiveForm.oldPrice),
 
-            pfandAmount: pfandEnabled ? Number(form.pfandAmount || 0) : 0,
+            pfandAmount: pfandEnabled
+              ? Number(effectiveForm.pfandAmount || 0)
+              : 0,
 
-            stock: Number(form.stock || 0),
+            stock: Number(effectiveForm.stock || 0),
 
-            stockUnit: form.stockUnit,
+            stockUnit: effectiveForm.stockUnit,
 
-            unitsPerPackage: Math.max(1, Number(form.unitsPerPackage || 1)),
+            unitsPerPackage: Math.max(
+              1,
+              Number(effectiveForm.unitsPerPackage || 1),
+            ),
 
-            minStock: Number(form.minStock || 0),
+            minStock: Number(effectiveForm.minStock || 0),
 
-            packageInfo: form.packageInfo.trim(),
+            packageInfo: effectiveForm.packageInfo.trim(),
           }),
         },
       );
@@ -1398,7 +1417,7 @@ export default function AdminProductsPage() {
 
             <form
               onSubmit={handleProductSubmit}
-              onBlur={editingProduct ? handleProductFieldBlur : undefined}
+              onBlur={editingProduct ? () => handleProductFieldBlur() : undefined}
               className="mt-5 grid gap-4 sm:grid-cols-2"
             >
               <Input
@@ -1999,6 +2018,10 @@ export default function AdminProductsPage() {
                               updateProductForm("imageUrl", "");
 
                               setImageUploadError("");
+
+                              if (editingProduct) {
+                                handleProductFieldBlur({ imageUrl: "" });
+                              }
                             }}
                             className="rounded-lg bg-red-50 px-3 py-2 text-[11px] font-black text-red-600"
                           >
