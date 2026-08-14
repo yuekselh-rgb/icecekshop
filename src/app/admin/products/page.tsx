@@ -942,6 +942,15 @@ export default function AdminProductsPage() {
       return;
     }
 
+    if (file.size > 4 * 1024 * 1024) {
+      setImageUploadError(
+        language === "de"
+          ? "Das Bild darf höchstens 4 MB groß sein."
+          : "Resim en fazla 4 MB olabilir.",
+      );
+      return;
+    }
+
     setImageUploading(true);
 
     setImageUploadError("");
@@ -1883,8 +1892,8 @@ export default function AdminProductsPage() {
 
                       <p className="mt-1.5 text-[10px] text-slate-500">
                         {language === "de"
-                          ? "JPG, PNG, WEBP oder GIF · Max. 5 MB"
-                          : "JPG, PNG, WEBP veya GIF · En fazla 5 MB"}
+                          ? "JPG, PNG, WEBP oder GIF · Max. 4 MB"
+                          : "JPG, PNG, WEBP veya GIF · En fazla 4 MB"}
                       </p>
 
                       {imageUploadError ? (

@@ -229,6 +229,15 @@ export default function CompanySettingsPage() {
       return;
     }
 
+    if (file.size > 4 * 1024 * 1024) {
+      setError(
+        language === "de"
+          ? "Das Logo darf höchstens 4 MB groß sein."
+          : "Logo en fazla 4 MB olabilir.",
+      );
+      return;
+    }
+
     setUploading(true);
     setError("");
     setSuccess("");
@@ -770,8 +779,8 @@ export default function CompanySettingsPage() {
 
                 <p className="mt-3 text-xs text-slate-500">
                   {language === "de"
-                    ? "JPG, PNG, WEBP oder GIF. Maximal 5 MB."
-                    : "JPG, PNG, WEBP veya GIF. En fazla 5 MB."}
+                    ? "JPG, PNG, WEBP oder GIF. Maximal 4 MB."
+                    : "JPG, PNG, WEBP veya GIF. En fazla 4 MB."}
                 </p>
               </div>
 

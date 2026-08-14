@@ -7,7 +7,12 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024;
+/*
+ * Vercel Serverless Functions reject request bodies over ~4.5 MB at the
+ * platform level (413) before this handler even runs, so the app's own
+ * limit must stay safely under that, not just under a round "5 MB".
+ */
+const MAX_FILE_SIZE = 4 * 1024 * 1024;
 
 const allowedTypes: Record<string, string> = {
   "image/jpeg": "jpg",
@@ -75,8 +80,8 @@ export const POST = withTenant(async (request: NextRequest) => {
         {
           error:
             language === "de"
-              ? "Das Logo darf höchstens 5 MB groß sein."
-              : "Logo en fazla 5 MB olabilir.",
+              ? "Das Logo darf höchstens 4 MB groß sein."
+              : "Logo en fazla 4 MB olabilir.",
         },
         {
           status: 400,
