@@ -287,6 +287,8 @@ export default function SuperAdminSidebar({
 
   const [collapsed, setCollapsed] = useState(false);
 
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
@@ -350,7 +352,7 @@ export default function SuperAdminSidebar({
             <CompanyBrand variant="footer" />
           </div>
 
-          <Sheet>
+          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <SheetTrigger
               render={
                 <button
@@ -373,6 +375,7 @@ export default function SuperAdminSidebar({
                 language={language}
                 setLanguage={setLanguage}
                 t={t}
+                onNavigate={() => setMobileMenuOpen(false)}
               />
             </SheetContent>
           </Sheet>

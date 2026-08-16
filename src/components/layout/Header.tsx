@@ -58,6 +58,8 @@ export default function Header() {
 
   const [searchQuery, setSearchQuery] = useState("");
 
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   function submitSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -216,7 +218,7 @@ export default function Header() {
               <CompanyBrand variant="footer" />
             </div>
 
-          <Sheet>
+          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <SheetTrigger
               render={
                 <button
@@ -230,7 +232,14 @@ export default function Header() {
             </SheetTrigger>
 
             <SheetContent side="left" className="top-0 h-screen w-[340px] border-r border-[#05090a26] bg-white p-0">
-              <div className="flex h-full flex-col">
+              <div
+                className="flex h-full flex-col"
+                onClick={(event) => {
+                  if ((event.target as HTMLElement).closest("a")) {
+                    setMobileMenuOpen(false);
+                  }
+                }}
+              >
 
                 <div className="border-b border-[#05090a26] p-6">
                   <h2 className="text-xl font-bold text-[#05090A]">
