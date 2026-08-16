@@ -422,63 +422,29 @@ const [pressedProductId, setPressedProductId] = useState<string | null>(null);
   }, []);
 
   /*
-   * Kategoriler bar ve ürün listesinde aynı sırada gösterilir.
+   * Die Kategorie-Reihenfolge kommt direkt von der API (sortOrder),
+   * damit die Kategorie-Leiste und die Produktgruppen unten immer
+   * exakt dieselbe Reihenfolge verwenden.
    */
-  const categoryTypeOrder: Record<string, number> = {
-    DRINK: 1,
-    PACKAGING: 2,
-    TAKEAWAY: 4,
-    CLEANING: 5,
-    OTHER: 99,
-  };
+  const categoryOrderIndex = useMemo(() => {
+    const index = new Map<string, number>();
 
-  const getCategoryOrder = (category: Category) => {
-    const normalizedSlug = category.slug.toLocaleLowerCase("tr-TR");
-
-    /*
-     * Sıcak içecek kategorisi API tarafında OTHER olabileceği için
-     * slug üzerinden üçüncü sıraya yerleştiriyoruz.
-     */
-    if (
-      normalizedSlug.includes("sicak") ||
-      normalizedSlug.includes("kahve") ||
-      normalizedSlug.includes("coffee") ||
-      normalizedSlug.includes("heiss")
-    ) {
-      return 3;
-    }
-
-    return categoryTypeOrder[category.type] ?? 99;
-  };
-
-  const sortedCategories = useMemo(() => {
-    return [...categories].sort((first, second) => {
-      const orderDifference =
-        getCategoryOrder(first) - getCategoryOrder(second);
-
-      if (orderDifference !== 0) {
-        return orderDifference;
-      }
-
-      return (
-        language === "de"
-          ? (first.nameDe || first.name || first.slug)
-          : (first.nameTr || first.name || first.slug)
-      ).localeCompare(
-        language === "de"
-          ? (second.nameDe || second.name || second.slug)
-          : (second.nameTr || second.name || second.slug),
-        language === "de" ? "de" : "tr",
-      );
+    categories.forEach((category, position) => {
+      index.set(category.id, position);
     });
+
+    return index;
   }, [categories]);
+
+  const getCategoryOrder = (category: Category) =>
+    categoryOrderIndex.get(category.id) ?? 999;
 
   const categoryButtons = [
     {
       value: "ALL",
       label: "Alle",
     },
-    ...sortedCategories.map((category) => ({
+    ...categories.map((category) => ({
       value: category.id,
       label:
         language === "de"
