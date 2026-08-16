@@ -1498,18 +1498,19 @@ const adminName =
                       </button>
 
                       <input
-                        type="number"
-                        min={0}
-                        step={1}
+                        type="text"
                         inputMode="numeric"
-                        value={option.quantity}
-                        onChange={(event) =>
+                        pattern="[0-9]*"
+                        placeholder="0"
+                        value={option.quantity === 0 ? "" : option.quantity}
+                        onChange={(event) => {
+                          const digits = event.target.value.replace(/\D/g, "");
+
                           setPfandQuantity(
                             option.unitAmount,
-                            Number(event.target.value),
-                          )
-                        }
-                        onFocus={(event) => event.target.select()}
+                            digits === "" ? 0 : parseInt(digits, 10),
+                          );
+                        }}
                         className="h-9 w-12 min-w-0 border-x border-slate-200 bg-transparent text-center text-sm font-black outline-none focus:bg-white"
                       />
 
