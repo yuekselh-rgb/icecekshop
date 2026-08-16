@@ -1194,16 +1194,15 @@ export default function SuperAdminStockPage() {
           </div>
         </section>
 
-        <section className="mt-6 min-w-0 w-full max-w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <section className="mt-6 w-full max-w-full overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
           {filteredProducts.length ===
           0 ? (
             <div className="p-8 text-center text-slate-500">
               {t.noProductsFound}
             </div>
           ) : (
-            <div className="w-full min-w-0">
-              <div className="w-full min-w-0">
-                <div className="grid grid-cols-[minmax(155px,1.35fr)_78px_104px_92px_105px_86px_86px_100px_100px_230px] items-center gap-3 border-b border-slate-200 bg-slate-100 px-4 py-3.5 text-[11px] font-black uppercase tracking-wide text-slate-500">
+            <div className="min-w-[1300px]">
+                <div className="grid grid-cols-[minmax(180px,1.35fr)_84px_112px_100px_112px_92px_92px_108px_108px_240px] items-center gap-3 border-b border-slate-200 bg-slate-100 px-4 py-3.5 text-[11px] font-black uppercase tracking-wide text-slate-500">
                   <div>
                     {t.colProduct}
                   </div>
@@ -1410,7 +1409,7 @@ export default function SuperAdminStockPage() {
                           ) : null}
 
                           <article
-                            className={`grid grid-cols-[minmax(155px,1.35fr)_78px_104px_92px_105px_86px_86px_100px_100px_230px] items-center gap-3 px-4 py-4 ${
+                            className={`grid grid-cols-[minmax(180px,1.35fr)_84px_112px_100px_112px_92px_92px_108px_108px_240px] items-center gap-3 px-4 py-4 ${
                             critical
                               ? "bg-orange-50/40"
                               : "bg-white"
@@ -1697,7 +1696,6 @@ export default function SuperAdminStockPage() {
                     }
                   )}
                 </div>
-              </div>
             </div>
           )}
         </section>
