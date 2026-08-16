@@ -459,11 +459,56 @@ const categoryLabels: Record<string, string> =
 
   const [category, setCategory] = useState("");
 
+  const [categoryFilter, setCategoryFilter] = useState("ALL");
+
   const [purchaseItems, setPurchaseItems] = useState<PurchaseItem[]>([
     createEmptyPurchaseItem(),
   ]);
 
   const isGoodsPurchase = direction === "OUT" && category === "GOODS_PURCHASE";
+
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+
+    movements.forEach((movement) => {
+      counts[movement.category] = (counts[movement.category] || 0) + 1;
+    });
+
+    return counts;
+  }, [movements]);
+
+  const availableCategoryFilters = useMemo(
+    () =>
+      Object.keys(categoryLabels).filter(
+        (categoryKey) => (categoryCounts[categoryKey] || 0) > 0,
+      ),
+    [categoryCounts, categoryLabels],
+  );
+
+  const filteredMovements = useMemo(
+    () =>
+      categoryFilter === "ALL"
+        ? movements
+        : movements.filter((movement) => movement.category === categoryFilter),
+    [movements, categoryFilter],
+  );
+
+  const filteredSummary = useMemo(() => {
+    if (categoryFilter === "ALL") {
+      return null;
+    }
+
+    const total = filteredMovements.reduce(
+      (sum, movement) =>
+        sum + (movement.direction === "IN" ? movement.amount : -movement.amount),
+      0,
+    );
+
+    return {
+      count: filteredMovements.length,
+      total: Number(total.toFixed(2)),
+    };
+  }, [categoryFilter, filteredMovements]);
 
   const purchaseTotal = useMemo(
     () =>
@@ -2169,17 +2214,86 @@ const categoryLabels: Record<string, string> =
           </section>
 
           <section className="min-w-0 w-full rounded-[28px] bg-white p-5 shadow-sm lg:p-6">
-            <h2 className="text-2xl font-black text-slate-950">
-              {t.cashMovements}
-            </h2>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2 className="text-2xl font-black text-slate-950">
+                {t.cashMovements}
+              </h2>
+
+              {movements.length > 0 ? (
+                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-500">
+                  {filteredMovements.length} / {movements.length}
+                </span>
+              ) : null}
+            </div>
+
+            {movements.length > 0 ? (
+              <div className="mt-4 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => setCategoryFilter("ALL")}
+                  className={`rounded-full px-3 py-1.5 text-xs font-black transition ${
+                    categoryFilter === "ALL"
+                      ? "bg-slate-950 text-white"
+                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  }`}
+                >
+                  {language === "de" ? "Alle" : "Tümü"}
+                </button>
+
+                {availableCategoryFilters.map((categoryKey) => (
+                  <button
+                    key={categoryKey}
+                    type="button"
+                    onClick={() => setCategoryFilter(categoryKey)}
+                    className={`rounded-full px-3 py-1.5 text-xs font-black transition ${
+                      categoryFilter === categoryKey
+                        ? "bg-slate-950 text-white"
+                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    }`}
+                  >
+                    {categoryLabels[categoryKey] || categoryKey}
+                    <span className="ml-1 opacity-60">
+                      {categoryCounts[categoryKey]}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            ) : null}
+
+            {filteredSummary ? (
+              <p className="mt-3 text-sm font-bold text-slate-500">
+                {filteredSummary.count}{" "}
+                {language === "de" ? "Einträge" : "kayıt"} ·{" "}
+                <span
+                  className={
+                    filteredSummary.total >= 0
+                      ? "text-green-700"
+                      : "text-red-600"
+                  }
+                >
+                  {filteredSummary.total >= 0 ? "+" : ""}
+                  {filteredSummary.total.toLocaleString("de-DE", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}{" "}
+                  €
+                </span>
+              </p>
+            ) : null}
 
             {movements.length === 0 ? (
               <p className="mt-6 text-slate-500">
                 {language === "de" ? "Noch keine Kassenbewegungen vorhanden." : "Henüz kasa hareketi bulunmuyor."}
               </p>
+            ) : filteredMovements.length === 0 ? (
+              <p className="mt-6 text-slate-500">
+                {language === "de"
+                  ? "Keine Kassenbewegungen in dieser Kategorie."
+                  : "Bu kategoride kasa hareketi bulunmuyor."}
+              </p>
             ) : (
               <div className="mt-6 space-y-3">
-                {movements.map((movement) => (
+                {filteredMovements.map((movement) => (
                   <article
                     key={movement.id}
                     className="rounded-2xl border border-slate-200 p-4"
@@ -2200,12 +2314,12 @@ const categoryLabels: Record<string, string> =
                       </div>
 
                       <div className="min-w-0 flex-1">
-                        <p className="font-black text-slate-950">
+                        <span className="inline-block rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-black text-slate-700">
                           {categoryLabels[movement.category] ||
                             movement.category}
-                        </p>
+                        </span>
 
-                        <p className="text-sm font-bold text-slate-600">
+                        <p className="mt-1.5 text-sm font-bold text-slate-600">
                           {movement.companyName || t.companyNotSpecified}
                         </p>
 
