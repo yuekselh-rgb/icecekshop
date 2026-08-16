@@ -358,11 +358,7 @@ const [pressedProductId, setPressedProductId] = useState<string | null>(null);
         fetch("/api/admin/customers"),
       ]);
 
-      console.log("PRODUCT RESPONSE STATUS", productsResponse.status);
-
       const productsData = await productsResponse.json();
-
-      console.log("PRODUCT RESPONSE", productsData);
 
       const categoriesData = await categoriesResponse.json();
 
@@ -403,9 +399,6 @@ const [pressedProductId, setPressedProductId] = useState<string | null>(null);
       const activeProducts =
         productsData.products.filter((product: Product) => product.active);
 
-      console.log("ALL PRODUCTS", productsData.products);
-console.log("ACTIVE PRODUCTS", activeProducts.length);
-
       setProducts(activeProducts);
 
       if (categoriesResponse.ok) {
@@ -424,10 +417,6 @@ console.log("ACTIVE PRODUCTS", activeProducts.length);
     }
   }
 
-  /*
-   * Geçici olarak kapatıldı.
-   * Filtre testi için.
-   */
   useEffect(() => {
     loadData();
   }, []);
@@ -505,11 +494,6 @@ console.log("ACTIVE PRODUCTS", activeProducts.length);
    */
   const filteredProducts = useMemo(() => {
     const query = search.trim().toLocaleLowerCase("tr-TR");
-console.log("FILTER", {
-      activeCategory,
-      productCount: products.length,
-    });
-
 
     return [...products]
       .filter((product) => {
@@ -552,7 +536,35 @@ console.log("FILTER", {
       });
   }, [products, search, activeCategory]);
 
-  
+  /*
+   * Ürünler artık tek bir düz ızgara yerine kategori bölümleri
+   * halinde gruplanır, böylece farklı kategorilerden ürünler aynı
+   * satırda karışmaz ve her kategori kendi başlığıyla ayrılır.
+   */
+  const groupedProducts = useMemo(() => {
+    const groups = new Map<string, { category: Category | null; products: Product[] }>();
+
+    filteredProducts.forEach((product) => {
+      const key = product.category?.id || "UNCATEGORIZED";
+
+      if (!groups.has(key)) {
+        groups.set(key, {
+          category: product.category || null,
+          products: [],
+        });
+      }
+
+      groups.get(key)!.products.push(product);
+    });
+
+    return [...groups.values()].sort((first, second) => {
+      const firstOrder = first.category ? getCategoryOrder(first.category) : 999;
+      const secondOrder = second.category ? getCategoryOrder(second.category) : 999;
+
+      return firstOrder - secondOrder;
+    });
+  }, [filteredProducts]);
+
   const scrollToProductCategory = (categoryId: string) => {
     const container = document.getElementById("bar-sale-scroll");
 
@@ -596,17 +608,17 @@ console.log("FILTER", {
     if (!container) return;
 
     const onScroll = () => {
-      const products = document.querySelectorAll<HTMLElement>(
+      const sections = document.querySelectorAll<HTMLElement>(
         "[data-bar-sale-category]",
       );
 
       let current = "ALL";
 
-      products.forEach((product) => {
-        const rect = product.getBoundingClientRect();
+      sections.forEach((section) => {
+        const rect = section.getBoundingClientRect();
 
         if (rect.top < 170) {
-          current = product.dataset.barSaleCategory || "ALL";
+          current = section.dataset.barSaleCategory || "ALL";
         }
       });
 
@@ -617,7 +629,7 @@ console.log("FILTER", {
     onScroll();
 
     return () => container.removeEventListener("scroll", onScroll);
-  }, [filteredProducts]);
+  }, [groupedProducts]);
 
 const adminName =
     [adminUser?.firstName, adminUser?.lastName]
@@ -1132,16 +1144,31 @@ const adminName =
             </div>
 
             {filteredProducts.length > 0 ? (
-              <div
-                id="bar-sale-product-grid"
-                className="mt-4 grid min-w-0 scroll-mt-28 grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
-              >
-                {filteredProducts.map((product) => (
-                  <article
-                    key={product.id}
-                    data-bar-sale-category={product.categoryId}
-                    className="group flex w-full min-w-0 max-w-full scroll-mt-28 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition duration-200 hover:-translate-y-0.5 hover:border-orange-300 hover:shadow-lg sm:rounded-2xl"
+              <div id="bar-sale-product-grid" className="mt-4 min-w-0 space-y-6">
+                {groupedProducts.map((group) => (
+                  <section
+                    key={group.category?.id || "UNCATEGORIZED"}
+                    data-bar-sale-category={group.category?.id || "UNCATEGORIZED"}
+                    className="scroll-mt-28"
                   >
+                    <h3 className="mb-2 flex items-center gap-2 text-xs font-black uppercase tracking-wide text-slate-500">
+                      {group.category
+                        ? language === "de"
+                          ? group.category.nameDe || group.category.name
+                          : group.category.nameTr || group.category.name
+                        : t.product}
+
+                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-black text-slate-400">
+                        {group.products.length}
+                      </span>
+                    </h3>
+
+                    <div className="grid min-w-0 grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+                      {group.products.map((product) => (
+                        <article
+                          key={product.id}
+                          className="group flex w-full min-w-0 max-w-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition duration-200 hover:-translate-y-0.5 hover:border-orange-300 hover:shadow-lg sm:rounded-2xl"
+                        >
                     <button
                       type="button"
                       onClick={() => addProduct(product)}
@@ -1253,8 +1280,11 @@ const adminName =
                           </div>
                         </div>
                       </div>
-                    </button>
-                  </article>
+                        </button>
+                        </article>
+                      ))}
+                    </div>
+                  </section>
                 ))}
               </div>
             ) : (
