@@ -2,10 +2,14 @@
 
 import {
   Boxes,
+  CalendarX,
+  Check,
   Loader2,
   Minus,
+  PackageX,
   Plus,
   Search,
+  Undo2,
 } from "lucide-react";
 import {
   FormEvent,
@@ -1201,8 +1205,8 @@ export default function SuperAdminStockPage() {
               {t.noProductsFound}
             </div>
           ) : (
-            <div className="min-w-[1300px]">
-                <div className="grid grid-cols-[minmax(180px,1.35fr)_84px_112px_100px_112px_92px_92px_108px_108px_240px] items-center gap-3 border-b border-slate-200 bg-slate-100 px-4 py-3.5 text-[11px] font-black uppercase tracking-wide text-slate-500">
+            <div className="min-w-[1200px]">
+                <div className="grid grid-cols-[minmax(200px,1.4fr)_92px_150px_104px_130px_140px_140px_170px] items-center gap-4 border-b border-slate-200 bg-slate-100 px-4 py-3.5 text-[11px] font-black uppercase tracking-wide text-slate-500">
                   <div>
                     {t.colProduct}
                   </div>
@@ -1229,14 +1233,6 @@ export default function SuperAdminStockPage() {
 
                   <div className="text-center">
                     {t.colThisMonth}
-                  </div>
-
-                  <div className="text-center">
-                    {t.colTodayProfit}
-                  </div>
-
-                  <div className="text-center">
-                    {t.colMonthlyProfit}
                   </div>
 
                   <div className="text-center">
@@ -1409,7 +1405,7 @@ export default function SuperAdminStockPage() {
                           ) : null}
 
                           <article
-                            className={`grid grid-cols-[minmax(180px,1.35fr)_84px_112px_100px_112px_92px_92px_108px_108px_240px] items-center gap-3 px-4 py-4 ${
+                            className={`grid grid-cols-[minmax(200px,1.4fr)_92px_150px_104px_130px_140px_140px_170px] items-center gap-4 px-4 py-4 ${
                             critical
                               ? "bg-orange-50/40"
                               : "bg-white"
@@ -1447,7 +1443,7 @@ export default function SuperAdminStockPage() {
                                 ? "bg-red-50 text-red-800"
                                 : critical
                                   ? "bg-orange-100 text-orange-800"
-                                  : "bg-green-50 text-green-800"
+                                  : "bg-slate-50 text-slate-700"
                             }`}
                           >
                             <p className="text-xl font-black leading-none">
@@ -1474,7 +1470,7 @@ export default function SuperAdminStockPage() {
                                 "UPDATE_PURCHASE_PRICE"
                               )
                             }
-                            className="grid gap-1"
+                            className="flex items-center gap-1.5"
                           >
                             <input
                               required
@@ -1486,21 +1482,23 @@ export default function SuperAdminStockPage() {
                                 product.purchasePrice
                               }
                               placeholder="0,00"
-                              className="h-10 min-w-0 rounded-lg border border-amber-200 bg-white px-3 text-center text-sm font-bold outline-none focus:border-amber-500"
+                              className="h-10 min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-3 text-center text-sm font-bold text-slate-950 outline-none focus:border-orange-500"
                             />
 
                             <button
                               type="submit"
+                              title={t.saveBtn}
+                              aria-label={t.saveBtn}
                               disabled={
                                 isSaving
                               }
-                              className="h-9 rounded-lg bg-amber-500 px-3 text-xs font-black text-white transition hover:bg-amber-600 disabled:opacity-50"
+                              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-950 text-white transition hover:bg-orange-500 disabled:opacity-50"
                             >
-                              {t.saveBtn}
+                              <Check size={16} />
                             </button>
                           </form>
 
-                          <div className="rounded-xl bg-slate-100 px-3 py-3 text-center">
+                          <div className="text-center">
                             <p className="text-base font-black text-slate-950">
                               {product.salePrice.toFixed(
                                 2
@@ -1508,13 +1506,13 @@ export default function SuperAdminStockPage() {
                               €
                             </p>
 
-                            <p className="mt-1 text-[9px] font-bold text-slate-500">
+                            <p className="mt-0.5 text-[10px] font-bold text-slate-400">
                               {t.registerPriceLabel}
                             </p>
                           </div>
 
-                          <div className="rounded-xl bg-amber-50 px-3 py-3 text-center text-amber-900">
-                            <p className="text-base font-black leading-none">
+                          <div className="text-center">
+                            <p className="text-base font-black leading-none text-slate-950">
                               {(
                                 product.stock *
                                 product.purchasePrice
@@ -1530,7 +1528,7 @@ export default function SuperAdminStockPage() {
                               €
                             </p>
 
-                            <p className="mt-1 text-[9px] font-bold text-amber-700">
+                            <p className="mt-1 text-[10px] font-bold text-slate-400">
                               {product.stock} ×{" "}
                               {product.purchasePrice.toLocaleString(
                                 "de-DE",
@@ -1545,79 +1543,61 @@ export default function SuperAdminStockPage() {
                             </p>
                           </div>
 
-                          <div className="rounded-xl bg-blue-50 px-3 py-3 text-center text-blue-800">
-                            <p className="text-base font-black leading-none">
+                          <div className="text-center">
+                            <p className="text-base font-black leading-none text-slate-950">
                               {
                                 product.soldToday
-                              }
+                              }{" "}
+                              <span className="text-xs font-bold text-slate-400">
+                                {t.revenueSuffix}
+                              </span>
                             </p>
 
-                            <p className="mt-1 text-[9px] font-bold">
-                              {product.soldTodayRevenue.toFixed(
-                                2
-                              )}{" "}
-                              € {t.revenueSuffix}
-                            </p>
-                          </div>
-
-                          <div className="rounded-xl bg-violet-50 px-3 py-3 text-center text-violet-800">
-                            <p className="text-base font-black leading-none">
-                              {
-                                product.soldThisMonth
-                              }
-                            </p>
-
-                            <p className="mt-1 text-[9px] font-bold">
-                              {product.soldThisMonthRevenue.toFixed(
-                                2
-                              )}{" "}
-                              € {t.revenueSuffix}
-                            </p>
-                          </div>
-
-                          <div
-                            className={`rounded-xl px-3 py-3 text-center ${
-                              product.soldTodayProfit >=
-                              0
-                                ? "bg-emerald-50 text-emerald-800"
-                                : "bg-red-50 text-red-800"
-                            }`}
-                          >
-                            <p className="text-base font-black">
+                            <p
+                              className={`mt-1 text-xs font-bold ${
+                                product.soldTodayProfit >=
+                                0
+                                  ? "text-emerald-700"
+                                  : "text-red-600"
+                              }`}
+                            >
                               {product.soldTodayProfit.toFixed(
                                 2
                               )}{" "}
-                              €
-                            </p>
-
-                            <p className="mt-1 text-[9px] font-bold">
-                              {t.dailyLabel}
+                              € {t.dailyLabel}
                             </p>
                           </div>
 
-                          <div
-                            className={`rounded-xl px-3 py-3 text-center ${
-                              product.soldThisMonthProfit >=
-                              0
-                                ? "bg-emerald-50 text-emerald-800"
-                                : "bg-red-50 text-red-800"
-                            }`}
-                          >
-                            <p className="text-base font-black">
+                          <div className="text-center">
+                            <p className="text-base font-black leading-none text-slate-950">
+                              {
+                                product.soldThisMonth
+                              }{" "}
+                              <span className="text-xs font-bold text-slate-400">
+                                {t.revenueSuffix}
+                              </span>
+                            </p>
+
+                            <p
+                              className={`mt-1 text-xs font-bold ${
+                                product.soldThisMonthProfit >=
+                                0
+                                  ? "text-emerald-700"
+                                  : "text-red-600"
+                              }`}
+                            >
                               {product.soldThisMonthProfit.toFixed(
                                 2
                               )}{" "}
-                              €
-                            </p>
-
-                            <p className="mt-1 text-[9px] font-bold">
-                              {t.monthlyLabel}
+                              € {t.monthlyLabel}
                             </p>
                           </div>
 
-                          <div className="grid grid-cols-4 gap-2">
+                          <div className="flex items-center justify-center gap-1.5">
                             <button
                               type="button"
+                              title={t.addStockBtn}
+                              aria-label={t.addStockBtn}
                               onClick={() =>
                                 setActionDialog({
                                   product,
@@ -1628,13 +1608,15 @@ export default function SuperAdminStockPage() {
                               disabled={
                                 isSaving
                               }
-                              className="rounded-xl bg-green-600 px-3 py-3 text-xs font-black text-white transition hover:bg-green-700 disabled:opacity-50"
+                              className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:border-green-300 hover:bg-green-50 hover:text-green-700 disabled:opacity-40"
                             >
-                              {t.addStockBtn}
+                              <Plus size={16} />
                             </button>
 
                             <button
                               type="button"
+                              title={t.returnBtn}
+                              aria-label={t.returnBtn}
                               onClick={() =>
                                 setActionDialog({
                                   product,
@@ -1647,13 +1629,15 @@ export default function SuperAdminStockPage() {
                                   0 ||
                                 isSaving
                               }
-                              className="rounded-xl bg-blue-600 px-3 py-3 text-xs font-black text-white transition hover:bg-blue-700 disabled:opacity-40"
+                              className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 disabled:opacity-30"
                             >
-                              {t.returnBtn}
+                              <Undo2 size={16} />
                             </button>
 
                             <button
                               type="button"
+                              title={t.brokenBtn}
+                              aria-label={t.brokenBtn}
                               onClick={() =>
                                 setActionDialog({
                                   product,
@@ -1666,13 +1650,15 @@ export default function SuperAdminStockPage() {
                                   0 ||
                                 isSaving
                               }
-                              className="rounded-xl bg-red-600 px-3 py-3 text-xs font-black text-white transition hover:bg-red-700 disabled:opacity-40"
+                              className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:border-red-300 hover:bg-red-50 hover:text-red-700 disabled:opacity-30"
                             >
-                              {t.brokenBtn}
+                              <PackageX size={16} />
                             </button>
 
                             <button
                               type="button"
+                              title={t.expiredBtn}
+                              aria-label={t.expiredBtn}
                               onClick={() =>
                                 setActionDialog({
                                   product,
@@ -1685,9 +1671,9 @@ export default function SuperAdminStockPage() {
                                   0 ||
                                 isSaving
                               }
-                              className="rounded-xl bg-orange-500 px-3 py-3 text-xs font-black text-white transition hover:bg-orange-600 disabled:opacity-40"
+                              className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:border-orange-300 hover:bg-orange-50 hover:text-orange-700 disabled:opacity-30"
                             >
-                              {t.expiredBtn}
+                              <CalendarX size={16} />
                             </button>
                           </div>
                           </article>
