@@ -1,4 +1,4 @@
-import { requireAdminPermission } from "@/lib/admin-auth";
+import { getAdminWithPermissions } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
 import { getRequestLanguage } from "@/lib/request-language";
 import { withTenant } from "@/lib/tenant";
@@ -14,9 +14,13 @@ export const DELETE = withTenant(async (
 ) => {
   const language = await getRequestLanguage();
 
-  const admin = await requireAdminPermission("deleteWarehouseLog");
+  /*
+   * Eigenständige Lagerbuchungen können nur vom Super-Admin gelöscht
+   * werden, unabhängig von sonstigen Berechtigungen.
+   */
+  const admin = await getAdminWithPermissions();
 
-  if (!admin) {
+  if (!admin || !admin.isSuperAdmin) {
     return NextResponse.json(
       {
         error:

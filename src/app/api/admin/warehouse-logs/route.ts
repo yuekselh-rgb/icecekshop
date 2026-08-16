@@ -46,8 +46,11 @@ export const GET = withTenant(async () => {
     });
 
     return NextResponse.json({
-      canDeleteWarehouseLog:
-        admin.isSuperAdmin || admin.permissions.deleteWarehouseLog,
+      /*
+       * Eigenständige Lagerbuchungen können nur vom Super-Admin
+       * gelöscht werden, unabhängig von sonstigen Berechtigungen.
+       */
+      canDeleteWarehouseLog: admin.isSuperAdmin,
 
       logs: logs.map((log) => ({
         ...log,

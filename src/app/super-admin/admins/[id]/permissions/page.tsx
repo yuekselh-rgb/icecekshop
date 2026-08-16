@@ -154,7 +154,6 @@ function getPermissionGroups(language: Language) {
             ["viewStock", "Lagerbestand anzeigen"],
             ["addStock", "Lagerbestand hinzufügen"],
             ["reduceStock", "Lagerbestand reduzieren"],
-            ["deleteWarehouseLog", "Eigenständigen Lagerbucheintrag löschen"],
           ] satisfies [PermissionKey, string][],
         },
         {
@@ -265,7 +264,6 @@ function getPermissionGroups(language: Language) {
             ["viewStock", "Stokları görüntüleme"],
             ["addStock", "Stok ekleme"],
             ["reduceStock", "Stok azaltma"],
-            ["deleteWarehouseLog", "Bağımsız depo kaydı silme"],
           ] satisfies [PermissionKey, string][],
         },
         {
