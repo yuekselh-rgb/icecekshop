@@ -1,8 +1,14 @@
 "use client";
 
 import { useLanguage } from "@/context/LanguageContext";
-import { escapeHtml } from "@/lib/html-escape";
 import { isPlaceholderEmail } from "@/lib/utils";
+import {
+  buildOrderReceiptHtml,
+  fetchReceiptCompany,
+  getDeliveryQrCode,
+  hasNavigableDeliveryAddress,
+  type ReceiptOrder,
+} from "@/lib/order-receipt";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -18,7 +24,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
-import QRCode from "qrcode";
 
 type Category = {
   id: string;
@@ -978,34 +983,6 @@ const adminName =
     }
   }
 
-  function hasNavigableAddress(order: { paymentStatus: string; deliveryAddress: string }) {
-    return (
-      order.paymentStatus === "OPEN" &&
-      !order.deliveryAddress.startsWith("Barverkauf") &&
-      !order.deliveryAddress.startsWith("Bar Satışı")
-    );
-  }
-
-  function getMapsQuery(order: { deliveryAddress: string }) {
-    return order.deliveryAddress
-      .split("\n")
-      .filter((line) => !line.startsWith("Telefon:"))
-      .join(", ");
-  }
-
-  async function getDeliveryQrCode(order: { deliveryAddress: string }) {
-    const redirectUrl = `${window.location.origin}/api/maps-redirect?address=${encodeURIComponent(getMapsQuery(order))}`;
-
-    try {
-      return await QRCode.toDataURL(redirectUrl, {
-        width: 160,
-        margin: 1,
-      });
-    } catch {
-      return null;
-    }
-  }
-
   async function printLastSale() {
     if (!lastSaleOrderId) {
       return;
@@ -1023,11 +1000,7 @@ const adminName =
         return;
       }
 
-      const order = data.order;
-
-      const deliveryQrCode = hasNavigableAddress(order)
-        ? await getDeliveryQrCode(order)
-        : null;
+      const order = data.order as ReceiptOrder;
 
       const popup = window.open("", "_blank", "width=900,height=700");
 
@@ -1036,150 +1009,12 @@ const adminName =
         return;
       }
 
-      popup.document.write(`
-        <!doctype html>
-        <html lang="${language === "de" ? "de" : "tr"}">
-          <head>
-            <meta charset="utf-8" />
-            <title>${escapeHtml(order.orderNumber)}</title>
+      const [deliveryQrCode, company] = await Promise.all([
+        hasNavigableDeliveryAddress(order) ? getDeliveryQrCode(order) : Promise.resolve(null),
+        fetchReceiptCompany(),
+      ]);
 
-            <style>
-              body {
-                font-family: Arial, sans-serif;
-                padding: 32px;
-                color: #0f172a;
-              }
-
-              h1 {
-                margin-bottom: 4px;
-              }
-
-              table {
-                width: 100%;
-                border-collapse: collapse;
-                margin-top: 24px;
-              }
-
-              th,
-              td {
-                border-bottom: 1px solid #ddd;
-                padding: 10px;
-                text-align: left;
-              }
-
-              .totals {
-                margin-top: 24px;
-                max-width: 360px;
-                margin-left: auto;
-              }
-
-              .row {
-                display: flex;
-                justify-content: space-between;
-                padding: 6px 0;
-              }
-
-              .address {
-                white-space: pre-line;
-                line-height: 1.6;
-              }
-
-              .total {
-                border-top: 2px solid #0f172a;
-                margin-top: 8px;
-                padding-top: 12px;
-                font-size: 18px;
-              }
-            </style>
-          </head>
-
-          <body>
-            <h1>
-              ${t.receiptTitle}
-              ${escapeHtml(order.orderNumber)}
-            </h1>
-
-            <p>
-              ${t.receiptDate}:
-              ${new Date(order.createdAt).toLocaleString("de-DE")}
-            </p>
-
-            <h2>${t.receiptCustomer}</h2>
-
-            <p>
-              ${order.user?.companyName ? `${escapeHtml(order.user.companyName)}<br />` : ""}
-
-              ${escapeHtml(order.user?.firstName || "")}
-              ${escapeHtml(order.user?.lastName || "")}<br />
-
-              ${escapeHtml(order.user?.email || "")}
-            </p>
-
-            <h2>${t.receiptDeliveryAddress}</h2>
-
-            <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;">
-              <p class="address">
-                ${escapeHtml(order.deliveryAddress || "")}
-              </p>
-
-              ${
-                deliveryQrCode
-                  ? `<img src="${deliveryQrCode}" width="120" height="120" alt="QR" />`
-                  : ""
-              }
-            </div>
-
-            ${
-              order.customerNote
-                ? `
-                  <h2>${t.receiptNote}</h2>
-                  <p>${escapeHtml(order.customerNote)}</p>
-                `
-                : ""
-            }
-
-            <table>
-              <thead>
-                <tr>
-                  <th>${t.receiptProduct}</th>
-                  <th>${t.receiptQuantity}</th>
-                  <th>${t.receiptUnitPrice}</th>
-                  <th>${t.receiptPfand}</th>
-                  <th>${t.receiptTotal}</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                ${order.items
-                  .map(
-                    (item: { name: string; quantity: number; price: number; pfand: number }) => `
-                      <tr>
-                        <td>${escapeHtml(item.name)}</td>
-                        <td>${item.quantity}</td>
-                        <td>${item.price.toFixed(2)} €</td>
-                        <td>${(item.pfand * item.quantity).toFixed(2)} €</td>
-                        <td>${((Number(item.price) + Number(item.pfand || 0)) * item.quantity).toFixed(2)} €</td>
-                      </tr>
-                    `,
-                  )
-                  .join("")}
-              </tbody>
-            </table>
-
-            <div class="totals">
-              <div class="row">
-                <span>${t.receiptSubtotal}</span>
-                <strong>${Number(order.subtotal).toFixed(2)} €</strong>
-              </div>
-
-              <div class="row total">
-                <span>${t.receiptTotal}</span>
-                <strong>${Number(order.totalAmount).toFixed(2)} €</strong>
-              </div>
-            </div>
-          </body>
-        </html>
-      `);
+      popup.document.write(buildOrderReceiptHtml(order, deliveryQrCode, language, company));
 
       popup.document.close();
       popup.focus();

@@ -57,6 +57,85 @@ export type ReceiptOrder = {
   }>;
 };
 
+export type ReceiptCompany = {
+  companyName: string;
+  logoUrl: string | null;
+  street: string | null;
+  houseNumber: string | null;
+  postalCode: string | null;
+  city: string | null;
+  country: string | null;
+  phone: string | null;
+  email: string | null;
+  website: string | null;
+  legalForm: string | null;
+  taxNumber: string | null;
+  vatId: string | null;
+  commercialRegister: string | null;
+  registerCourt: string | null;
+  bankName: string | null;
+  accountHolder: string | null;
+  iban: string | null;
+  bic: string | null;
+  footerText: string | null;
+};
+
+const emptyReceiptCompany: ReceiptCompany = {
+  companyName: "",
+  logoUrl: null,
+  street: null,
+  houseNumber: null,
+  postalCode: null,
+  city: null,
+  country: null,
+  phone: null,
+  email: null,
+  website: null,
+  legalForm: null,
+  taxNumber: null,
+  vatId: null,
+  commercialRegister: null,
+  registerCourt: null,
+  bankName: null,
+  accountHolder: null,
+  iban: null,
+  bic: null,
+  footerText: null,
+};
+
+export async function fetchReceiptCompany(): Promise<ReceiptCompany> {
+  try {
+    const response = await fetch("/api/company-settings");
+    const data = await response.json();
+    const settings = data.settings || {};
+
+    return {
+      companyName: settings.companyName || "",
+      logoUrl: settings.logoUrl || null,
+      street: settings.street || null,
+      houseNumber: settings.houseNumber || null,
+      postalCode: settings.postalCode || null,
+      city: settings.city || null,
+      country: settings.country || null,
+      phone: settings.phone || null,
+      email: settings.email || null,
+      website: settings.website || null,
+      legalForm: settings.legalForm || null,
+      taxNumber: settings.taxNumber || null,
+      vatId: settings.vatId || null,
+      commercialRegister: settings.commercialRegister || null,
+      registerCourt: settings.registerCourt || null,
+      bankName: settings.bankName || null,
+      accountHolder: settings.accountHolder || null,
+      iban: settings.iban || null,
+      bic: settings.bic || null,
+      footerText: settings.footerText || null,
+    };
+  } catch {
+    return emptyReceiptCompany;
+  }
+}
+
 const receiptStatusLabels: Record<ReceiptOrderStatus, { de: string; tr: string }> = {
   NEW: { de: "Neu", tr: "Yeni" },
   CONFIRMED: { de: "Bestätigt", tr: "Onaylandı" },
@@ -116,10 +195,318 @@ export async function getDeliveryQrCode(order: { deliveryAddress: string }) {
   }
 }
 
+export function renderCompanyHeader(company: ReceiptCompany, language: "de" | "tr") {
+  const addressLine = [
+    [company.street, company.houseNumber].filter(Boolean).join(" "),
+    [company.postalCode, company.city].filter(Boolean).join(" "),
+    company.country,
+  ]
+    .filter(Boolean)
+    .map((line) => escapeHtml(line as string))
+    .join("<br />");
+
+  const contactParts = [
+    company.phone,
+    company.email,
+    company.website,
+  ].filter(Boolean) as string[];
+
+  const taxParts = [
+    company.taxNumber
+      ? `${language === "de" ? "Steuernr." : "Vergi No"}: ${escapeHtml(company.taxNumber)}`
+      : null,
+    company.vatId ? `USt-IdNr.: ${escapeHtml(company.vatId)}` : null,
+  ].filter(Boolean) as string[];
+
+  return `
+    <div class="company">
+      ${
+        company.logoUrl
+          ? `<img class="company-logo" src="${escapeHtml(company.logoUrl)}" alt="${escapeHtml(company.companyName)}" />`
+          : `<div class="company-name">${escapeHtml(company.companyName || "")}</div>`
+      }
+
+      ${addressLine ? `<div class="company-line">${addressLine}</div>` : ""}
+
+      ${contactParts.length ? `<div class="company-line">${contactParts.map((part) => escapeHtml(part)).join(" · ")}</div>` : ""}
+
+      ${taxParts.length ? `<div class="company-line company-tax">${taxParts.join(" · ")}</div>` : ""}
+    </div>
+  `;
+}
+
+export function renderLegalFooter(company: ReceiptCompany, language: "de" | "tr") {
+  const registerParts = [
+    company.legalForm,
+    company.commercialRegister
+      ? `${language === "de" ? "Registergericht" : "Sicil Mahkemesi"}: ${escapeHtml(company.registerCourt || "")} · ${escapeHtml(company.commercialRegister)}`
+      : null,
+  ].filter(Boolean) as string[];
+
+  const bankParts = [
+    company.bankName ? escapeHtml(company.bankName) : null,
+    company.accountHolder ? escapeHtml(company.accountHolder) : null,
+    company.iban ? `IBAN ${escapeHtml(company.iban)}` : null,
+    company.bic ? `BIC ${escapeHtml(company.bic)}` : null,
+  ].filter(Boolean) as string[];
+
+  if (
+    registerParts.length === 0 &&
+    bankParts.length === 0 &&
+    !company.footerText
+  ) {
+    return "";
+  }
+
+  return `
+    <footer class="legal-footer">
+      ${registerParts.length ? `<div>${registerParts.join(" · ")}</div>` : ""}
+      ${bankParts.length ? `<div>${bankParts.join(" · ")}</div>` : ""}
+      ${company.footerText ? `<div>${escapeHtml(company.footerText)}</div>` : ""}
+    </footer>
+  `;
+}
+
+export const receiptStyleSheet = `
+            @page {
+              size: A4;
+              margin: 14mm 12mm;
+            }
+
+            * {
+              box-sizing: border-box;
+            }
+
+            body {
+              font-family: Arial, Helvetica, sans-serif;
+              font-size: 12px;
+              line-height: 1.4;
+              color: #0f172a;
+              margin: 0;
+              padding: 10mm;
+            }
+
+            .letterhead {
+              display: flex;
+              justify-content: space-between;
+              align-items: flex-start;
+              gap: 24px;
+              padding-bottom: 12px;
+              border-bottom: 2px solid #0f172a;
+            }
+
+            .company-logo {
+              max-height: 46px;
+              max-width: 200px;
+              object-fit: contain;
+              margin-bottom: 6px;
+            }
+
+            .company-name {
+              font-size: 16px;
+              font-weight: 800;
+              margin-bottom: 3px;
+            }
+
+            .company-line {
+              font-size: 10.5px;
+              color: #475569;
+              line-height: 1.5;
+            }
+
+            .company-tax {
+              color: #64748b;
+            }
+
+            .doc-meta {
+              text-align: right;
+              min-width: 210px;
+            }
+
+            .doc-title {
+              font-size: 20px;
+              font-weight: 800;
+              letter-spacing: 0.5px;
+              margin-bottom: 8px;
+              text-transform: uppercase;
+            }
+
+            .meta-table {
+              margin-left: auto;
+              border-collapse: collapse;
+              font-size: 11px;
+            }
+
+            .meta-table td {
+              padding: 1.5px 0 1.5px 14px;
+              text-align: right;
+              white-space: nowrap;
+            }
+
+            .meta-table td:first-child {
+              color: #64748b;
+              padding-left: 0;
+            }
+
+            .parties {
+              display: flex;
+              gap: 28px;
+              margin-top: 16px;
+            }
+
+            .party {
+              flex: 1;
+              min-width: 0;
+            }
+
+            .party-label {
+              font-size: 9.5px;
+              font-weight: 700;
+              text-transform: uppercase;
+              letter-spacing: 0.4px;
+              color: #64748b;
+              margin-bottom: 3px;
+            }
+
+            .party-body {
+              font-size: 11.5px;
+              line-height: 1.5;
+            }
+
+            .address-with-qr {
+              display: flex;
+              align-items: flex-start;
+              justify-content: space-between;
+              gap: 10px;
+            }
+
+            .address {
+              white-space: pre-line;
+              margin: 0;
+            }
+
+            .qr-block {
+              text-align: center;
+              flex-shrink: 0;
+            }
+
+            .qr-block img {
+              display: block;
+            }
+
+            .qr-block p {
+              margin: 2px 0 0;
+              font-size: 8.5px;
+              color: #64748b;
+            }
+
+            .note-block {
+              margin-top: 10px;
+              padding: 6px 10px;
+              background: #f8fafc;
+              border-radius: 6px;
+              font-size: 11px;
+            }
+
+            .note-block .party-label {
+              margin-bottom: 2px;
+            }
+
+            table.items {
+              width: 100%;
+              border-collapse: collapse;
+              margin-top: 16px;
+              font-size: 11px;
+            }
+
+            table.items thead {
+              display: table-header-group;
+            }
+
+            table.items th {
+              text-align: left;
+              padding: 5px 6px;
+              border-bottom: 1.5px solid #0f172a;
+              font-size: 9.5px;
+              text-transform: uppercase;
+              letter-spacing: 0.3px;
+              color: #334155;
+            }
+
+            table.items td {
+              padding: 4px 6px;
+              border-bottom: 1px solid #e2e8f0;
+              vertical-align: top;
+            }
+
+            table.items tr {
+              page-break-inside: avoid;
+            }
+
+            table.items th.num,
+            table.items td.num {
+              text-align: right;
+              white-space: nowrap;
+              font-variant-numeric: tabular-nums;
+            }
+
+            .totals {
+              margin-top: 10px;
+              max-width: 300px;
+              margin-left: auto;
+              font-size: 11.5px;
+            }
+
+            .row {
+              display: flex;
+              justify-content: space-between;
+              padding: 3px 0;
+            }
+
+            .total {
+              border-top: 1.5px solid #0f172a;
+              margin-top: 6px;
+              padding-top: 6px;
+              font-size: 14px;
+              font-weight: 800;
+            }
+
+            .pfand-return-detail {
+              margin-top: 6px;
+              margin-bottom: 8px;
+              padding: 8px 10px;
+              background: #f0fdf4;
+              border-radius: 6px;
+              font-size: 10.5px;
+            }
+
+            .pfand-return-detail .party-label {
+              color: #166534;
+              margin-bottom: 4px;
+            }
+
+            .pfand-return-row {
+              display: flex;
+              justify-content: space-between;
+              gap: 16px;
+              padding: 2px 0;
+            }
+
+            .legal-footer {
+              margin-top: 24px;
+              padding-top: 8px;
+              border-top: 1px solid #e2e8f0;
+              font-size: 9px;
+              color: #64748b;
+              line-height: 1.6;
+            }
+`;
+
 export function buildOrderReceiptHtml(
   order: ReceiptOrder,
   deliveryQrCode: string | null,
   language: "de" | "tr",
+  company: ReceiptCompany = emptyReceiptCompany,
 ) {
   return `
       <!doctype html>
@@ -128,135 +515,100 @@ export function buildOrderReceiptHtml(
           <meta charset="utf-8" />
           <title>${escapeHtml(order.orderNumber)}</title>
 
-          <style>
-            body {
-              font-family: Arial, sans-serif;
-              padding: 32px;
-              color: #0f172a;
-            }
-
-            h1 {
-              margin-bottom: 4px;
-            }
-
-            table {
-              width: 100%;
-              border-collapse: collapse;
-              margin-top: 24px;
-            }
-
-            th,
-            td {
-              border-bottom: 1px solid #ddd;
-              padding: 10px;
-              text-align: left;
-            }
-
-            .totals {
-              margin-top: 24px;
-              max-width: 360px;
-              margin-left: auto;
-            }
-
-            .row {
-              display: flex;
-              justify-content: space-between;
-              padding: 6px 0;
-            }
-
-            .address {
-              white-space: pre-line;
-              line-height: 1.6;
-            }
-
-            .total {
-              border-top: 2px solid #0f172a;
-              margin-top: 8px;
-              padding-top: 12px;
-              font-size: 18px;
-            }
-          </style>
+          <style>${receiptStyleSheet}</style>
         </head>
 
         <body>
-          <h1>
-            ${language === "de" ? "Bestellung" : "Sipariş"}
-            ${escapeHtml(order.orderNumber)}
-          </h1>
+          <header class="letterhead">
+            ${renderCompanyHeader(company, language)}
 
-          <p>
-            ${language === "de" ? "Datum" : "Tarih"}:
-            ${new Date(order.createdAt).toLocaleString("de-DE")}
-          </p>
+            <div class="doc-meta">
+              <div class="doc-title">${language === "de" ? "Rechnung" : "Fatura"}</div>
 
-          <p>
-            ${language === "de" ? "Status" : "Durum"}:
-            ${receiptStatusLabels[order.status][language]}
-          </p>
+              <table class="meta-table">
+                <tr>
+                  <td>${language === "de" ? "Nr." : "No"}</td>
+                  <td><strong>${escapeHtml(order.orderNumber)}</strong></td>
+                </tr>
 
-          <p>
-            <strong>${language === "de" ? "Fahrer" : "Şoför"}</strong>
-            ${
-              order.driver
-                ? escapeHtml(
-                    `${order.driver.firstName || ""} ${order.driver.lastName || ""}`.trim() ||
-                      order.driver.email,
-                  )
-                : language === "de" ? "Nicht zugewiesen" : "Atanmadı"
-            }
-          </p>
+                <tr>
+                  <td>${language === "de" ? "Datum" : "Tarih"}</td>
+                  <td>${new Date(order.createdAt).toLocaleString("de-DE")}</td>
+                </tr>
 
-          <h2>${language === "de" ? "Kunde" : "Müşteri"}</h2>
+                <tr>
+                  <td>Status</td>
+                  <td>${receiptStatusLabels[order.status][language]}</td>
+                </tr>
 
-          <p>
-            ${order.user.companyName ? `${escapeHtml(order.user.companyName)}<br />` : ""}
+                <tr>
+                  <td>${language === "de" ? "Fahrer" : "Şoför"}</td>
+                  <td>
+                    ${
+                      order.driver
+                        ? escapeHtml(
+                            `${order.driver.firstName || ""} ${order.driver.lastName || ""}`.trim() ||
+                              order.driver.email,
+                          )
+                        : language === "de" ? "Nicht zugewiesen" : "Atanmadı"
+                    }
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </header>
 
-            ${escapeHtml(order.user.firstName || "")}
-            ${escapeHtml(order.user.lastName || "")}<br />
+          <div class="parties">
+            <div class="party">
+              <div class="party-label">${language === "de" ? "Kunde" : "Müşteri"}</div>
 
-            ${escapeHtml(order.user.email)}<br />
+              <div class="party-body">
+                ${order.user.companyName ? `${escapeHtml(order.user.companyName)}<br />` : ""}
+                ${escapeHtml(order.user.firstName || "")} ${escapeHtml(order.user.lastName || "")}<br />
+                ${escapeHtml(order.user.email)}<br />
+                ${escapeHtml(order.user.phone || "")}
+              </div>
+            </div>
 
-            ${escapeHtml(order.user.phone || "")}
-          </p>
+            <div class="party">
+              <div class="party-label">${language === "de" ? "Lieferadresse" : "Teslimat Adresi"}</div>
 
-          <h2>${language === "de" ? "Lieferadresse" : "Teslimat Adresi"}</h2>
+              <div class="party-body address-with-qr">
+                <p class="address">${escapeHtml(order.deliveryAddress)}</p>
 
-          <div style="display:flex; align-items:flex-start; gap:20px;">
-            <p class="address" style="margin:0;">
-              ${escapeHtml(order.deliveryAddress)}
-            </p>
-
-            ${
-              deliveryQrCode
-                ? `
-                  <div style="text-align:center;">
-                    <img src="${deliveryQrCode}" width="120" height="120" alt="${language === "de" ? "QR-Code für Google Maps" : "Google Maps için QR kodu"}" />
-                    <p style="margin:4px 0 0; font-size:11px; color:#64748b;">
-                      ${language === "de" ? "In Google Maps öffnen" : "Google Maps'te aç"}
-                    </p>
-                  </div>
-                `
-                : ""
-            }
+                ${
+                  deliveryQrCode
+                    ? `
+                      <div class="qr-block">
+                        <img src="${deliveryQrCode}" width="86" height="86" alt="${language === "de" ? "QR-Code für Google Maps" : "Google Maps için QR kodu"}" />
+                        <p>${language === "de" ? "Google Maps" : "Google Maps"}</p>
+                      </div>
+                    `
+                    : ""
+                }
+              </div>
+            </div>
           </div>
 
           ${
             order.customerNote
               ? `
-                <h2>${language === "de" ? "Kundennotiz" : "Müşteri Notu"}</h2>
-                <p>${escapeHtml(order.customerNote)}</p>
+                <div class="note-block">
+                  <div class="party-label">${language === "de" ? "Kundennotiz" : "Müşteri Notu"}</div>
+                  <div>${escapeHtml(order.customerNote)}</div>
+                </div>
               `
               : ""
           }
 
-          <table>
+          <table class="items">
             <thead>
               <tr>
                 <th>${language === "de" ? "Produkt" : "Ürün"}</th>
-                <th>${language === "de" ? "Menge" : "Adet"}</th>
-                <th>${language === "de" ? "Stückpreis" : "Birim fiyat"}</th>
-                <th>${language === "de" ? "Pfand" : "Pfand"}</th>
-                <th>${language === "de" ? "Gesamt" : "Toplam"}</th>
+                <th class="num">${language === "de" ? "Menge" : "Adet"}</th>
+                <th class="num">${language === "de" ? "Stückpreis" : "Birim fiyat"}</th>
+                <th class="num">${language === "de" ? "Pfand" : "Pfand"}</th>
+                <th class="num">${language === "de" ? "Gesamt" : "Toplam"}</th>
               </tr>
             </thead>
 
@@ -265,23 +617,11 @@ export function buildOrderReceiptHtml(
                 .map(
                   (item) => `
                     <tr>
-                      <td>
-                        ${escapeHtml(item.name)}
-                      </td>
-
-                      <td>
-                        ${item.quantity}
-                      </td>
-
-                      <td>
-                        ${item.price.toFixed(2)} €
-                      </td>
-
-                      <td>
-                        ${(item.pfand * item.quantity).toFixed(2)} €
-                      </td>
-
-                      <td>
+                      <td>${escapeHtml(item.name)}</td>
+                      <td class="num">${item.quantity}</td>
+                      <td class="num">${item.price.toFixed(2)} €</td>
+                      <td class="num">${(item.pfand * item.quantity).toFixed(2)} €</td>
+                      <td class="num">
                         ${(
                           (Number(item.price) + Number(item.pfand || 0)) *
                           item.quantity
@@ -296,13 +636,8 @@ export function buildOrderReceiptHtml(
 
           <div class="totals">
             <div class="row">
-              <span>
-                ${language === "de" ? "Zwischensumme" : "Ara Toplam"}
-              </span>
-
-              <strong>
-                ${order.subtotal.toFixed(2)} €
-              </strong>
+              <span>${language === "de" ? "Zwischensumme" : "Ara Toplam"}</span>
+              <strong>${order.subtotal.toFixed(2)} €</strong>
             </div>
 
             ${
@@ -310,10 +645,7 @@ export function buildOrderReceiptHtml(
                 ? `
                   <div class="row">
                     <span>${language === "de" ? "Produktpfand" : "Ürün Pfandı"}</span>
-
-                    <strong>
-                      ${order.pfandAmount.toFixed(2)} €
-                    </strong>
+                    <strong>${order.pfandAmount.toFixed(2)} €</strong>
                   </div>
                 `
                 : ""
@@ -324,52 +656,24 @@ export function buildOrderReceiptHtml(
                 ? `
                   <div class="row">
                     <span>${language === "de" ? "Pfandrückgabe" : "Pfand İadesi"}</span>
-
-                    <strong style="color:#15803d;">
-                      -${order.pfandReturnAmount.toFixed(2)} €
-                    </strong>
+                    <strong style="color:#15803d;">-${order.pfandReturnAmount.toFixed(2)} €</strong>
                   </div>
 
                   ${
                     order.pfandReturnItems.length > 0
                       ? `
-                        <div style="
-                          margin-top: 8px;
-                          margin-bottom: 12px;
-                          padding: 10px 12px;
-                          background: #f0fdf4;
-                          border-radius: 8px;
-                        ">
-                          <strong style="
-                            display:block;
-                            margin-bottom:6px;
-                            color:#166534;
-                          ">
-                            ${language === "de" ? "Zurückgegebenes Pfand" : "İade edilen Pfand"}
-                          </strong>
+                        <div class="pfand-return-detail">
+                          <div class="party-label">${language === "de" ? "Zurückgegebenes Pfand" : "İade edilen Pfand"}</div>
 
                           ${order.pfandReturnItems
                             .map(
                               (item) => `
-                                <div style="
-                                  display:flex;
-                                  justify-content:space-between;
-                                  gap:20px;
-                                  padding:3px 0;
-                                  font-size:13px;
-                                ">
+                                <div class="pfand-return-row">
                                   <span>
                                     <strong>${escapeHtml(item.name)}</strong><br />
-
-                                    <span style="
-                                      font-size:11px;
-                                      color:#64748b;
-                                    ">
-                                      ${language === "de" ? "Kunde" : "Müşteri"}:
-                                      ${item.originalQuantity}
-                                      → ${language === "de" ? "Fahrer" : "Şoför"}:
-                                      ${item.quantity}
-
+                                    <span style="font-size:9.5px; color:#64748b;">
+                                      ${language === "de" ? "Kunde" : "Müşteri"}: ${item.originalQuantity}
+                                      → ${language === "de" ? "Fahrer" : "Şoför"}: ${item.quantity}
                                       ${
                                         item.quantityDifference !== 0
                                           ? ` · ${language === "de" ? "Differenz" : "Fark"}: ${item.quantityDifference > 0 ? "+" : ""}${item.quantityDifference}`
@@ -379,26 +683,14 @@ export function buildOrderReceiptHtml(
                                   </span>
 
                                   <span style="text-align:right;">
-                                    <strong>
-                                      -${item.totalAmount.toFixed(2)} €
-                                    </strong>
+                                    <strong>-${item.totalAmount.toFixed(2)} €</strong>
 
                                     ${
                                       item.amountDifference !== 0
                                         ? `
                                           <br />
-                                          <span style="
-                                            font-size:11px;
-                                            font-weight:700;
-                                            color:${
-                                              item.amountDifference < 0
-                                                ? "#b45309"
-                                                : "#15803d"
-                                            };
-                                          ">
-                                            ${language === "de" ? "Differenz" : "Fark"}:
-                                            ${item.amountDifference > 0 ? "+" : ""}
-                                            ${item.amountDifference.toFixed(2)} €
+                                          <span style="font-size:9.5px; font-weight:700; color:${item.amountDifference < 0 ? "#b45309" : "#15803d"};">
+                                            ${language === "de" ? "Differenz" : "Fark"}: ${item.amountDifference > 0 ? "+" : ""}${item.amountDifference.toFixed(2)} €
                                           </span>
                                         `
                                         : ""
@@ -418,20 +710,16 @@ export function buildOrderReceiptHtml(
 
             <div class="row">
               <span>${language === "de" ? "Lieferung" : "Teslimat"}</span>
-
-              <strong>
-                ${order.deliveryFee.toFixed(2)} €
-              </strong>
+              <strong>${order.deliveryFee.toFixed(2)} €</strong>
             </div>
 
             <div class="row total">
               <span>${language === "de" ? "Gesamt" : "Toplam"}</span>
-
-              <strong>
-                ${order.totalAmount.toFixed(2)} €
-              </strong>
+              <strong>${order.totalAmount.toFixed(2)} €</strong>
             </div>
           </div>
+
+          ${renderLegalFooter(company, language)}
         </body>
       </html>
     `;
@@ -441,9 +729,10 @@ export async function printOrderSilently(
   order: ReceiptOrder,
   language: "de" | "tr",
 ) {
-  const deliveryQrCode = hasNavigableDeliveryAddress(order)
-    ? await getDeliveryQrCode(order)
-    : null;
+  const [deliveryQrCode, company] = await Promise.all([
+    hasNavigableDeliveryAddress(order) ? getDeliveryQrCode(order) : Promise.resolve(null),
+    fetchReceiptCompany(),
+  ]);
 
   const iframe = document.createElement("iframe");
 
@@ -464,7 +753,7 @@ export async function printOrderSilently(
   }
 
   frameDocument.open();
-  frameDocument.write(buildOrderReceiptHtml(order, deliveryQrCode, language));
+  frameDocument.write(buildOrderReceiptHtml(order, deliveryQrCode, language, company));
   frameDocument.close();
 
   function cleanup() {

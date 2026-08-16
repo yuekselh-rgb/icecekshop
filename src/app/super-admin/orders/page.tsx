@@ -13,7 +13,14 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import { escapeHtml } from "@/lib/html-escape";
-import QRCode from "qrcode";
+import {
+  fetchReceiptCompany,
+  getDeliveryQrCode,
+  hasNavigableDeliveryAddress,
+  receiptStyleSheet,
+  renderCompanyHeader,
+  renderLegalFooter,
+} from "@/lib/order-receipt";
 
 type OrderStatus =
   | "NEW"
@@ -424,9 +431,10 @@ export default function SuperAdminOrdersPage() {
       return;
     }
 
-    const deliveryQrCode = hasNavigableDeliveryAddress(order)
-      ? await getDeliveryQrCode(order)
-      : null;
+    const [deliveryQrCode, company] = await Promise.all([
+      hasNavigableDeliveryAddress(order) ? getDeliveryQrCode(order) : Promise.resolve(null),
+      fetchReceiptCompany(),
+    ]);
 
     const pfandReturn = order.pfandReturns?.[0];
 
@@ -436,92 +444,13 @@ export default function SuperAdminOrdersPage() {
 
     popup.document.write(`
       <!doctype html>
-      <html>
+      <html lang="${language === "de" ? "de" : "tr"}">
         <head>
           <meta charset="utf-8" />
           <title>${escapeHtml(order.orderNumber)}</title>
 
           <style>
-            body {
-              font-family: Arial, sans-serif;
-              padding: 28px;
-              color: #0f172a;
-              background: #ffffff;
-            }
-
-            h1 {
-              margin: 0;
-              font-size: 26px;
-              line-height: 1.2;
-            }
-
-            h2 {
-              margin-top: 24px;
-              margin-bottom: 8px;
-              font-size: 18px;
-            }
-
-            .order-header {
-              display: grid;
-              grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
-              gap: 28px;
-              border: 1px solid #e2e8f0;
-              border-radius: 14px;
-              padding: 18px 20px;
-              margin-bottom: 22px;
-              background: #f8fafc;
-            }
-
-            .order-left {
-              min-width: 0;
-            }
-
-            .order-number {
-              font-size: 20px;
-              line-height: 1.25;
-              font-weight: 800;
-              margin-bottom: 14px;
-            }
-
-            .customer-name {
-              font-size: 16px;
-              font-weight: 800;
-              margin-bottom: 6px;
-            }
-
-            .address {
-              white-space: pre-line;
-              font-size: 13px;
-              line-height: 1.5;
-              color: #334155;
-            }
-
-            .order-right {
-              display: grid;
-              grid-template-columns: 1fr 1fr;
-              gap: 12px 20px;
-              align-content: start;
-            }
-
-            .info-item {
-              min-width: 0;
-            }
-
-            .info-label {
-              display: block;
-              margin-bottom: 3px;
-              font-size: 10px;
-              font-weight: 700;
-              text-transform: uppercase;
-              color: #64748b;
-            }
-
-            .info-value {
-              font-size: 13px;
-              font-weight: 700;
-              color: #0f172a;
-              word-break: break-word;
-            }
+            ${receiptStyleSheet}
 
             .paid {
               color: #15803d;
@@ -531,176 +460,124 @@ export default function SuperAdminOrdersPage() {
               color: #dc2626;
             }
 
-            table {
-              width: 100%;
-              border-collapse: collapse;
-              margin-top: 12px;
-            }
-
-            th, td {
-              border-bottom: 1px solid #e2e8f0;
-              text-align: left;
-              padding: 10px 8px;
-            }
-
-            th {
-              background: #f8fafc;
-            }
-
-            .totals {
-              margin-top: 24px;
-              margin-left: auto;
-              width: 360px;
-            }
-
-            .row {
-              display: flex;
-              justify-content: space-between;
-              padding: 6px 0;
-            }
-
-            .total {
-              border-top: 2px solid #0f172a;
-              margin-top: 8px;
-              padding-top: 12px;
-              font-size: 20px;
-              font-weight: bold;
-            }
-
             .green {
               color: #15803d;
-            }
-
-            .address {
-              white-space: pre-line;
             }
           </style>
         </head>
 
         <body>
-          <section class="order-header">
-            <div class="order-left">
-              <div class="order-number">
-                ${language === "de" ? "Bestellung" : "Sipariş"} ${escapeHtml(order.orderNumber)}
-              </div>
+          <header class="letterhead">
+            ${renderCompanyHeader(company, language)}
 
-              <div class="customer-name">
-                ${escapeHtml(
-                  order.user.companyName ||
-                    `${order.user.firstName || ""} ${order.user.lastName || ""}`.trim() ||
-                    "-",
-                )}
-              </div>
+            <div class="doc-meta">
+              <div class="doc-title">${language === "de" ? "Rechnung" : "Fatura"}</div>
 
-              <div class="address">
-                ${escapeHtml(order.deliveryAddress || "-")}
-              </div>
+              <table class="meta-table">
+                <tr>
+                  <td>${language === "de" ? "Nr." : "No"}</td>
+                  <td><strong>${escapeHtml(order.orderNumber)}</strong></td>
+                </tr>
 
-              ${
-                deliveryQrCode
-                  ? `
-                    <div style="margin-top:12px; text-align:center; width:120px;">
-                      <img src="${deliveryQrCode}" width="110" height="110" alt="${language === "de" ? "QR-Code für Google Maps" : "Google Maps için QR kodu"}" />
-                      <p style="margin:4px 0 0; font-size:10px; color:#64748b;">
-                        ${language === "de" ? "In Google Maps öffnen" : "Google Maps'te aç"}
-                      </p>
-                    </div>
-                  `
-                  : ""
-              }
+                <tr>
+                  <td>${language === "de" ? "Datum" : "Tarih"}</td>
+                  <td>${new Date(order.createdAt).toLocaleString("de-DE")}</td>
+                </tr>
+
+                <tr>
+                  <td>Status</td>
+                  <td>${statusLabels[order.status][language]}</td>
+                </tr>
+
+                <tr>
+                  <td>${language === "de" ? "Personal" : "Personel"}</td>
+                  <td>
+                    ${
+                      order.driver
+                        ? escapeHtml(
+                            `${order.driver.firstName || ""} ${order.driver.lastName || ""}`.trim() ||
+                              order.driver.email,
+                          )
+                        : language === "de"
+                          ? "Nicht zugewiesen"
+                          : "Atanmadı"
+                    }
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>${language === "de" ? "Zahlung" : "Ödeme"}</td>
+                  <td class="${order.paymentStatus === "PAID" ? "paid" : "open-payment"}">
+                    ${
+                      order.paymentStatus === "PAID"
+                        ? language === "de"
+                          ? "Bezahlt"
+                          : "Parası Ödendi"
+                        : language === "de"
+                          ? "Zahlung offen"
+                          : "Ödeme Açık"
+                    }
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </header>
+
+          <div class="parties">
+            <div class="party">
+              <div class="party-label">${language === "de" ? "Kunde" : "Müşteri"}</div>
+
+              <div class="party-body">
+                ${
+                  order.user.companyName
+                    ? `${escapeHtml(order.user.companyName)}<br />`
+                    : ""
+                }
+                ${escapeHtml(order.user.firstName || "")} ${escapeHtml(order.user.lastName || "")}<br />
+                ${escapeHtml(order.user.email)}<br />
+                ${escapeHtml(order.user.phone || "")}
+              </div>
             </div>
 
-            <div class="order-right">
-              <div class="info-item">
-                <span class="info-label">
-                  ${language === "de" ? "Datum" : "Tarih"}
-                </span>
+            <div class="party">
+              <div class="party-label">${language === "de" ? "Lieferadresse" : "Teslimat Adresi"}</div>
 
-                <span class="info-value">
-                  ${new Date(order.createdAt).toLocaleString("de-DE")}
-                </span>
-              </div>
+              <div class="party-body address-with-qr">
+                <p class="address">${escapeHtml(order.deliveryAddress || "-")}</p>
 
-              <div class="info-item">
-                <span class="info-label">
-                  ${language === "de" ? "Status" : "Durum"}
-                </span>
-
-                <span class="info-value">
-                  ${statusLabels[order.status][language]}
-                </span>
-              </div>
-
-              <div class="info-item">
-                <span class="info-label">
-                  ${language === "de" ? "Personal" : "Personel"}
-                </span>
-
-                <span class="info-value">
-                  ${
-                    order.driver
-                      ? escapeHtml(
-                          `${order.driver.firstName || ""} ${order.driver.lastName || ""}`.trim() ||
-                            order.driver.email,
-                        )
-                      : language === "de"
-                        ? "Nicht zugewiesen"
-                        : "Atanmadı"
-                  }
-                </span>
-              </div>
-
-              <div class="info-item">
-                <span class="info-label">
-                  ${language === "de" ? "Zahlung" : "Ödeme"}
-                </span>
-
-                <span class="info-value ${
-                  order.paymentStatus === "PAID" ? "paid" : "open-payment"
-                }">
-                  ${
-                    order.paymentStatus === "PAID"
-                      ? language === "de"
-                        ? "Bezahlt"
-                        : "Parası Ödendi"
-                      : language === "de"
-                        ? "Zahlung offen"
-                        : "Ödeme Açık"
-                  }
-                </span>
-              </div>
-
-              <div class="info-item">
-                <span class="info-label">
-                  Telefon
-                </span>
-
-                <span class="info-value">
-                  ${escapeHtml(order.user.phone || "-")}
-                </span>
+                ${
+                  deliveryQrCode
+                    ? `
+                      <div class="qr-block">
+                        <img src="${deliveryQrCode}" width="86" height="86" alt="${language === "de" ? "QR-Code für Google Maps" : "Google Maps için QR kodu"}" />
+                        <p>Google Maps</p>
+                      </div>
+                    `
+                    : ""
+                }
               </div>
             </div>
-          </section>
+          </div>
 
           ${
             order.customerNote
               ? `
-                <h2>${language === "de" ? "Kundennotiz" : "Müşteri Notu"}</h2>
-                <p>${escapeHtml(order.customerNote)}</p>
+                <div class="note-block">
+                  <div class="party-label">${language === "de" ? "Kundennotiz" : "Müşteri Notu"}</div>
+                  <div>${escapeHtml(order.customerNote)}</div>
+                </div>
               `
               : ""
           }
 
-          <h2>${language === "de" ? "Produkte" : "Ürünler"}</h2>
-
-          <table>
+          <table class="items">
             <thead>
               <tr>
                 <th>${language === "de" ? "Produkt" : "Ürün"}</th>
-                <th>${language === "de" ? "Menge" : "Adet"}</th>
-                <th>${language === "de" ? "Stückpreis" : "Birim Fiyat"}</th>
-                <th>${language === "de" ? "Pfand" : "Depozito"}</th>
-                <th>${language === "de" ? "Gesamt" : "Toplam"}</th>
+                <th class="num">${language === "de" ? "Menge" : "Adet"}</th>
+                <th class="num">${language === "de" ? "Stückpreis" : "Birim Fiyat"}</th>
+                <th class="num">${language === "de" ? "Pfand" : "Depozito"}</th>
+                <th class="num">${language === "de" ? "Gesamt" : "Toplam"}</th>
               </tr>
             </thead>
 
@@ -710,12 +587,12 @@ export default function SuperAdminOrdersPage() {
                   (item) => `
                     <tr>
                       <td>${escapeHtml(item.name)}</td>
-                      <td>${item.quantity}</td>
-                      <td>${Number(item.price).toFixed(2)} €</td>
-                      <td>${(Number(item.pfand) * item.quantity).toFixed(
+                      <td class="num">${item.quantity}</td>
+                      <td class="num">${Number(item.price).toFixed(2)} €</td>
+                      <td class="num">${(Number(item.pfand) * item.quantity).toFixed(
                         2,
                       )} €</td>
-                      <td>${(
+                      <td class="num">${(
                         (Number(item.price) + Number(item.pfand)) *
                         item.quantity
                       ).toFixed(2)} €</td>
@@ -729,15 +606,13 @@ export default function SuperAdminOrdersPage() {
           ${
             pfandReturn && pfandReturn.items.length > 0
               ? `
-                <h2>${language === "de" ? "Pfandrückgabe / Leergut" : "Depozito İadesi"}</h2>
-
-                <table>
+                <table class="items">
                   <thead>
                     <tr>
-                      <th>${language === "de" ? "Pfandtyp" : "Pfand Türü"}</th>
-                      <th>${language === "de" ? "Menge" : "Adet"}</th>
-                      <th>${language === "de" ? "Einheit" : "Birim"}</th>
-                      <th>${language === "de" ? "Gesamt" : "Toplam"}</th>
+                      <th>${language === "de" ? "Pfandrückgabe / Leergut" : "Depozito İadesi"}</th>
+                      <th class="num">${language === "de" ? "Menge" : "Adet"}</th>
+                      <th class="num">${language === "de" ? "Einzelpreis" : "Birim Fiyat"}</th>
+                      <th class="num">${language === "de" ? "Gesamt" : "Toplam"}</th>
                     </tr>
                   </thead>
 
@@ -747,9 +622,9 @@ export default function SuperAdminOrdersPage() {
                         (item) => `
                           <tr>
                             <td>${escapeHtml(item.name)}</td>
-                            <td>${item.quantity}</td>
-                            <td>${Number(item.unitAmount).toFixed(2)} €</td>
-                            <td>${Number(item.totalAmount).toFixed(2)} €</td>
+                            <td class="num">${item.quantity}</td>
+                            <td class="num">${Number(item.unitAmount).toFixed(2)} €</td>
+                            <td class="num">${Number(item.totalAmount).toFixed(2)} €</td>
                           </tr>
                         `,
                       )
@@ -798,6 +673,8 @@ export default function SuperAdminOrdersPage() {
               <strong>${Number(order.totalAmount).toFixed(2)} €</strong>
             </div>
           </div>
+
+          ${renderLegalFooter(company, language)}
         </body>
       </html>
     `);
@@ -1007,43 +884,6 @@ export default function SuperAdminOrdersPage() {
 
   function isBarSale(order: Order) {
     return order.orderNumber.startsWith("BAR-");
-  }
-
-  /*
-   * Bar-Satışı-Bestellungen ohne echte Lieferadresse (Verkauf direkt
-   * an der Theke) markieren deliveryAddress mit diesem Platzhalter-
-   * Präfix. Offene Bar-Verkäufe MIT echter Lieferadresse sollen aber
-   * navigierbar bleiben (z. B. Lieferung an ein Restaurant/Imbiss).
-   */
-  function hasNavigableDeliveryAddress(order: Order) {
-    return (
-      Boolean(order.deliveryAddress) &&
-      !order.deliveryAddress.startsWith("Barverkauf") &&
-      !order.deliveryAddress.startsWith("Bar Satışı") &&
-      !order.deliveryAddress.startsWith("DEPODAN TESLİM")
-    );
-  }
-
-  function getMapsQuery(order: Order) {
-    return order.deliveryAddress
-      .split("\n")
-      .filter(
-        (line) => !line.startsWith("Telefon:") && !line.startsWith("Kat:") && !line.startsWith("Zil:"),
-      )
-      .join(", ");
-  }
-
-  async function getDeliveryQrCode(order: Order) {
-    const redirectUrl = `${window.location.origin}/api/maps-redirect?address=${encodeURIComponent(getMapsQuery(order))}`;
-
-    try {
-      return await QRCode.toDataURL(redirectUrl, {
-        width: 160,
-        margin: 1,
-      });
-    } catch {
-      return null;
-    }
   }
 
   function getCustomerNoteValue(order: Order, label: string) {

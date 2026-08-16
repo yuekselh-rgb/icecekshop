@@ -5,6 +5,7 @@ import Header from "@/components/layout/Header";
 import { useLanguage } from "@/context/LanguageContext";
 import {
   buildOrderReceiptHtml,
+  fetchReceiptCompany,
   getDeliveryQrCode,
   hasNavigableDeliveryAddress,
 } from "@/lib/order-receipt";
@@ -184,11 +185,12 @@ export default function MyOrdersPage() {
       return;
     }
 
-    const deliveryQrCode = hasNavigableDeliveryAddress(order)
-      ? await getDeliveryQrCode(order)
-      : null;
+    const [deliveryQrCode, company] = await Promise.all([
+      hasNavigableDeliveryAddress(order) ? getDeliveryQrCode(order) : Promise.resolve(null),
+      fetchReceiptCompany(),
+    ]);
 
-    popup.document.write(buildOrderReceiptHtml(order, deliveryQrCode, language));
+    popup.document.write(buildOrderReceiptHtml(order, deliveryQrCode, language, company));
 
     popup.document.close();
     popup.focus();

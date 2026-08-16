@@ -16,6 +16,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   buildOrderReceiptHtml,
+  fetchReceiptCompany,
   getDeliveryQrCode,
   hasNavigableDeliveryAddress,
 } from "@/lib/order-receipt";
@@ -926,11 +927,12 @@ export default function AdminOrdersPage() {
       return;
     }
 
-    const deliveryQrCode = hasNavigableDeliveryAddress(order)
-      ? await getDeliveryQrCode(order)
-      : null;
+    const [deliveryQrCode, company] = await Promise.all([
+      hasNavigableDeliveryAddress(order) ? getDeliveryQrCode(order) : Promise.resolve(null),
+      fetchReceiptCompany(),
+    ]);
 
-    popup.document.write(buildOrderReceiptHtml(order, deliveryQrCode, language));
+    popup.document.write(buildOrderReceiptHtml(order, deliveryQrCode, language, company));
 
     popup.document.close();
     popup.focus();
