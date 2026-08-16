@@ -763,6 +763,23 @@ const adminName =
     );
   }
 
+  function setPfandQuantity(unitAmount: number, quantity: number) {
+    const safeQuantity = Number.isFinite(quantity)
+      ? Math.max(0, Math.round(quantity))
+      : 0;
+
+    setPfandOptions((current) =>
+      current.map((option) =>
+        option.unitAmount === unitAmount
+          ? {
+              ...option,
+              quantity: safeQuantity,
+            }
+          : option,
+      ),
+    );
+  }
+
   const subtotal = cart.reduce(
     (total, item) => total + item.price * item.quantity,
     0,
@@ -1480,9 +1497,21 @@ const adminName =
                         <Minus size={15} />
                       </button>
 
-                      <span className="min-w-9 text-center text-sm font-black">
-                        {option.quantity}
-                      </span>
+                      <input
+                        type="number"
+                        min={0}
+                        step={1}
+                        inputMode="numeric"
+                        value={option.quantity}
+                        onChange={(event) =>
+                          setPfandQuantity(
+                            option.unitAmount,
+                            Number(event.target.value),
+                          )
+                        }
+                        onFocus={(event) => event.target.select()}
+                        className="h-9 w-12 min-w-0 border-x border-slate-200 bg-transparent text-center text-sm font-black outline-none focus:bg-white"
+                      />
 
                       <button
                         type="button"
