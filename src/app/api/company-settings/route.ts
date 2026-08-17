@@ -51,6 +51,9 @@ const fallbackSettings = {
   minOrderValueEnabled: false,
   minOrderValue: null,
 
+  deliveryFeeEnabled: true,
+  deliveryFee: 7.9,
+
   autoPrintOrders: false,
 
   businessHoursEnabled: false,

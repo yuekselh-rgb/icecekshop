@@ -117,6 +117,18 @@ export const PATCH = withTenant(async (request: Request, _context, tenant) => {
         ? Math.round(rawMinOrderValue * 100) / 100
         : null;
 
+    const deliveryFeeEnabled =
+      typeof body.deliveryFeeEnabled === "boolean"
+        ? body.deliveryFeeEnabled
+        : true;
+
+    const rawDeliveryFee = Number(body.deliveryFee);
+
+    const deliveryFee =
+      Number.isFinite(rawDeliveryFee) && rawDeliveryFee >= 0
+        ? Math.round(rawDeliveryFee * 100) / 100
+        : 7.9;
+
     const autoPrintOrders =
       typeof body.autoPrintOrders === "boolean" ? body.autoPrintOrders : false;
 
@@ -290,6 +302,8 @@ export const PATCH = withTenant(async (request: Request, _context, tenant) => {
         showOffers,
         minOrderValueEnabled,
         minOrderValue,
+        deliveryFeeEnabled,
+        deliveryFee,
         autoPrintOrders,
         businessHoursEnabled,
         businessHours,
@@ -338,6 +352,8 @@ export const PATCH = withTenant(async (request: Request, _context, tenant) => {
         showOffers,
         minOrderValueEnabled,
         minOrderValue,
+        deliveryFeeEnabled,
+        deliveryFee,
         autoPrintOrders,
         businessHoursEnabled,
         businessHours,

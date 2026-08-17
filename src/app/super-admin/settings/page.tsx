@@ -66,6 +66,9 @@ type Settings = {
   minOrderValueEnabled: boolean;
   minOrderValue: string;
 
+  deliveryFeeEnabled: boolean;
+  deliveryFee: string;
+
   autoPrintOrders: boolean;
 
   businessHoursEnabled: boolean;
@@ -120,6 +123,9 @@ const emptySettings: Settings = {
 
   minOrderValueEnabled: false,
   minOrderValue: "",
+
+  deliveryFeeEnabled: true,
+  deliveryFee: "7.9",
 
   autoPrintOrders: false,
 
@@ -215,6 +221,13 @@ export default function CompanySettingsPage() {
             data.settings.minOrderValue !== undefined
               ? String(data.settings.minOrderValue)
               : "",
+
+          deliveryFeeEnabled: data.settings.deliveryFeeEnabled !== false,
+          deliveryFee:
+            data.settings.deliveryFee !== null &&
+            data.settings.deliveryFee !== undefined
+              ? String(data.settings.deliveryFee)
+              : "7.9",
 
           autoPrintOrders: Boolean(data.settings.autoPrintOrders),
 
@@ -394,6 +407,13 @@ export default function CompanySettingsPage() {
             ? String(data.settings.minOrderValue)
             : "",
 
+        deliveryFeeEnabled: data.settings.deliveryFeeEnabled !== false,
+        deliveryFee:
+          data.settings.deliveryFee !== null &&
+          data.settings.deliveryFee !== undefined
+            ? String(data.settings.deliveryFee)
+            : "7.9",
+
         autoPrintOrders: Boolean(data.settings.autoPrintOrders),
 
         businessHoursEnabled: Boolean(data.settings.businessHoursEnabled),
@@ -498,6 +518,13 @@ export default function CompanySettingsPage() {
           data.settings.minOrderValue !== undefined
             ? String(data.settings.minOrderValue)
             : "",
+
+        deliveryFeeEnabled: data.settings.deliveryFeeEnabled !== false,
+        deliveryFee:
+          data.settings.deliveryFee !== null &&
+          data.settings.deliveryFee !== undefined
+            ? String(data.settings.deliveryFee)
+            : "7.9",
 
         autoPrintOrders: Boolean(data.settings.autoPrintOrders),
 
@@ -1318,6 +1345,79 @@ export default function CompanySettingsPage() {
                 : language === "de"
                   ? "Kein Mindestbestellwert aktiv."
                   : "Minimum sipariş tutarı aktif değil."}
+            </p>
+          </section>
+
+          <section className="rounded-3xl border border-slate-200 p-5">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-xl font-black text-slate-950">
+                  {language === "de" ? "Lieferkosten" : "Teslimat Ücreti"}
+                </h2>
+
+                <p className="mt-1 text-sm text-slate-500">
+                  {language === "de"
+                    ? "Legen Sie fest, ob und in welcher Höhe eine Liefergebühr berechnet wird."
+                    : "Teslimat ücreti alınıp alınmayacağını ve tutarını belirleyin."}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setSettings((current) => ({
+                    ...current,
+                    deliveryFeeEnabled: !current.deliveryFeeEnabled,
+                  }))
+                }
+                className={`relative h-8 w-14 shrink-0 rounded-full transition ${
+                  settings.deliveryFeeEnabled ? "bg-green-500" : "bg-slate-300"
+                }`}
+              >
+                <span
+                  className={`absolute top-1 h-6 w-6 rounded-full bg-white shadow transition ${
+                    settings.deliveryFeeEnabled ? "left-7" : "left-1"
+                  }`}
+                />
+              </button>
+            </div>
+
+            {settings.deliveryFeeEnabled ? (
+              <label className="mt-4 block max-w-xs">
+                <span className="text-sm font-bold text-slate-700">
+                  {language === "de"
+                    ? "Liefergebühr (€)"
+                    : "Teslimat Ücreti (€)"}
+                </span>
+
+                <input
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  value={settings.deliveryFee}
+                  onChange={(event) =>
+                    setSettings((current) => ({
+                      ...current,
+                      deliveryFee: event.target.value,
+                    }))
+                  }
+                  className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-2.5 outline-none focus:border-orange-500"
+                />
+              </label>
+            ) : null}
+
+            <p
+              className={`mt-4 text-sm font-black ${
+                settings.deliveryFeeEnabled ? "text-green-700" : "text-red-600"
+              }`}
+            >
+              {settings.deliveryFeeEnabled
+                ? language === "de"
+                  ? `Bestellungen unter 100 € kosten ${Number(settings.deliveryFee || 0).toFixed(2)} € Lieferung.`
+                  : `100 €'nun altındaki siparişlerde ${Number(settings.deliveryFee || 0).toFixed(2)} € teslimat ücreti alınır.`
+                : language === "de"
+                  ? "Keine Lieferkosten – die Lieferung ist immer kostenlos."
+                  : "Teslimat ücreti yok – teslimat her zaman ücretsizdir."}
             </p>
           </section>
 

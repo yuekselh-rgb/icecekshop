@@ -654,6 +654,9 @@ model CompanySetting {
   minOrderValueEnabled Boolean  @default(false)
   minOrderValue        Decimal? @db.Decimal(10, 2)
 
+  deliveryFeeEnabled Boolean @default(true)
+  deliveryFee        Decimal @default(7.9) @db.Decimal(10, 2)
+
   autoPrintOrders Boolean @default(false)
 
   businessHoursEnabled Boolean @default(false)

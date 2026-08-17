@@ -103,7 +103,6 @@ export default function CheckoutPage() {
           free: "Kostenlos",
           warehousePickup: "Lagerabholung",
           freeDeliveryText: "Die Lieferung ist kostenlos.",
-          paidDeliveryText: "Für Bestellungen unter 100 € beträgt die Liefergebühr 7,90 €.",
           dealerDeliveryText: "Händlerbestellungen werden kostenlos im Lager zur Abholung bereitgestellt.",
           pfandInfo: "Pfand wird bei Bedarf zusätzlich serverseitig berechnet.",
           paymentTitle: "Zahlung bei Lieferung",
@@ -155,7 +154,6 @@ export default function CheckoutPage() {
           free: "Ücretsiz",
           warehousePickup: "Depodan Teslim",
           freeDeliveryText: "Teslimat ücretsizdir.",
-          paidDeliveryText: "100 € altındaki siparişlerde teslimat ücreti 7,90 €’dur.",
           dealerDeliveryText: "Bayi siparişleri depodan teslim alınır. Bayilere teslimat ücreti eklenmez.",
           pfandInfo: "Pfand varsa sunucu tarafından ayrıca hesaplanır.",
           paymentTitle: "Teslimatta Ödeme",
@@ -191,13 +189,33 @@ export default function CheckoutPage() {
     isPreOrder: boolean;
   } | null>(null);
 
+  const [deliveryFeeSettings, setDeliveryFeeSettings] = useState({
+    enabled: true,
+    amount: 7.9,
+  });
+
   /*
    * Bayiler ürünleri depodan kendileri alır.
    * Sipariş tutarı ne olursa olsun teslimat ücreti eklenmez.
+   * Teslimat ücreti tenant bazında ayarlanabilir; kapalıysa
+   * veya 100 €'nun üzerindeyse ücretsizdir.
    */
-  const deliveryFee = isDealer ? 0 : productSubtotal >= 100 ? 0 : 7.9;
+  const deliveryFee =
+    isDealer || !deliveryFeeSettings.enabled
+      ? 0
+      : productSubtotal >= 100
+        ? 0
+        : deliveryFeeSettings.amount;
 
   const total = Math.max(0, subtotal + deliveryFee - pfandReturnTotal);
+
+  const deliveryMessage = isDealer
+    ? t.dealerDeliveryText
+    : !deliveryFeeSettings.enabled || productSubtotal >= 100
+      ? t.freeDeliveryText
+      : language === "de"
+        ? `Für Bestellungen unter 100 € beträgt die Liefergebühr ${deliveryFeeSettings.amount.toFixed(2)} €.`
+        : `100 € altındaki siparişlerde teslimat ücreti ${deliveryFeeSettings.amount.toFixed(2)} €'dur.`;
 
   const [minOrderSettings, setMinOrderSettings] = useState({
     enabled: false,
@@ -221,6 +239,11 @@ export default function CheckoutPage() {
         setMinOrderSettings({
           enabled: Boolean(data.settings?.minOrderValueEnabled),
           value: Number(data.settings?.minOrderValue) || 0,
+        });
+
+        setDeliveryFeeSettings({
+          enabled: data.settings?.deliveryFeeEnabled !== false,
+          amount: Number(data.settings?.deliveryFee) || 7.9,
         });
 
         setBusinessHoursSettings({
@@ -704,13 +727,7 @@ export default function CheckoutPage() {
                 </h2>
               </div>
 
-              <p className="mt-4 text-slate-600">
-                {isDealer
-                  ? t.dealerDeliveryText
-                  : productSubtotal >= 100
-                    ? t.freeDeliveryText
-                    : t.paidDeliveryText}
-              </p>
+              <p className="mt-4 text-slate-600">{deliveryMessage}</p>
             </section>
           </div>
 

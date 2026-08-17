@@ -448,6 +448,10 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
 
     pfandAmount = Number(pfandAmount.toFixed(2));
 
+    let deliveryFeeEnabled = true;
+
+    let deliveryFeeAmount = 7.9;
+
     if (!isDealer) {
       const companySettings = await prisma.companySetting.findUnique({
         where: {
@@ -456,6 +460,8 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
         select: {
           minOrderValueEnabled: true,
           minOrderValue: true,
+          deliveryFeeEnabled: true,
+          deliveryFee: true,
         },
       });
 
@@ -480,6 +486,13 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
           },
         );
       }
+
+      deliveryFeeEnabled = companySettings?.deliveryFeeEnabled ?? true;
+
+      deliveryFeeAmount =
+        companySettings?.deliveryFee != null
+          ? Number(companySettings.deliveryFee)
+          : 7.9;
     }
 
     const pfandReturnAmount = Number(
@@ -505,8 +518,15 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
     /*
      * Bayiler siparişi depodan kendileri teslim alır.
      * Sipariş miktarı ve tutarı ne olursa olsun teslimat ücreti yoktur.
+     * Teslimat ücreti tenant bazında CompanySetting üzerinden
+     * ayarlanabilir; kapalıysa veya 100 €'nun üzerindeyse ücretsizdir.
      */
-    const deliveryFee = isDealer ? 0 : subtotal >= 100 ? 0 : 7.9;
+    const deliveryFee =
+      isDealer || !deliveryFeeEnabled
+        ? 0
+        : subtotal >= 100
+          ? 0
+          : deliveryFeeAmount;
 
     const totalAmount = Number(
       Math.max(
