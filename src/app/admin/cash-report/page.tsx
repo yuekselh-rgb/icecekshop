@@ -508,54 +508,47 @@ export default function CashReportPage() {
               {report.openAccount.orders.length === 0 ? (
                 <p className="text-sm text-slate-500">{t.noOpenAccountOrders}</p>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-sm">
-                    <thead>
-                      <tr className="border-b border-slate-200 text-xs font-black uppercase text-slate-400">
-                        <th className="py-2 pr-4">{t.orderNumber}</th>
-                        <th className="py-2 pr-4">{t.dateTime}</th>
-                        <th className="py-2 pr-4">{t.customer}</th>
-                        <th className="py-2 text-right">{t.amount}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {report.openAccount.orders.map((order) => (
-                        <tr
-                          key={order.id}
-                          className={`border-b border-slate-100 last:border-b-0 ${
-                            order.settledAfterPeriod ? "bg-green-50/60" : ""
-                          }`}
-                        >
-                          <td className="py-2 pr-4 font-bold text-slate-900">
-                            <div className="flex flex-wrap items-center gap-2">
-                              {order.orderNumber}
+                <div className="divide-y divide-slate-100">
+                  {report.openAccount.orders.map((order) => (
+                    <div
+                      key={order.id}
+                      className={`grid gap-1 py-3 sm:grid-cols-[1fr_auto] sm:items-center sm:gap-4 ${
+                        order.settledAfterPeriod
+                          ? "-mx-5 bg-green-50/60 px-5"
+                          : ""
+                      }`}
+                    >
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="font-bold text-slate-900">
+                            {order.orderNumber}
+                          </p>
 
-                              {order.settledAfterPeriod ? (
-                                <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-black uppercase text-green-700">
-                                  {t.settledAfterPeriod}
-                                </span>
-                              ) : null}
-                            </div>
-                          </td>
-                          <td className="py-2 pr-4 text-slate-600">
-                            {new Date(order.createdAt).toLocaleString("de-DE")}
-                          </td>
-                          <td className="py-2 pr-4 text-slate-600">
-                            {order.customerName}
-                          </td>
-                          <td
-                            className={`py-2 text-right font-black ${
-                              order.settledAfterPeriod
-                                ? "text-green-700"
-                                : "text-slate-950"
-                            }`}
-                          >
-                            {formatEuro(order.openPaymentAmount)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                          {order.settledAfterPeriod ? (
+                            <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-black uppercase text-green-700">
+                              {t.settledAfterPeriod}
+                            </span>
+                          ) : null}
+                        </div>
+
+                        <p className="text-xs text-slate-500">
+                          {new Date(order.createdAt).toLocaleString("de-DE")}
+                          {" · "}
+                          {order.customerName}
+                        </p>
+                      </div>
+
+                      <p
+                        className={`font-black sm:text-right ${
+                          order.settledAfterPeriod
+                            ? "text-green-700"
+                            : "text-slate-950"
+                        }`}
+                      >
+                        {formatEuro(order.openPaymentAmount)}
+                      </p>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
@@ -568,70 +561,134 @@ export default function CashReportPage() {
               {report.movements.length === 0 ? (
                 <p className="text-sm text-slate-500">{t.noMovements}</p>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-sm">
-                    <thead>
-                      <tr className="border-b border-slate-200 text-xs font-black uppercase text-slate-400">
-                        <th className="py-2 pr-4">{t.dateTime}</th>
-                        <th className="py-2 pr-4">{t.account}</th>
-                        <th className="py-2 pr-4">{t.category}</th>
-                        <th className="py-2 pr-4">{t.description}</th>
-                        <th className="py-2 pr-4">{t.staff}</th>
-                        <th className="py-2 text-right">{t.amount}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {report.movements.map((movement) => {
-                        const isSettledOpenAccount =
-                          movement.category === "MANUAL_INCOME" &&
-                          movement.orderId !== null;
+                <>
+                  <div className="hidden overflow-x-auto sm:block">
+                    <table className="w-full text-left text-sm">
+                      <thead>
+                        <tr className="border-b border-slate-200 text-xs font-black uppercase text-slate-400">
+                          <th className="py-2 pr-4">{t.dateTime}</th>
+                          <th className="py-2 pr-4">{t.account}</th>
+                          <th className="py-2 pr-4">{t.category}</th>
+                          <th className="py-2 pr-4">{t.description}</th>
+                          <th className="py-2 pr-4">{t.staff}</th>
+                          <th className="py-2 text-right">{t.amount}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {report.movements.map((movement) => {
+                          const isSettledOpenAccount =
+                            movement.category === "MANUAL_INCOME" &&
+                            movement.orderId !== null;
 
-                        return (
-                        <tr
-                          key={movement.id}
-                          className={`border-b border-slate-100 last:border-b-0 ${
-                            isSettledOpenAccount ? "bg-green-50/60" : ""
-                          }`}
-                        >
-                          <td className="py-2 pr-4 text-slate-600">
-                            {new Date(movement.createdAt).toLocaleString("de-DE")}
-                          </td>
-                          <td className="py-2 pr-4 text-slate-600">
-                            {t.accountLabels[movement.accountType] || movement.accountType}
-                          </td>
-                          <td className="py-2 pr-4 text-slate-600">
-                            <div className="flex flex-wrap items-center gap-2">
-                              {t.categoryLabels[movement.category] || movement.category}
-
-                              {isSettledOpenAccount ? (
-                                <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-black uppercase text-green-700">
-                                  {t.settledOpenAccount}
-                                </span>
-                              ) : null}
-                            </div>
-                          </td>
-                          <td className="py-2 pr-4 text-slate-500">
-                            {movement.description || movement.companyName || movement.supplierName || "—"}
-                          </td>
-                          <td className="py-2 pr-4 text-slate-500">
-                            {movement.createdBy.name || "—"}
-                          </td>
-                          <td
-                            className={`py-2 text-right font-black ${
-                              movement.direction === "IN"
-                                ? "text-green-700"
-                                : "text-red-700"
+                          return (
+                          <tr
+                            key={movement.id}
+                            className={`border-b border-slate-100 last:border-b-0 ${
+                              isSettledOpenAccount ? "bg-green-50/60" : ""
                             }`}
                           >
-                            {movement.direction === "IN" ? "+" : "-"}
-                            {formatEuro(movement.amount)}
-                          </td>
-                        </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+                            <td className="py-2 pr-4 text-slate-600">
+                              {new Date(movement.createdAt).toLocaleString("de-DE")}
+                            </td>
+                            <td className="py-2 pr-4 text-slate-600">
+                              {t.accountLabels[movement.accountType] || movement.accountType}
+                            </td>
+                            <td className="py-2 pr-4 text-slate-600">
+                              <div className="flex flex-wrap items-center gap-2">
+                                {t.categoryLabels[movement.category] || movement.category}
+
+                                {isSettledOpenAccount ? (
+                                  <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-black uppercase text-green-700">
+                                    {t.settledOpenAccount}
+                                  </span>
+                                ) : null}
+                              </div>
+                            </td>
+                            <td className="py-2 pr-4 text-slate-500">
+                              {movement.description || movement.companyName || movement.supplierName || "—"}
+                            </td>
+                            <td className="py-2 pr-4 text-slate-500">
+                              {movement.createdBy.name || "—"}
+                            </td>
+                            <td
+                              className={`py-2 text-right font-black ${
+                                movement.direction === "IN"
+                                  ? "text-green-700"
+                                  : "text-red-700"
+                              }`}
+                            >
+                              {movement.direction === "IN" ? "+" : "-"}
+                              {formatEuro(movement.amount)}
+                            </td>
+                          </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div className="divide-y divide-slate-100 sm:hidden">
+                    {report.movements.map((movement) => {
+                      const isSettledOpenAccount =
+                        movement.category === "MANUAL_INCOME" &&
+                        movement.orderId !== null;
+
+                      return (
+                        <div
+                          key={movement.id}
+                          className={`py-3 ${
+                            isSettledOpenAccount
+                              ? "-mx-5 bg-green-50/60 px-5"
+                              : ""
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <p className="text-xs text-slate-500">
+                              {new Date(movement.createdAt).toLocaleString("de-DE")}
+                            </p>
+
+                            <p
+                              className={`shrink-0 font-black ${
+                                movement.direction === "IN"
+                                  ? "text-green-700"
+                                  : "text-red-700"
+                              }`}
+                            >
+                              {movement.direction === "IN" ? "+" : "-"}
+                              {formatEuro(movement.amount)}
+                            </p>
+                          </div>
+
+                          <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs">
+                            <span className="font-bold text-slate-700">
+                              {t.accountLabels[movement.accountType] || movement.accountType}
+                            </span>
+
+                            <span className="text-slate-300">·</span>
+
+                            <span className="font-bold text-slate-700">
+                              {t.categoryLabels[movement.category] || movement.category}
+                            </span>
+
+                            {isSettledOpenAccount ? (
+                              <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-black uppercase text-green-700">
+                                {t.settledOpenAccount}
+                              </span>
+                            ) : null}
+                          </div>
+
+                          <p className="mt-1 text-sm text-slate-600">
+                            {movement.description || movement.companyName || movement.supplierName || "—"}
+                          </p>
+
+                          <p className="mt-1 text-xs text-slate-400">
+                            {movement.createdBy.name || "—"}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
               )}
             </div>
           </>

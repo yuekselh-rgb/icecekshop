@@ -1496,7 +1496,9 @@ export default function AdminOrdersPage() {
         <section className="mt-6 rounded-[32px] bg-slate-950 p-7 text-white sm:p-10">
           <PackageCheck size={30} className="text-orange-400" />
 
-          <h1 className="mt-4 text-4xl font-black">{t.title}</h1>
+          <h1 className="mt-4 break-words text-3xl font-black sm:text-4xl">
+            {t.title}
+          </h1>
 
           <p className="mt-3 text-slate-400">
             {language === "de"
@@ -1790,56 +1792,132 @@ export default function AdminOrdersPage() {
                     : "Seçilen rapor için sipariş bulunmuyor."}
                 </p>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="min-w-[820px] w-full text-sm">
-                    <thead>
-                      <tr className="text-left text-xs font-black uppercase text-slate-500">
-                        <th className="px-4 py-2">{language === "de" ? "Datum" : "Tarih"}</th>
+                <>
+                  <div className="hidden overflow-x-auto sm:block">
+                    <table className="min-w-[820px] w-full text-sm">
+                      <thead>
+                        <tr className="text-left text-xs font-black uppercase text-slate-500">
+                          <th className="px-4 py-2">{language === "de" ? "Datum" : "Tarih"}</th>
 
-                        <th className="px-4 py-2">{language === "de" ? "Fahrer / Verkäufer" : "Şoför / Satışı Yapan"}</th>
-                        <th className="px-4 py-2 text-center">{language === "de" ? "Bestellung" : "Sipariş"}</th>
-                        <th className="px-4 py-2 text-center">{language === "de" ? "Bezahlt" : "Ödendi"}</th>
-                        <th className="px-4 py-2 text-center">{language === "de" ? "Offen" : "Açık"}</th>
-                        <th className="px-4 py-2 text-right">{language === "de" ? "Eingenommen" : "Tahsil Edilen"}</th>
-                        <th className="px-4 py-2 text-right">{language === "de" ? "Offener Betrag" : "Açık Tutar"}</th>
-                        <th className="px-4 py-2 text-right">{language === "de" ? "Gesamt" : "Toplam"}</th>
-                      </tr>
-                    </thead>
-
-                    <tbody>
-                      {reportDailyRows.map((row) => (
-                        <tr
-                          key={row.rowKey}
-                          className="border-t border-slate-200"
-                        >
-                          <td className="px-4 py-2 font-black">
-                            {row.dateLabel}
-                          </td>
-
-                          <td className="px-4 py-2">{row.actorName}</td>
-                          <td className="px-4 py-2 text-center">
-                            {row.orderCount}
-                          </td>
-                          <td className="px-4 py-2 text-center font-black text-green-700">
-                            {row.paidCount}
-                          </td>
-                          <td className="px-4 py-2 text-center font-black text-red-600">
-                            {row.openCount}
-                          </td>
-                          <td className="px-4 py-2 text-right font-black text-green-700">
-                            {row.paidAmount.toFixed(2)} €
-                          </td>
-                          <td className="px-4 py-2 text-right font-black text-red-600">
-                            {row.openAmount.toFixed(2)} €
-                          </td>
-                          <td className="px-4 py-2 text-right font-black">
-                            {row.totalAmount.toFixed(2)} €
-                          </td>
+                          <th className="px-4 py-2">{language === "de" ? "Fahrer / Verkäufer" : "Şoför / Satışı Yapan"}</th>
+                          <th className="px-4 py-2 text-center">{language === "de" ? "Bestellung" : "Sipariş"}</th>
+                          <th className="px-4 py-2 text-center">{language === "de" ? "Bezahlt" : "Ödendi"}</th>
+                          <th className="px-4 py-2 text-center">{language === "de" ? "Offen" : "Açık"}</th>
+                          <th className="px-4 py-2 text-right">{language === "de" ? "Eingenommen" : "Tahsil Edilen"}</th>
+                          <th className="px-4 py-2 text-right">{language === "de" ? "Offener Betrag" : "Açık Tutar"}</th>
+                          <th className="px-4 py-2 text-right">{language === "de" ? "Gesamt" : "Toplam"}</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+
+                      <tbody>
+                        {reportDailyRows.map((row) => (
+                          <tr
+                            key={row.rowKey}
+                            className="border-t border-slate-200"
+                          >
+                            <td className="px-4 py-2 font-black">
+                              {row.dateLabel}
+                            </td>
+
+                            <td className="px-4 py-2">{row.actorName}</td>
+                            <td className="px-4 py-2 text-center">
+                              {row.orderCount}
+                            </td>
+                            <td className="px-4 py-2 text-center font-black text-green-700">
+                              {row.paidCount}
+                            </td>
+                            <td className="px-4 py-2 text-center font-black text-red-600">
+                              {row.openCount}
+                            </td>
+                            <td className="px-4 py-2 text-right font-black text-green-700">
+                              {row.paidAmount.toFixed(2)} €
+                            </td>
+                            <td className="px-4 py-2 text-right font-black text-red-600">
+                              {row.openAmount.toFixed(2)} €
+                            </td>
+                            <td className="px-4 py-2 text-right font-black">
+                              {row.totalAmount.toFixed(2)} €
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div className="divide-y divide-slate-200 sm:hidden">
+                    {reportDailyRows.map((row) => (
+                      <div key={row.rowKey} className="p-4">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="font-black text-slate-950">
+                            {row.dateLabel}
+                          </p>
+
+                          <p className="text-xs font-bold text-slate-500">
+                            {row.actorName}
+                          </p>
+                        </div>
+
+                        <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+                          <div>
+                            <p className="text-[10px] font-black uppercase text-slate-400">
+                              {language === "de" ? "Bestellung" : "Sipariş"}
+                            </p>
+                            <p className="font-black text-slate-950">
+                              {row.orderCount}
+                            </p>
+                          </div>
+
+                          <div>
+                            <p className="text-[10px] font-black uppercase text-slate-400">
+                              {language === "de" ? "Bezahlt" : "Ödendi"}
+                            </p>
+                            <p className="font-black text-green-700">
+                              {row.paidCount}
+                            </p>
+                          </div>
+
+                          <div>
+                            <p className="text-[10px] font-black uppercase text-slate-400">
+                              {language === "de" ? "Offen" : "Açık"}
+                            </p>
+                            <p className="font-black text-red-600">
+                              {row.openCount}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="mt-3 grid grid-cols-3 gap-2 border-t border-slate-100 pt-3 text-center">
+                          <div>
+                            <p className="text-[10px] font-black uppercase text-slate-400">
+                              {language === "de" ? "Eingenommen" : "Tahsil Edilen"}
+                            </p>
+                            <p className="font-black text-green-700">
+                              {row.paidAmount.toFixed(2)} €
+                            </p>
+                          </div>
+
+                          <div>
+                            <p className="text-[10px] font-black uppercase text-slate-400">
+                              {language === "de" ? "Offener Betrag" : "Açık Tutar"}
+                            </p>
+                            <p className="font-black text-red-600">
+                              {row.openAmount.toFixed(2)} €
+                            </p>
+                          </div>
+
+                          <div>
+                            <p className="text-[10px] font-black uppercase text-slate-400">
+                              {language === "de" ? "Gesamt" : "Toplam"}
+                            </p>
+                            <p className="font-black text-slate-950">
+                              {row.totalAmount.toFixed(2)} €
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
               )}
             </div>
 
