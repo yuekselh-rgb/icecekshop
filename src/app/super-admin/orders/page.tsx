@@ -1908,15 +1908,30 @@ export default function SuperAdminOrdersPage() {
                         `${order.user.firstName || ""} ${order.user.lastName || ""}`.trim() ||
                         order.user.email;
 
+                      const wasSettledOnDifferentDay =
+                        order.paidAt &&
+                        getLocalDateKey(new Date(order.createdAt)) !==
+                          getLocalDateKey(new Date(order.paidAt));
+
                       return (
                         <div
                           key={order.id}
                           className="grid gap-2 p-4 transition-colors hover:bg-green-50/50 sm:grid-cols-[1fr_auto] sm:items-center"
                         >
                           <div>
-                            <p className="text-xs font-black text-orange-500">
-                              {order.orderNumber}
-                            </p>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <p className="text-xs font-black text-orange-500">
+                                {order.orderNumber}
+                              </p>
+
+                              {wasSettledOnDifferentDay ? (
+                                <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-black uppercase text-amber-700">
+                                  {language === "de"
+                                    ? `Offen seit ${new Date(order.createdAt).toLocaleDateString("de-DE")}`
+                                    : `${new Date(order.createdAt).toLocaleDateString("tr-TR")} tarihinden açık`}
+                                </span>
+                              ) : null}
+                            </div>
 
                             <p className="font-black text-slate-950">
                               {customerName}
