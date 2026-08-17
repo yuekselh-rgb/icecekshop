@@ -8,7 +8,7 @@ import {
   Recycle,
   Users,
 } from "lucide-react";
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 
 import { useLanguage } from "@/context/LanguageContext";
 
@@ -68,6 +68,22 @@ export default function DashboardOverview({
     series: "cost" | "revenue";
   } | null>(null);
 
+  const revenueScrollRef = useRef<HTMLDivElement>(null);
+
+  /*
+   * Der Chart zeigt immer die letzten 14 Tage, heute ist der letzte
+   * (rechteste) Balken. Auf schmalen Bildschirmen ist die Reihe breiter
+   * als der sichtbare Bereich, deshalb direkt zum aktuellen Tag scrollen
+   * statt beim ältesten Tag zu starten.
+   */
+  useLayoutEffect(() => {
+    const el = revenueScrollRef.current;
+
+    if (el) {
+      el.scrollLeft = el.scrollWidth;
+    }
+  }, [stats.dailyRevenue]);
+
   const t =
     language === "de"
       ? {
@@ -92,6 +108,7 @@ export default function DashboardOverview({
           businessCustomers: "Firmenkunden",
           unknownCity: "Unbekannt",
           noData: "Noch keine Daten vorhanden.",
+          today: "Heute",
         }
       : {
           eyebrow: "Sistem Yönetimi",
@@ -115,6 +132,7 @@ export default function DashboardOverview({
           businessCustomers: "Firma Müşterileri",
           unknownCity: "Bilinmiyor",
           noData: "Henüz veri yok.",
+          today: "Bugün",
         };
 
   const statCards = [
@@ -250,9 +268,11 @@ export default function DashboardOverview({
         {stats.dailyRevenue.every((day) => day.cost === 0 && day.revenue === 0) ? (
           <p className="mt-8 text-sm font-bold text-slate-400">{t.noData}</p>
         ) : (
-          <div className="mt-12 overflow-x-auto">
+          <div ref={revenueScrollRef} className="mt-12 overflow-x-auto">
           <div className="flex h-48 min-w-[700px] items-stretch gap-2 sm:gap-3">
             {stats.dailyRevenue.map((day, index) => {
+              const isToday = index === stats.dailyRevenue.length - 1;
+
               const costHeightPercent = Math.max(
                 2,
                 (day.cost / maxDailyRevenue) * 100,
@@ -306,7 +326,9 @@ export default function DashboardOverview({
               return (
                 <div
                   key={day.date}
-                  className="flex flex-1 flex-col items-center gap-2"
+                  className={`flex flex-1 flex-col items-center gap-2 rounded-2xl pt-2 ${
+                    isToday ? "bg-orange-50" : ""
+                  }`}
                 >
                   <div className="relative flex w-full flex-1 items-end justify-center gap-1">
                     {isHoveredHere && hoveredBar ? (
@@ -375,8 +397,12 @@ export default function DashboardOverview({
                     />
                   </div>
 
-                  <span className="text-[10px] font-bold text-slate-400">
-                    {weekdayLabel(day.date, language)}
+                  <span
+                    className={`pb-2 text-[10px] font-bold ${
+                      isToday ? "text-orange-600" : "text-slate-400"
+                    }`}
+                  >
+                    {isToday ? t.today : weekdayLabel(day.date, language)}
                   </span>
                 </div>
               );
