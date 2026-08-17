@@ -49,6 +49,7 @@ const permissionNames = [
   "createBarCashIncome",
   "createBarCashExpense",
   "deleteBarCashMovement",
+  "viewCashReport",
 ] as const;
 
 type PermissionName = (typeof permissionNames)[number];

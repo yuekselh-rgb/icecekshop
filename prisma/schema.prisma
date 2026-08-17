@@ -729,6 +729,7 @@ model AdminPermission {
   createBarCashIncome   Boolean @default(false)
   createBarCashExpense  Boolean @default(false)
   deleteBarCashMovement Boolean @default(false)
+  viewCashReport        Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

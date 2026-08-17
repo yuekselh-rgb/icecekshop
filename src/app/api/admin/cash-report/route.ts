@@ -38,7 +38,7 @@ export const GET = withTenant(async (request: NextRequest) => {
 
   const admin = await getAdminWithPermissions();
 
-  if (!admin || (!admin.isSuperAdmin && !admin.permissions.viewBarCash)) {
+  if (!admin || (!admin.isSuperAdmin && !admin.permissions.viewCashReport)) {
     return NextResponse.json(
       {
         error:

@@ -57,7 +57,8 @@ type PermissionKey =
   | "viewBarCash"
   | "createBarCashIncome"
   | "createBarCashExpense"
-  | "deleteBarCashMovement";
+  | "deleteBarCashMovement"
+  | "viewCashReport";
 
 type Permissions = Record<PermissionKey, boolean>;
 
@@ -115,6 +116,7 @@ const defaultPermissions: Permissions = {
   createBarCashIncome: false,
   createBarCashExpense: false,
   deleteBarCashMovement: false,
+  viewCashReport: false,
 };
 
 function getPermissionGroups(language: Language) {
@@ -198,6 +200,7 @@ function getPermissionGroups(language: Language) {
             ["createBarCashIncome", "Manuelle Einzahlung in die Kasse vornehmen"],
             ["createBarCashExpense", "Auszahlung aus der Kasse vornehmen"],
             ["deleteBarCashMovement", "Kassenbewegung löschen"],
+            ["viewCashReport", "Kassenbericht anzeigen"],
           ] satisfies [PermissionKey, string][],
         },
         {
@@ -307,6 +310,7 @@ function getPermissionGroups(language: Language) {
             ["createBarCashIncome", "Kasaya manuel para girişi yapma"],
             ["createBarCashExpense", "Kasadan para çıkışı yapma"],
             ["deleteBarCashMovement", "Kasa hareketini silme"],
+            ["viewCashReport", "Kasa raporunu görüntüleme"],
           ] satisfies [PermissionKey, string][],
         },
         {
