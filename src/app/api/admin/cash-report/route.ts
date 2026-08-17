@@ -262,6 +262,14 @@ export const GET = withTenant(async (request: NextRequest) => {
       return {
         ...serialized,
         openPaymentAmount: historicalOpenAmount,
+
+        /*
+         * War am Ende des Berichtszeitraums offen, ist aber inzwischen
+         * (nach dem Zeitraum) tatsächlich bezahlt worden — im Frontend
+         * auffällig markiert, damit niemand versucht, das Geld noch
+         * einzutreiben.
+         */
+        settledAfterPeriod: order.paymentStatus === "PAID",
       };
     });
 
@@ -304,6 +312,7 @@ export const GET = withTenant(async (request: NextRequest) => {
               .join(" ") ||
             order.user.email,
           openPaymentAmount: order.openPaymentAmount,
+          settledAfterPeriod: order.settledAfterPeriod,
         })),
       },
 

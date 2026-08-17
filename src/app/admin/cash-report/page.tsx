@@ -35,6 +35,7 @@ type OpenOrderRow = {
   createdAt: string;
   customerName: string;
   openPaymentAmount: number;
+  settledAfterPeriod: boolean;
 };
 
 type ReportData = {
@@ -103,6 +104,7 @@ export default function CashReportPage() {
           noExpense: "Keine Ausgaben in diesem Zeitraum.",
           openAccountOrders: "Offene Bestellungen",
           noOpenAccountOrders: "Keine offenen Bestellungen in diesem Zeitraum.",
+          settledAfterPeriod: "Inzwischen bezahlt",
           orderNumber: "Bestellnr.",
           customer: "Kunde",
           amount: "Betrag",
@@ -158,6 +160,7 @@ export default function CashReportPage() {
           noExpense: "Bu dönemde gider bulunmuyor.",
           openAccountOrders: "Açık Hesap Siparişleri",
           noOpenAccountOrders: "Bu dönemde açık hesap siparişi bulunmuyor.",
+          settledAfterPeriod: "Daha sonra ödendi",
           orderNumber: "Sipariş No",
           customer: "Müşteri",
           amount: "Tutar",
@@ -514,9 +517,22 @@ export default function CashReportPage() {
                     </thead>
                     <tbody>
                       {report.openAccount.orders.map((order) => (
-                        <tr key={order.id} className="border-b border-slate-100 last:border-b-0">
+                        <tr
+                          key={order.id}
+                          className={`border-b border-slate-100 last:border-b-0 ${
+                            order.settledAfterPeriod ? "bg-green-50/60" : ""
+                          }`}
+                        >
                           <td className="py-2 pr-4 font-bold text-slate-900">
-                            {order.orderNumber}
+                            <div className="flex flex-wrap items-center gap-2">
+                              {order.orderNumber}
+
+                              {order.settledAfterPeriod ? (
+                                <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-black uppercase text-green-700">
+                                  {t.settledAfterPeriod}
+                                </span>
+                              ) : null}
+                            </div>
                           </td>
                           <td className="py-2 pr-4 text-slate-600">
                             {new Date(order.createdAt).toLocaleString("de-DE")}
@@ -524,7 +540,13 @@ export default function CashReportPage() {
                           <td className="py-2 pr-4 text-slate-600">
                             {order.customerName}
                           </td>
-                          <td className="py-2 text-right font-black text-slate-950">
+                          <td
+                            className={`py-2 text-right font-black ${
+                              order.settledAfterPeriod
+                                ? "text-green-700"
+                                : "text-slate-950"
+                            }`}
+                          >
                             {formatEuro(order.openPaymentAmount)}
                           </td>
                         </tr>
