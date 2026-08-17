@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { getAdminSession } from "@/lib/admin-auth";
+import { logAuditEvent } from "@/lib/audit-log";
 import { getRequestLanguage } from "@/lib/request-language";
 import { withTenant } from "@/lib/tenant";
 import { NextRequest, NextResponse } from "next/server";
@@ -7,6 +8,7 @@ import { NextRequest, NextResponse } from "next/server";
 export const DELETE = withTenant(async (
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
+  tenant,
 ) => {
   const language = await getRequestLanguage();
 
@@ -26,11 +28,27 @@ export const DELETE = withTenant(async (
 
   const { id } = await params;
 
+  const customerForLog = await prisma.user.findUnique({
+    where: { id },
+    select: { email: true },
+  });
+
   try {
     await prisma.user.delete({
       where: {
         id,
       },
+    });
+
+    await logAuditEvent({
+      tenantId: tenant.id,
+      actorUserId: session.userId,
+      actorEmail: session.email,
+      actorRole: session.role,
+      action: "customer.deleted",
+      summary: `Kunde ${customerForLog?.email || id} gelöscht.`,
+      entityType: "User",
+      entityId: id,
     });
 
     return NextResponse.json({

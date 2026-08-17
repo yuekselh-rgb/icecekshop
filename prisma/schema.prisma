@@ -136,6 +136,8 @@ model Tenant {
 
   domains TenantDomain[]
   impersonationTickets ImpersonationTicket[]
+  auditLogs   AuditLog[]
+  loginEvents LoginEvent[]
 
   users                   User[]
   addresses               Address[]
@@ -194,6 +196,50 @@ model ImpersonationTicket {
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
+}
+
+/*
+ * Änderungsprotokoll für sicherheitsrelevante Admin-Aktionen (Preise,
+ * Einstellungen, Löschungen, Berechtigungen). Bewusst NICHT in
+ * TENANT_SCOPED_MODELS (src/lib/prisma.ts), damit die
+ * Platform-Owner-Ansicht ohne withTenant tenantübergreifend lesen
+ * kann — genau wie bei Tenant/TenantDomain.
+ */
+model AuditLog {
+  id          String   @id @default(cuid())
+  tenantId    String
+  actorUserId String
+  actorEmail  String
+  actorRole   String
+  action      String
+  summary     String
+  entityType  String?
+  entityId    String?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([createdAt])
+}
+
+/*
+ * Protokoll erfolgreicher Logins (alle Rollen inkl. Platform Owner,
+ * dort tenantId null). Ebenfalls absichtlich nicht tenant-scoped.
+ */
+model LoginEvent {
+  id        String   @id @default(cuid())
+  tenantId  String?
+  userId    String
+  email     String
+  role      String
+  createdAt DateTime @default(now())
+
+  tenant Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([createdAt])
 }
 
 model User {

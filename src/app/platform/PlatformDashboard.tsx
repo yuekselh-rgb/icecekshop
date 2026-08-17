@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Activity,
   Building2,
   Globe,
   LogIn,
@@ -8,6 +9,7 @@ import {
   Plus,
   Power,
 } from "lucide-react";
+import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import LogoutButton from "@/components/LogoutButton";
 
@@ -159,11 +161,21 @@ export default function PlatformDashboard() {
               <Building2 size={28} />
             </div>
 
-            <LogoutButton
-              label="Abmelden"
-              variant="dark"
-              redirectTo="/platform/login"
-            />
+            <div className="flex items-center gap-3">
+              <Link
+                href="/platform/activity"
+                className="flex items-center gap-2 rounded-xl border border-white/20 px-4 py-2.5 text-sm font-bold text-white transition hover:border-orange-400 hover:text-orange-400"
+              >
+                <Activity size={16} />
+                Aktivitäten ansehen
+              </Link>
+
+              <LogoutButton
+                label="Abmelden"
+                variant="dark"
+                redirectTo="/platform/login"
+              />
+            </div>
           </div>
 
           <h1 className="mt-5 text-4xl font-black">Platform-Verwaltung</h1>

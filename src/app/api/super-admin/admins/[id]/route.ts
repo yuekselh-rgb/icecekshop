@@ -1,4 +1,5 @@
 import { verifySessionToken } from "@/lib/auth";
+import { logAuditEvent } from "@/lib/audit-log";
 import { prisma } from "@/lib/prisma";
 import { getRequestLanguage } from "@/lib/request-language";
 import { withTenant } from "@/lib/tenant";
@@ -185,7 +186,7 @@ export const PATCH = withTenant(async (request: NextRequest, context: RouteConte
   }
 });
 
-export const DELETE = withTenant(async (_request: NextRequest, context: RouteContext) => {
+export const DELETE = withTenant(async (_request: NextRequest, context: RouteContext, tenant) => {
   const language = await getRequestLanguage();
 
   const session = await getSuperAdminSession();
@@ -211,6 +212,7 @@ export const DELETE = withTenant(async (_request: NextRequest, context: RouteCon
       },
       select: {
         id: true,
+        email: true,
       },
     });
 
@@ -232,6 +234,17 @@ export const DELETE = withTenant(async (_request: NextRequest, context: RouteCon
       where: {
         id,
       },
+    });
+
+    await logAuditEvent({
+      tenantId: tenant.id,
+      actorUserId: session.userId,
+      actorEmail: session.email,
+      actorRole: session.role,
+      action: "admin.deleted",
+      summary: `Admin ${existingAdmin.email} gelöscht.`,
+      entityType: "User",
+      entityId: id,
     });
 
     return NextResponse.json({

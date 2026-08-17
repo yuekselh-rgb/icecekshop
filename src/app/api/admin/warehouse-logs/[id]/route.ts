@@ -1,4 +1,5 @@
 import { getAdminWithPermissions } from "@/lib/admin-auth";
+import { logAuditEvent } from "@/lib/audit-log";
 import { prisma } from "@/lib/prisma";
 import { getRequestLanguage } from "@/lib/request-language";
 import { withTenant } from "@/lib/tenant";
@@ -11,6 +12,7 @@ export const DELETE = withTenant(async (
       id: string;
     }>;
   },
+  tenant,
 ) => {
   const language = await getRequestLanguage();
 
@@ -43,6 +45,8 @@ export const DELETE = withTenant(async (
       },
       select: {
         id: true,
+        type: true,
+        companyName: true,
       },
     });
 
@@ -64,6 +68,17 @@ export const DELETE = withTenant(async (
       where: {
         id,
       },
+    });
+
+    await logAuditEvent({
+      tenantId: tenant.id,
+      actorUserId: admin.session.userId,
+      actorEmail: admin.session.email,
+      actorRole: admin.session.role,
+      action: "warehouse_log.deleted",
+      summary: `Lagerbuchung (${existing.type}${existing.companyName ? `, ${existing.companyName}` : ""}) gelöscht.`,
+      entityType: "WarehouseLog",
+      entityId: id,
     });
 
     return NextResponse.json({

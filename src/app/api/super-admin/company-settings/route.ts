@@ -1,4 +1,5 @@
 import { getAdminWithPermissions } from "@/lib/admin-auth";
+import { logAuditEvent } from "@/lib/audit-log";
 import { normalizeBusinessHours } from "@/lib/business-hours";
 import { prisma } from "@/lib/prisma";
 import { getRequestLanguage } from "@/lib/request-language";
@@ -341,6 +342,16 @@ export const PATCH = withTenant(async (request: Request, _context, tenant) => {
         businessHoursEnabled,
         businessHours,
       },
+    });
+
+    await logAuditEvent({
+      tenantId: tenant.id,
+      actorUserId: admin.session.userId,
+      actorEmail: admin.session.email,
+      actorRole: admin.session.role,
+      action: "company_settings.updated",
+      summary: "Firmeneinstellungen geändert.",
+      entityType: "CompanySetting",
     });
 
     return NextResponse.json({

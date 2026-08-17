@@ -1,4 +1,5 @@
 import { createSessionToken } from "@/lib/auth";
+import { logLoginEvent } from "@/lib/audit-log";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
@@ -39,6 +40,13 @@ export async function POST(request: Request) {
       email: user.email,
       role: user.role,
       tenantId: null,
+    });
+
+    await logLoginEvent({
+      tenantId: null,
+      userId: user.id,
+      email: user.email,
+      role: user.role,
     });
 
     const response = NextResponse.json({ message: "Angemeldet." });

@@ -1,4 +1,5 @@
 import { createSessionToken } from "@/lib/auth";
+import { logLoginEvent } from "@/lib/audit-log";
 import { prisma } from "@/lib/prisma";
 import { withTenant } from "@/lib/tenant";
 import bcrypt from "bcryptjs";
@@ -211,6 +212,20 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
       email: user.email,
       role: user.role,
       tenantId: tenant.id,
+    });
+
+    /*
+     * Vercel-Funktionen können nach dem Senden der Antwort beendet
+     * werden — deshalb hier awaiten statt fire-and-forget, damit der
+     * Log-Eintrag zuverlässig geschrieben wird (der Helper selbst
+     * kann trotzdem nie einen echten Login blockieren, siehe
+     * try/catch in logLoginEvent).
+     */
+    await logLoginEvent({
+      tenantId: tenant.id,
+      userId: user.id,
+      email: user.email,
+      role: user.role,
     });
 
     /*

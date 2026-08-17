@@ -1,4 +1,5 @@
 import { verifySessionToken } from "@/lib/auth";
+import { logAuditEvent } from "@/lib/audit-log";
 import { prisma } from "@/lib/prisma";
 import { getRequestLanguage } from "@/lib/request-language";
 import { withTenant } from "@/lib/tenant";
@@ -113,6 +114,7 @@ export const PATCH = withTenant(async (
   context: {
     params: Promise<{ id: string }>;
   },
+  tenant,
 ) => {
   const language = await getRequestLanguage();
 
@@ -135,6 +137,7 @@ export const PATCH = withTenant(async (
     },
     select: {
       id: true,
+      email: true,
     },
   });
 
@@ -264,6 +267,18 @@ export const PATCH = withTenant(async (
       userId: id,
       ...data,
     },
+  });
+
+  await logAuditEvent({
+    tenantId: tenant.id,
+    actorUserId: session.userId,
+    actorEmail: session.email,
+    actorRole: session.role,
+    action: "admin.permissions_updated",
+    summary: `Berechtigungen von ${admin.email} geändert.`,
+    entityType: "User",
+    entityId: id,
+    metadata: data,
   });
 
   return NextResponse.json({

@@ -1,4 +1,5 @@
 import { requireAdminPermission } from "@/lib/admin-auth";
+import { logAuditEvent } from "@/lib/audit-log";
 import { prisma } from "@/lib/prisma";
 import { withTenant } from "@/lib/tenant";
 import { getRequestLanguage } from "@/lib/request-language";
@@ -12,6 +13,7 @@ export const PATCH = withTenant(async (
       id: string;
     }>;
   },
+  tenant,
 ) => {
   const { id } = await context.params;
 
@@ -557,6 +559,23 @@ export const PATCH = withTenant(async (
       },
     });
 
+    if (priceChanged) {
+      await logAuditEvent({
+        tenantId: tenant.id,
+        actorUserId: baseline.session.userId,
+        actorEmail: baseline.session.email,
+        actorRole: baseline.session.role,
+        action: "product.price_changed",
+        summary: `Preis von "${existing.nameDe || existing.name}" von ${Number(existing.price).toFixed(2)} € auf ${requestedPrice.toFixed(2)} € geändert.`,
+        entityType: "Product",
+        entityId: id,
+        metadata: {
+          oldPrice: Number(existing.price),
+          newPrice: requestedPrice,
+        },
+      });
+    }
+
     return NextResponse.json({
       message:
         language === "de" ? "Produkt aktualisiert." : "Ürün güncellendi.",
@@ -586,6 +605,7 @@ export const DELETE = withTenant(async (
       id: string;
     }>;
   },
+  tenant,
 ) => {
   const admin = await requireAdminPermission("deleteProduct");
 
@@ -607,11 +627,27 @@ export const DELETE = withTenant(async (
 
   const { id } = await context.params;
 
+  const productForLog = await prisma.product.findUnique({
+    where: { id },
+    select: { name: true, nameDe: true },
+  });
+
   try {
     await prisma.product.delete({
       where: {
         id,
       },
+    });
+
+    await logAuditEvent({
+      tenantId: tenant.id,
+      actorUserId: admin.session.userId,
+      actorEmail: admin.session.email,
+      actorRole: admin.session.role,
+      action: "product.deleted",
+      summary: `Produkt "${productForLog?.nameDe || productForLog?.name || id}" gelöscht.`,
+      entityType: "Product",
+      entityId: id,
     });
 
     return NextResponse.json({
@@ -635,6 +671,17 @@ export const DELETE = withTenant(async (
           data: {
             active: false,
           },
+        });
+
+        await logAuditEvent({
+          tenantId: tenant.id,
+          actorUserId: admin.session.userId,
+          actorEmail: admin.session.email,
+          actorRole: admin.session.role,
+          action: "product.deactivated",
+          summary: `Produkt "${productForLog?.nameDe || productForLog?.name || id}" konnte nicht gelöscht werden (Historie vorhanden) und wurde stattdessen deaktiviert.`,
+          entityType: "Product",
+          entityId: id,
         });
 
         return NextResponse.json({

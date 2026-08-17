@@ -1,4 +1,5 @@
 import { verifySessionToken } from "@/lib/auth";
+import { logAuditEvent } from "@/lib/audit-log";
 import { prisma } from "@/lib/prisma";
 import { getRequestLanguage } from "@/lib/request-language";
 import { withTenant } from "@/lib/tenant";
@@ -190,6 +191,17 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
         isActive: true,
         createdAt: true,
       },
+    });
+
+    await logAuditEvent({
+      tenantId: tenant.id,
+      actorUserId: session.userId,
+      actorEmail: session.email,
+      actorRole: session.role,
+      action: "admin.created",
+      summary: `Admin ${admin.email} angelegt.`,
+      entityType: "User",
+      entityId: admin.id,
     });
 
     return NextResponse.json(

@@ -1,4 +1,5 @@
 import { getAdminWithPermissions } from "@/lib/admin-auth";
+import { logAuditEvent } from "@/lib/audit-log";
 import { prisma } from "@/lib/prisma";
 import { getRequestLanguage } from "@/lib/request-language";
 import { withTenant } from "@/lib/tenant";
@@ -8,7 +9,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 const CONFIRM_TEXT = "NEHIR CAN";
 
-export const DELETE = withTenant(async (request: NextRequest) => {
+export const DELETE = withTenant(async (request: NextRequest, _context, tenant) => {
   const language = await getRequestLanguage();
 
   const admin = await getAdminWithPermissions();
@@ -200,6 +201,16 @@ export const DELETE = withTenant(async (request: NextRequest) => {
       superAdminEmail: admin.user.email,
       executedAt: new Date().toISOString(),
       result,
+    });
+
+    await logAuditEvent({
+      tenantId: tenant.id,
+      actorUserId: admin.session.userId,
+      actorEmail: admin.session.email,
+      actorRole: admin.session.role,
+      action: "sales.reset",
+      summary: `Periodenrücksetzung durchgeführt: ${result.deletedOrders} Bestellungen und alle Kassen-/Pfand-/Fahrerbestandsdaten endgültig gelöscht.`,
+      metadata: result,
     });
 
     return NextResponse.json({

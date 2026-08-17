@@ -1,6 +1,7 @@
 import {
   verifySessionToken,
 } from "@/lib/auth";
+import { logAuditEvent } from "@/lib/audit-log";
 import { prisma } from "@/lib/prisma";
 import { getRequestLanguage } from "@/lib/request-language";
 import { withTenant } from "@/lib/tenant";
@@ -46,7 +47,8 @@ export const DELETE = withTenant(async (
     params: Promise<{
       id: string;
     }>;
-  }
+  },
+  tenant,
 ) => {
   const language = await getRequestLanguage();
 
@@ -99,6 +101,17 @@ export const DELETE = withTenant(async (
         deletedAt:
           new Date(),
       },
+    });
+
+    await logAuditEvent({
+      tenantId: tenant.id,
+      actorUserId: session.userId,
+      actorEmail: session.email,
+      actorRole: session.role,
+      action: "order.deleted",
+      summary: `Bestellung ${order.orderNumber} in den Papierkorb verschoben.`,
+      entityType: "Order",
+      entityId: id,
     });
 
     return NextResponse.json({
