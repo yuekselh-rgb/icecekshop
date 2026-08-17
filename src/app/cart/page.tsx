@@ -6,7 +6,7 @@ import { useCart } from "@/context/CartContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { Minus, Plus, RotateCcw, ShoppingBag, Trash2, X } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function CartPage() {
   const {
@@ -90,6 +90,23 @@ export default function CartPage() {
         ? "Pfand pro Stück"
         : "adet başına Pfand",
   };
+
+  const [deliveryFeeEnabled, setDeliveryFeeEnabled] = useState(true);
+
+  useEffect(() => {
+    async function loadCompanySettings() {
+      try {
+        const response = await fetch("/api/company-settings");
+        const data = await response.json();
+
+        setDeliveryFeeEnabled(data.settings?.deliveryFeeEnabled !== false);
+      } catch {
+        // Lieferkosten-Status ist optional; bei Fehler Standardverhalten beibehalten.
+      }
+    }
+
+    loadCompanySettings();
+  }, []);
 
   const [quantityInputs, setQuantityInputs] = useState<Record<string, string>>(
     {},
@@ -561,7 +578,7 @@ export default function CartPage() {
                     <span className="text-slate-500">{t.delivery}</span>
 
                     <span className="font-bold text-green-600">
-                      {t.calculatedLater}
+                      {deliveryFeeEnabled ? t.calculatedLater : t.free}
                     </span>
                   </div>
 
