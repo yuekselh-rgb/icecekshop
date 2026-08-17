@@ -221,6 +221,21 @@ export default function Header() {
       ? roleLabels[currentUser.role]?.[language]
       : undefined) ?? roleLabels.CUSTOMER[language];
 
+  /*
+   * "Mein Konto" führt je nach Rolle zum passenden Bereich, nicht
+   * immer zu den Kundenbestellungen — sonst landen Admin/Fahrer dort,
+   * wo sie nichts zu suchen haben.
+   */
+  const accountHref = !currentUser
+    ? "/login"
+    : currentUser.role === "SUPER_ADMIN"
+      ? "/super-admin"
+      : currentUser.role === "ADMIN"
+        ? "/admin"
+        : currentUser.role === "DRIVER"
+          ? "/driver"
+          : "/orders";
+
   const shopOpenStatus = getShopOpenStatus(
     businessHoursSettings.enabled,
     businessHoursSettings.hours,
@@ -438,7 +453,7 @@ export default function Header() {
       <span>{t.pfand}</span>
     </Link>
 
-    <Link href={currentUser ? "/orders" : "/login"} className="flex items-center gap-3 rounded-none px-4 py-3 font-semibold transition hover:bg-[#E8ECEF] hover:text-[#1B4965]">
+    <Link href={accountHref} className="flex items-center gap-3 rounded-none px-4 py-3 font-semibold transition hover:bg-[#E8ECEF] hover:text-[#1B4965]">
       <UserRound size={20}/>
       <span>{t.account}</span>
     </Link>
@@ -553,7 +568,7 @@ export default function Header() {
             </button>
 
             <Link
-              href={currentUser ? "/orders" : "/login"}
+              href={accountHref}
               aria-label={t.account}
               className="rounded-full border border-[#05090a26] p-2.5 transition hover:border-[#1B4965] hover:text-[#1B4965]"
             >
