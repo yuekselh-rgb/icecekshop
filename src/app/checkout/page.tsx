@@ -5,6 +5,13 @@ import Header from "@/components/layout/Header";
 import { useCart } from "@/context/CartContext";
 import { useLanguage } from "@/context/LanguageContext";
 import {
+  formatNextOpening,
+  getDefaultBusinessHours,
+  getShopOpenStatus,
+  normalizeBusinessHours,
+  type BusinessHoursDay,
+} from "@/lib/business-hours";
+import {
   AlertTriangle,
   CheckCircle2,
   Loader2,
@@ -181,6 +188,7 @@ export default function CheckoutPage() {
     orderNumber: string;
     totalAmount: number;
     requiresConfirmation: boolean;
+    isPreOrder: boolean;
   } | null>(null);
 
   /*
@@ -196,6 +204,14 @@ export default function CheckoutPage() {
     value: 0,
   });
 
+  const [businessHoursSettings, setBusinessHoursSettings] = useState<{
+    enabled: boolean;
+    hours: BusinessHoursDay[];
+  }>({
+    enabled: false,
+    hours: getDefaultBusinessHours(),
+  });
+
   useEffect(() => {
     async function loadCompanySettings() {
       try {
@@ -206,6 +222,11 @@ export default function CheckoutPage() {
           enabled: Boolean(data.settings?.minOrderValueEnabled),
           value: Number(data.settings?.minOrderValue) || 0,
         });
+
+        setBusinessHoursSettings({
+          enabled: Boolean(data.settings?.businessHoursEnabled),
+          hours: normalizeBusinessHours(data.settings?.businessHours),
+        });
       } catch {
         // Mindestbestellwert ist optional; bei Fehler einfach nicht durchsetzen.
       }
@@ -213,6 +234,14 @@ export default function CheckoutPage() {
 
     loadCompanySettings();
   }, []);
+
+  const shopOpenStatus = getShopOpenStatus(
+    businessHoursSettings.enabled,
+    businessHoursSettings.hours,
+  );
+
+  const isPreOrder =
+    !isDealer && businessHoursSettings.enabled && !shopOpenStatus.isOpen;
 
   const belowMinOrderValue =
     !isDealer &&
@@ -357,6 +386,7 @@ export default function CheckoutPage() {
         orderNumber: data.order.orderNumber,
         totalAmount: data.order.totalAmount,
         requiresConfirmation: Boolean(data.requiresConfirmation),
+        isPreOrder,
       });
 
       clearCart();
@@ -412,6 +442,14 @@ export default function CheckoutPage() {
                 {language === "de"
                   ? "Bitte bestätigen Sie Ihre Bestellung über den Link, den wir Ihnen per E-Mail geschickt haben."
                   : "Lütfen siparişinizi, e-posta ile gönderdiğimiz bağlantı üzerinden onaylayın."}
+              </p>
+            ) : null}
+
+            {completedOrder.isPreOrder ? (
+              <p className="mx-auto mt-6 max-w-md rounded-2xl bg-amber-50 p-4 text-sm font-bold text-amber-800">
+                {language === "de"
+                  ? `Wir sind aktuell außerhalb der Öffnungszeiten. Ihre Bestellung wurde als Vorbestellung angenommen und wird ab ${formatNextOpening(shopOpenStatus, language)} bearbeitet.`
+                  : `Şu anda çalışma saatleri dışındayız. Siparişiniz ön sipariş olarak alındı ve ${formatNextOpening(shopOpenStatus, language)} itibarıyla işleme alınacak.`}
               </p>
             ) : null}
 
@@ -779,6 +817,21 @@ export default function CheckoutPage() {
                   {language === "de"
                     ? `Der Mindestbestellwert beträgt ${minOrderSettings.value.toFixed(2)} €. Bitte fügen Sie noch ${(minOrderSettings.value - productSubtotal).toFixed(2)} € hinzu.`
                     : `Minimum sipariş tutarı ${minOrderSettings.value.toFixed(2)} €. Lütfen ${(minOrderSettings.value - productSubtotal).toFixed(2)} € daha ekleyin.`}
+                </p>
+              </div>
+            ) : null}
+
+            {isPreOrder ? (
+              <div className="mt-6 flex items-start gap-3 rounded-2xl bg-amber-50 p-4">
+                <AlertTriangle
+                  size={20}
+                  className="mt-0.5 shrink-0 text-amber-600"
+                />
+
+                <p className="text-sm font-bold text-amber-800">
+                  {language === "de"
+                    ? `Aktuell außerhalb der Öffnungszeiten — Ihre Bestellung wird als Vorbestellung angenommen und ab ${formatNextOpening(shopOpenStatus, language)} bearbeitet.`
+                    : `Şu anda çalışma saatleri dışındayız — siparişiniz ön sipariş olarak alınır ve ${formatNextOpening(shopOpenStatus, language)} itibarıyla işleme alınır.`}
                 </p>
               </div>
             ) : null}

@@ -1,4 +1,5 @@
 import { getAdminWithPermissions } from "@/lib/admin-auth";
+import { normalizeBusinessHours } from "@/lib/business-hours";
 import { prisma } from "@/lib/prisma";
 import { getRequestLanguage } from "@/lib/request-language";
 import { withTenant } from "@/lib/tenant";
@@ -117,6 +118,29 @@ export const PATCH = withTenant(async (request: Request, _context, tenant) => {
 
     const autoPrintOrders =
       typeof body.autoPrintOrders === "boolean" ? body.autoPrintOrders : false;
+
+    const businessHoursEnabled =
+      typeof body.businessHoursEnabled === "boolean"
+        ? body.businessHoursEnabled
+        : false;
+
+    const businessHours = normalizeBusinessHours(body.businessHours);
+
+    for (const entry of businessHours) {
+      if (!entry.closed && entry.open >= entry.close) {
+        return NextResponse.json(
+          {
+            error:
+              language === "de"
+                ? "Die Öffnungszeit muss vor der Schließzeit liegen."
+                : "Açılış saati kapanış saatinden önce olmalıdır.",
+          },
+          {
+            status: 400,
+          },
+        );
+      }
+    }
 
     if (minOrderValueEnabled && minOrderValue === null) {
       return NextResponse.json(
@@ -266,6 +290,8 @@ export const PATCH = withTenant(async (request: Request, _context, tenant) => {
         minOrderValueEnabled,
         minOrderValue,
         autoPrintOrders,
+        businessHoursEnabled,
+        businessHours,
       },
       update: {
         companyName,
@@ -312,6 +338,8 @@ export const PATCH = withTenant(async (request: Request, _context, tenant) => {
         minOrderValueEnabled,
         minOrderValue,
         autoPrintOrders,
+        businessHoursEnabled,
+        businessHours,
       },
     });
 

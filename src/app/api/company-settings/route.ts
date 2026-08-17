@@ -52,6 +52,9 @@ const fallbackSettings = {
   minOrderValue: null,
 
   autoPrintOrders: false,
+
+  businessHoursEnabled: false,
+  businessHours: null,
 };
 
 export const GET = withTenant(async (_request, _context, tenant) => {

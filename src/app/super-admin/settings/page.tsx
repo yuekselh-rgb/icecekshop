@@ -10,6 +10,12 @@ import {
 } from "lucide-react";
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { useLanguage } from "@/context/LanguageContext";
+import {
+  getDefaultBusinessHours,
+  normalizeBusinessHours,
+  weekdayLabels,
+  type BusinessHoursDay,
+} from "@/lib/business-hours";
 
 type Settings = {
   companyName: string;
@@ -61,6 +67,9 @@ type Settings = {
   minOrderValue: string;
 
   autoPrintOrders: boolean;
+
+  businessHoursEnabled: boolean;
+  businessHours: BusinessHoursDay[];
 };
 
 const emptySettings: Settings = {
@@ -113,6 +122,9 @@ const emptySettings: Settings = {
   minOrderValue: "",
 
   autoPrintOrders: false,
+
+  businessHoursEnabled: false,
+  businessHours: getDefaultBusinessHours(),
 };
 
 export default function CompanySettingsPage() {
@@ -205,6 +217,9 @@ export default function CompanySettingsPage() {
               : "",
 
           autoPrintOrders: Boolean(data.settings.autoPrintOrders),
+
+          businessHoursEnabled: Boolean(data.settings.businessHoursEnabled),
+          businessHours: normalizeBusinessHours(data.settings.businessHours),
         });
       } catch {
         setError(
@@ -380,6 +395,9 @@ export default function CompanySettingsPage() {
             : "",
 
         autoPrintOrders: Boolean(data.settings.autoPrintOrders),
+
+        businessHoursEnabled: Boolean(data.settings.businessHoursEnabled),
+        businessHours: normalizeBusinessHours(data.settings.businessHours),
       });
 
       setSuccess(
@@ -482,6 +500,9 @@ export default function CompanySettingsPage() {
             : "",
 
         autoPrintOrders: Boolean(data.settings.autoPrintOrders),
+
+        businessHoursEnabled: Boolean(data.settings.businessHoursEnabled),
+        businessHours: normalizeBusinessHours(data.settings.businessHours),
       });
 
       setSuccess(
@@ -1348,6 +1369,148 @@ export default function CompanySettingsPage() {
                 : language === "de"
                   ? "Automatischer Druck ist deaktiviert."
                   : "Otomatik yazdırma devre dışı."}
+            </p>
+          </section>
+
+          <section className="rounded-3xl border border-slate-200 p-5">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-xl font-black text-slate-950">
+                  {language === "de" ? "Öffnungszeiten" : "Çalışma Saatleri"}
+                </h2>
+
+                <p className="mt-1 text-sm text-slate-500">
+                  {language === "de"
+                    ? "Legen Sie fest, wann Bestellungen sofort bearbeitet werden. Außerhalb dieser Zeiten wird die Bestellung als Vorbestellung angenommen und ab der nächsten Öffnung bearbeitet."
+                    : "Siparişlerin hemen işleneceği saatleri belirleyin. Bu saatler dışında sipariş ön sipariş olarak kabul edilir ve bir sonraki açılışta işlenir."}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setSettings((current) => ({
+                    ...current,
+                    businessHoursEnabled: !current.businessHoursEnabled,
+                  }))
+                }
+                className={`relative h-8 w-14 shrink-0 rounded-full transition ${
+                  settings.businessHoursEnabled
+                    ? "bg-green-500"
+                    : "bg-slate-300"
+                }`}
+              >
+                <span
+                  className={`absolute top-1 h-6 w-6 rounded-full bg-white shadow transition ${
+                    settings.businessHoursEnabled ? "left-7" : "left-1"
+                  }`}
+                />
+              </button>
+            </div>
+
+            {settings.businessHoursEnabled ? (
+              <div className="mt-4 space-y-2">
+                {[1, 2, 3, 4, 5, 6, 0].map((day) => {
+                  const entry =
+                    settings.businessHours.find((item) => item.day === day) ||
+                    getDefaultBusinessHours()[day];
+
+                  return (
+                    <div
+                      key={day}
+                      className="flex flex-col gap-3 rounded-xl border border-slate-200 p-3 sm:flex-row sm:items-center sm:gap-4"
+                    >
+                      <span className="w-28 shrink-0 text-sm font-bold text-slate-700">
+                        {weekdayLabels[day][language]}
+                      </span>
+
+                      <label className="flex items-center gap-2 text-sm font-bold text-slate-600">
+                        <input
+                          type="checkbox"
+                          checked={entry.closed}
+                          onChange={(event) =>
+                            setSettings((current) => ({
+                              ...current,
+                              businessHours: current.businessHours.map((item) =>
+                                item.day === day
+                                  ? { ...item, closed: event.target.checked }
+                                  : item,
+                              ),
+                            }))
+                          }
+                          className="h-4 w-4 accent-orange-500"
+                        />
+
+                        {language === "de" ? "Geschlossen" : "Kapalı"}
+                      </label>
+
+                      {!entry.closed ? (
+                        <div className="flex flex-1 items-center gap-2">
+                          <input
+                            type="time"
+                            value={entry.open}
+                            onChange={(event) =>
+                              setSettings((current) => ({
+                                ...current,
+                                businessHours: current.businessHours.map(
+                                  (item) =>
+                                    item.day === day
+                                      ? { ...item, open: event.target.value }
+                                      : item,
+                                ),
+                              }))
+                            }
+                            className="rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-orange-500"
+                          />
+
+                          <span className="text-slate-400">
+                            {language === "de" ? "bis" : "-"}
+                          </span>
+
+                          <input
+                            type="time"
+                            value={entry.close}
+                            onChange={(event) =>
+                              setSettings((current) => ({
+                                ...current,
+                                businessHours: current.businessHours.map(
+                                  (item) =>
+                                    item.day === day
+                                      ? { ...item, close: event.target.value }
+                                      : item,
+                                ),
+                              }))
+                            }
+                            className="rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-orange-500"
+                          />
+                        </div>
+                      ) : (
+                        <p className="flex-1 text-sm text-slate-400">
+                          {language === "de"
+                            ? "Ganztägig geschlossen"
+                            : "Tüm gün kapalı"}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : null}
+
+            <p
+              className={`mt-4 text-sm font-black ${
+                settings.businessHoursEnabled
+                  ? "text-green-700"
+                  : "text-red-600"
+              }`}
+            >
+              {settings.businessHoursEnabled
+                ? language === "de"
+                  ? "Aktiv — Bestellungen außerhalb der Öffnungszeiten werden als Vorbestellung markiert."
+                  : "Aktif — çalışma saatleri dışındaki siparişler ön sipariş olarak işaretlenir."
+                : language === "de"
+                  ? "Der Shop gilt als 24/7 geöffnet."
+                  : "Mağaza 7/24 açık kabul edilir."}
             </p>
           </section>
 

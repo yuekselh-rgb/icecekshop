@@ -7,6 +7,13 @@ import { usePathname, useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { useLanguage } from "@/context/LanguageContext";
 import CompanyBrand from "@/components/company/CompanyBrand";
+import {
+  formatNextOpening,
+  getDefaultBusinessHours,
+  getShopOpenStatus,
+  normalizeBusinessHours,
+  type BusinessHoursDay,
+} from "@/lib/business-hours";
 
 import {
   Crown,
@@ -128,6 +135,14 @@ export default function Header() {
     value: 0,
   });
 
+  const [businessHoursSettings, setBusinessHoursSettings] = useState<{
+    enabled: boolean;
+    hours: BusinessHoursDay[];
+  }>({
+    enabled: false,
+    hours: getDefaultBusinessHours(),
+  });
+
   useEffect(() => {
     async function loadCompanySettings() {
       try {
@@ -140,6 +155,11 @@ export default function Header() {
         setMinOrderValueSettings({
           enabled: Boolean(data.settings?.minOrderValueEnabled),
           value: Number(data.settings?.minOrderValue) || 0,
+        });
+
+        setBusinessHoursSettings({
+          enabled: Boolean(data.settings?.businessHoursEnabled),
+          hours: normalizeBusinessHours(data.settings?.businessHours),
         });
       } catch (err) {
         console.error(err);
@@ -201,8 +221,26 @@ export default function Header() {
       ? roleLabels[currentUser.role]?.[language]
       : undefined) ?? roleLabels.CUSTOMER[language];
 
+  const shopOpenStatus = getShopOpenStatus(
+    businessHoursSettings.enabled,
+    businessHoursSettings.hours,
+  );
+
+  const showClosedShopBanner =
+    businessHoursSettings.enabled &&
+    !shopOpenStatus.isOpen &&
+    currentUser?.role !== "DEALER";
+
   return (
     <>
+      {showClosedShopBanner ? (
+        <div className="bg-amber-50 px-4 py-2 text-center text-sm font-bold text-amber-800">
+          {language === "de"
+            ? `Aktuell außerhalb der Öffnungszeiten — Ihre Bestellung wird als Vorbestellung angenommen und ab ${formatNextOpening(shopOpenStatus, language)} bearbeitet.`
+            : `Şu anda çalışma saatleri dışındayız — siparişiniz ön sipariş olarak alınır ve ${formatNextOpening(shopOpenStatus, language)} itibarıyla işleme alınır.`}
+        </div>
+      ) : null}
+
       {minOrderValueSettings.enabled && minOrderValueSettings.value > 0 ? (
         <div className="bg-[#05090A] px-4 py-2 text-center text-sm text-white">
           {language === "de"

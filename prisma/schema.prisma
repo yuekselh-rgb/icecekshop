@@ -586,6 +586,9 @@ model CompanySetting {
 
   autoPrintOrders Boolean @default(false)
 
+  businessHoursEnabled Boolean @default(false)
+  businessHours        Json?
+
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
