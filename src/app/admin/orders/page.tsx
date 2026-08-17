@@ -1129,11 +1129,47 @@ export default function AdminOrdersPage() {
     );
   }, [drivers, staff, reportActivityOrders]);
 
+  /*
+   * Bir sipariş, seçilen rapor döneminin sonunda hâlâ açıksa (ya da o an
+   * açık değil ama dönem bittikten SONRA ödendiyse) o dönem için "açık"
+   * sayılır. İkinci durum olmadan, sonradan ödenen bir kayıt açık olduğu
+   * günün raporundan tamamen kaybolur (çünkü getOrderReportDate ödeme
+   * tarihini önceliklendirir).
+   */
+  function wasOrderHistoricallyOpen(order: Order) {
+    if (order.paymentStatus === "OPEN") {
+      return true;
+    }
+
+    if (order.paymentStatus !== "PAID" || !order.paidAt || reportMode === "ALL") {
+      return false;
+    }
+
+    const periodEndKey =
+      reportMode === "RANGE" ? effectiveReportEndDate : effectiveReportDate;
+
+    return getLocalDateKey(new Date(order.paidAt)) > periodEndKey;
+  }
+
   const selectedReportOrders = useMemo(
     () =>
       reportActivityOrders
         .filter((order) => {
-          const date = getOrderReportDate(order);
+          const historicallyOpen = wasOrderHistoricallyOpen(order);
+
+          const date = historicallyOpen
+            ? (() => {
+                const value =
+                  order.deliveredAt ||
+                  order.outForDeliveryAt ||
+                  order.assignedAt ||
+                  order.createdAt;
+
+                const originDate = new Date(value);
+
+                return Number.isNaN(originDate.getTime()) ? null : originDate;
+              })()
+            : getOrderReportDate(order);
 
           if (!date) {
             return false;
@@ -1189,18 +1225,24 @@ export default function AdminOrdersPage() {
 
   const paidReportOrders = useMemo(
     () =>
-      selectedReportOrders.filter((order) => order.paymentStatus === "PAID"),
-    [selectedReportOrders],
+      selectedReportOrders.filter(
+        (order) =>
+          order.paymentStatus === "PAID" && !wasOrderHistoricallyOpen(order),
+      ),
+    [selectedReportOrders, reportMode, effectiveReportDate, effectiveReportEndDate],
   );
 
   /*
    * Bu liste yalnızca seçilen rapor tarihindeki açık siparişleri içerir.
    * Günlük rapor, tarih aralığı ve personel filtrelerinde kullanılır.
+   * Dönem sonunda açık olup sonradan ödenen siparişler de burada
+   * kalır (badge ile işaretlenir), aksi halde açık olduğu günün
+   * raporundan tamamen kaybolurdu.
    */
   const selectedOpenReportOrders = useMemo(
     () =>
-      selectedReportOrders.filter((order) => order.paymentStatus === "OPEN"),
-    [selectedReportOrders],
+      selectedReportOrders.filter((order) => wasOrderHistoricallyOpen(order)),
+    [selectedReportOrders, reportMode, effectiveReportDate, effectiveReportEndDate],
   );
 
   /*
@@ -1393,14 +1435,14 @@ export default function AdminOrdersPage() {
 
       current.totalAmount += amount;
 
-      if (order.paymentStatus === "PAID") {
-        current.paidCount += 1;
-
-        current.paidAmount += amount;
-      } else {
+      if (wasOrderHistoricallyOpen(order)) {
         current.openCount += 1;
 
         current.openAmount += amount;
+      } else {
+        current.paidCount += 1;
+
+        current.paidAmount += amount;
       }
 
       grouped.set(rowKey, current);
@@ -1918,15 +1960,31 @@ export default function AdminOrdersPage() {
                     </p>
                   ) : (
                     <div className="divide-y divide-red-100">
-                      {selectedOpenReportOrders.map((order) => (
+                      {selectedOpenReportOrders.map((order) => {
+                        const isSettledAfterPeriod =
+                          order.paymentStatus === "PAID";
+
+                        return (
                         <div
                           key={order.id}
-                          className="grid gap-2 p-4 sm:grid-cols-[1fr_auto]"
+                          className={`grid gap-2 p-4 sm:grid-cols-[1fr_auto] ${
+                            isSettledAfterPeriod ? "bg-green-50/60" : ""
+                          }`}
                         >
                           <div>
-                            <p className="text-xs font-black text-orange-500">
-                              {order.orderNumber}
-                            </p>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <p className="text-xs font-black text-orange-500">
+                                {order.orderNumber}
+                              </p>
+
+                              {isSettledAfterPeriod ? (
+                                <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-black uppercase text-green-700">
+                                  {language === "de"
+                                    ? "Inzwischen bezahlt"
+                                    : "Daha sonra ödendi"}
+                                </span>
+                              ) : null}
+                            </div>
 
                             <p className="font-black text-slate-950">
                               {isBarSale(order)
@@ -1948,11 +2006,18 @@ export default function AdminOrdersPage() {
                             ) : null}
                           </div>
 
-                          <strong className="text-red-700">
+                          <strong
+                            className={
+                              isSettledAfterPeriod
+                                ? "text-green-700"
+                                : "text-red-700"
+                            }
+                          >
                             {getEffectiveOrderTotal(order).toFixed(2)} €
                           </strong>
                         </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )
                 ) : null}

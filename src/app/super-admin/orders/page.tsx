@@ -1040,12 +1040,59 @@ export default function SuperAdminOrdersPage() {
       ? effectiveReportEndDate
       : effectiveReportStartDate;
 
+  /*
+   * Bir sipariş, dönem sonunda hâlâ açıksa (ya da o anda açık değil
+   * ama dönem bittikten SONRA kapatıldıysa) bu dönem için "açık"
+   * sayılır. İkinci durum olmadan, sonradan ödenen bir kayıt açık
+   * olduğu günün raporundan tamamen kaybolur.
+   */
+  function wasOrderHistoricallyOpen(order: Order) {
+    if (order.paymentStatus === "OPEN") {
+      return true;
+    }
+
+    if (order.paymentStatus !== "PAID" || !order.paidAt) {
+      return false;
+    }
+
+    if (reportMode === "ALL") {
+      return false;
+    }
+
+    const periodEndKey =
+      reportMode === "DAY" ? effectiveReportDate : normalizedReportEndDate;
+
+    return getLocalDateKey(new Date(order.paidAt)) > periodEndKey;
+  }
+
+  /*
+   * Açık (veya sonradan kapatılmış) kayıtlar ödeme tarihine göre değil,
+   * oluşturulma/teslimat tarihine göre gruplanır — aksi halde ödeme
+   * tarihi seçili dönemin dışına düşer ve kayıt hiçbir yerde görünmez.
+   * Diğer kayıtlar için mevcut getOrderReportDate mantığı kullanılır.
+   */
+  function getReportBucketDate(order: Order) {
+    if (wasOrderHistoricallyOpen(order)) {
+      const value =
+        order.deliveredAt ||
+        order.outForDeliveryAt ||
+        order.assignedAt ||
+        order.createdAt;
+
+      const date = new Date(value);
+
+      return Number.isNaN(date.getTime()) ? null : date;
+    }
+
+    return getOrderReportDate(order);
+  }
+
   function matchesReportPeriod(order: Order) {
     if (reportMode === "ALL") {
       return true;
     }
 
-    const date = getOrderReportDate(order);
+    const date = getReportBucketDate(order);
 
     if (!date) {
       return false;
@@ -1054,11 +1101,11 @@ export default function SuperAdminOrdersPage() {
     const dateKey = getLocalDateKey(date);
 
     if (reportMode === "DAY") {
-      /*
-       * Açık alacaklar seçilen güne kadar
-       * birikimli görünür.
-       */
-      if (order.paymentStatus === "OPEN") {
+      if (wasOrderHistoricallyOpen(order)) {
+        /*
+         * Açık alacaklar seçilen güne kadar
+         * birikimli görünür.
+         */
         return dateKey <= effectiveReportDate;
       }
 
@@ -1165,14 +1212,16 @@ export default function SuperAdminOrdersPage() {
 
   const paidReportOrders = useMemo(
     () =>
-      selectedReportOrders.filter((order) => order.paymentStatus === "PAID"),
-    [selectedReportOrders],
+      selectedReportOrders.filter(
+        (order) =>
+          order.paymentStatus === "PAID" && !wasOrderHistoricallyOpen(order),
+      ),
+    [selectedReportOrders, reportMode, effectiveReportDate, normalizedReportEndDate],
   );
 
   const openReportOrders = useMemo(
-    () =>
-      selectedReportOrders.filter((order) => order.paymentStatus === "OPEN"),
-    [selectedReportOrders],
+    () => selectedReportOrders.filter((order) => wasOrderHistoricallyOpen(order)),
+    [selectedReportOrders, reportMode, effectiveReportDate, normalizedReportEndDate],
   );
 
   const reportSummary = useMemo(() => {
@@ -1207,8 +1256,50 @@ export default function SuperAdminOrdersPage() {
     };
   }, [selectedReportOrders, paidReportOrders, openReportOrders]);
 
+  /*
+   * wasOrderHistoricallyOpen/getReportBucketDate'in genelleştirilmiş
+   * hâli: burada dönem sonu, seçili rapor modundan değil, doğrudan
+   * verilen bir gün/ay anahtarından geliyor (Tageskasse ve Monatskasse
+   * kutucukları rapor modundan bağımsız hep gün/ay bazlı çalışır).
+   */
+  function wasOrderOpenAsOfKey(order: Order, periodEndKey: string) {
+    if (order.paymentStatus === "OPEN") {
+      return true;
+    }
+
+    if (order.paymentStatus !== "PAID" || !order.paidAt) {
+      return false;
+    }
+
+    return getLocalDateKey(new Date(order.paidAt)) > periodEndKey;
+  }
+
+  function getBucketDateForKey(order: Order, periodEndKey: string) {
+    if (wasOrderOpenAsOfKey(order, periodEndKey)) {
+      const value =
+        order.deliveredAt ||
+        order.outForDeliveryAt ||
+        order.assignedAt ||
+        order.createdAt;
+
+      const date = new Date(value);
+
+      return Number.isNaN(date.getTime()) ? null : date;
+    }
+
+    return getOrderReportDate(order);
+  }
+
   const superAdminCashSummary = useMemo(() => {
     const selectedMonth = effectiveReportDate.slice(0, 7);
+
+    const [selectedYear, selectedMonthNumber] = selectedMonth
+      .split("-")
+      .map(Number);
+
+    const monthEndKey = getLocalDateKey(
+      new Date(selectedYear, selectedMonthNumber, 0),
+    );
 
     let dailyPaid = 0;
     let dailyOpen = 0;
@@ -1216,37 +1307,37 @@ export default function SuperAdminOrdersPage() {
     let monthlyOpen = 0;
 
     for (const order of reportActivityOrders) {
-      const orderDate = getOrderReportDate(order);
-
-      if (!orderDate) {
-        continue;
-      }
-
       const personMatches = matchesSelectedReportPerson(order);
 
       if (!personMatches) {
         continue;
       }
 
-      const orderDateKey = getLocalDateKey(orderDate);
-
-      const orderMonthKey = orderDateKey.slice(0, 7);
-
       const amount = getEffectiveOrderTotal(order);
 
-      if (orderDateKey === effectiveReportDate) {
-        if (order.paymentStatus === "PAID") {
-          dailyPaid += amount;
-        } else {
+      const dailyBucketDate = getBucketDateForKey(order, effectiveReportDate);
+
+      if (
+        dailyBucketDate &&
+        getLocalDateKey(dailyBucketDate) === effectiveReportDate
+      ) {
+        if (wasOrderOpenAsOfKey(order, effectiveReportDate)) {
           dailyOpen += amount;
+        } else {
+          dailyPaid += amount;
         }
       }
 
-      if (orderMonthKey === selectedMonth) {
-        if (order.paymentStatus === "PAID") {
-          monthlyPaid += amount;
-        } else {
+      const monthlyBucketDate = getBucketDateForKey(order, monthEndKey);
+
+      if (
+        monthlyBucketDate &&
+        getLocalDateKey(monthlyBucketDate).slice(0, 7) === selectedMonth
+      ) {
+        if (wasOrderOpenAsOfKey(order, monthEndKey)) {
           monthlyOpen += amount;
+        } else {
+          monthlyPaid += amount;
         }
       }
     }
@@ -1290,7 +1381,7 @@ export default function SuperAdminOrdersPage() {
     const dailySourceOrders =
       reportMode === "DAY"
         ? reportActivityOrders.filter((order) => {
-            const date = getOrderReportDate(order);
+            const date = getReportBucketDate(order);
 
             if (!date) {
               return false;
@@ -1307,7 +1398,7 @@ export default function SuperAdminOrdersPage() {
     const grouped = new Map<string, DailyReportRow>();
 
     for (const order of dailySourceOrders) {
-      const date = getOrderReportDate(order);
+      const date = getReportBucketDate(order);
 
       if (!date) {
         continue;
@@ -1339,14 +1430,14 @@ export default function SuperAdminOrdersPage() {
 
       current.totalAmount += orderTotal;
 
-      if (order.paymentStatus === "PAID") {
-        current.paidCount += 1;
-
-        current.paidAmount += orderTotal;
-      } else {
+      if (wasOrderHistoricallyOpen(order)) {
         current.openCount += 1;
 
         current.openAmount += orderTotal;
+      } else {
+        current.paidCount += 1;
+
+        current.paidAmount += orderTotal;
       }
 
       grouped.set(groupKey, current);
@@ -1907,24 +1998,51 @@ export default function SuperAdminOrdersPage() {
                         `${order.user.firstName || ""} ${order.user.lastName || ""}`.trim() ||
                         order.user.email;
 
+                      const isSettledAfterPeriod =
+                        order.paymentStatus === "PAID";
+
                       return (
                         <div
                           key={order.id}
-                          className="grid gap-2 p-4 transition-colors hover:bg-red-50/50 sm:grid-cols-[1fr_auto] sm:items-center"
+                          className={`grid gap-2 p-4 transition-colors sm:grid-cols-[1fr_auto] sm:items-center ${
+                            isSettledAfterPeriod
+                              ? "bg-green-50/60"
+                              : "hover:bg-red-50/50"
+                          }`}
                         >
                           <div>
-                            <p className="text-xs font-black text-orange-500">
-                              {order.orderNumber}
-                            </p>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <p className="text-xs font-black text-orange-500">
+                                {order.orderNumber}
+                              </p>
+
+                              {isSettledAfterPeriod ? (
+                                <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-black uppercase text-green-700">
+                                  {language === "de"
+                                    ? "Inzwischen bezahlt"
+                                    : "Daha sonra ödendi"}
+                                </span>
+                              ) : null}
+                            </div>
 
                             <p className="font-black text-slate-950">
                               {customerName}
                             </p>
 
-                            <p className="mt-1 text-xs font-bold text-red-600">
-                              {language === "de"
-                                ? "Zahlung noch offen"
-                                : "Ödeme hâlâ açık"}
+                            <p
+                              className={`mt-1 text-xs font-bold ${
+                                isSettledAfterPeriod
+                                  ? "text-green-700"
+                                  : "text-red-600"
+                              }`}
+                            >
+                              {isSettledAfterPeriod
+                                ? language === "de"
+                                  ? "War an diesem Tag offen"
+                                  : "Bu gün açıktı"
+                                : language === "de"
+                                  ? "Zahlung noch offen"
+                                  : "Ödeme hâlâ açık"}
                             </p>
 
                             <p className="mt-0.5 text-xs text-slate-500">
@@ -1937,7 +2055,13 @@ export default function SuperAdminOrdersPage() {
                             </p>
                           </div>
 
-                          <span className="inline-flex items-center justify-center rounded-full bg-red-50 px-3 py-1.5 font-black text-red-700 sm:justify-self-end">
+                          <span
+                            className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 font-black sm:justify-self-end ${
+                              isSettledAfterPeriod
+                                ? "bg-green-100 text-green-700"
+                                : "bg-red-50 text-red-700"
+                            }`}
+                          >
                             {getEffectiveOrderTotal(order).toFixed(2)} €
                           </span>
                         </div>
