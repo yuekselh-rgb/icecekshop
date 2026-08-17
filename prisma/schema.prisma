@@ -135,6 +135,7 @@ model Tenant {
   updatedAt DateTime @updatedAt
 
   domains TenantDomain[]
+  impersonationTickets ImpersonationTicket[]
 
   users                   User[]
   addresses               Address[]
@@ -166,6 +167,29 @@ model TenantDomain {
   domain    String  @unique
   isPrimary Boolean @default(false)
   createdAt DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+}
+
+/*
+ * Kurzlebiges Einmal-Ticket, mit dem der Platform Owner sich von
+ * /platform direkt als Super-Admin eines Tenants einloggen kann. Wird
+ * auf der Zieldomain des Tenants eingelöst, damit das Session-Cookie
+ * für die richtige Host-Domain gesetzt werden kann (Cookies ohne
+ * Domain-Attribut sind host-gebunden).
+ */
+model ImpersonationTicket {
+  id                 String    @id @default(cuid())
+  token              String    @unique
+  tenantId           String
+  targetUserId       String
+  platformOwnerId    String
+  platformOwnerEmail String
+  expiresAt          DateTime
+  usedAt             DateTime?
+  createdAt          DateTime  @default(now())
 
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 

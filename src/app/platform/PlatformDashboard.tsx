@@ -3,6 +3,7 @@
 import {
   Building2,
   Globe,
+  LogIn,
   Loader2,
   Plus,
   Power,
@@ -31,6 +32,9 @@ export default function PlatformDashboard() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [impersonatingTenantId, setImpersonatingTenantId] = useState<
+    string | null
+  >(null);
 
   async function loadTenants() {
     setError("");
@@ -95,6 +99,31 @@ export default function PlatformDashboard() {
       setError("Tenant konnte nicht angelegt werden.");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function impersonate(tenant: Tenant) {
+    setError("");
+    setImpersonatingTenantId(tenant.id);
+
+    try {
+      const response = await fetch(
+        `/api/platform/tenants/${tenant.id}/impersonate`,
+        { method: "POST" },
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || "Zugriff auf den Tenant fehlgeschlagen.");
+        setImpersonatingTenantId(null);
+        return;
+      }
+
+      window.location.href = data.redirectUrl;
+    } catch {
+      setError("Zugriff auf den Tenant fehlgeschlagen.");
+      setImpersonatingTenantId(null);
     }
   }
 
@@ -286,6 +315,21 @@ export default function PlatformDashboard() {
                         >
                           {tenant.active ? "Aktiv" : "Deaktiviert"}
                         </span>
+
+                        {tenant.active ? (
+                          <button
+                            onClick={() => impersonate(tenant)}
+                            disabled={impersonatingTenantId === tenant.id}
+                            className="flex items-center gap-1.5 rounded-xl bg-orange-500 px-3 py-2 text-xs font-bold text-white hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            {impersonatingTenantId === tenant.id ? (
+                              <Loader2 size={14} className="animate-spin" />
+                            ) : (
+                              <LogIn size={14} />
+                            )}
+                            Als Super-Admin anmelden
+                          </button>
+                        ) : null}
 
                         <button
                           onClick={() => toggleActive(tenant)}

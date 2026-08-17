@@ -13,6 +13,13 @@ export type SessionPayload = {
   email: string;
   role: AuthRole;
   tenantId: string | null;
+
+  /*
+   * Gesetzt, wenn diese Session über die Platform-Owner-Zugangsfunktion
+   * erstellt wurde (Login als Tenant-Super-Admin) — enthält die
+   * E-Mail-Adresse des Platform Owners, der den Zugriff ausgelöst hat.
+   */
+  impersonatedByEmail?: string;
 };
 
 function getSecret() {
@@ -31,6 +38,7 @@ export async function createSessionToken(payload: SessionPayload) {
     email: payload.email,
     role: payload.role,
     tenantId: payload.tenantId,
+    impersonatedByEmail: payload.impersonatedByEmail,
   })
     .setProtectedHeader({
       alg: "HS256",
@@ -55,7 +63,9 @@ export async function verifySessionToken(
         payload.role !== "ADMIN" &&
         payload.role !== "SUPER_ADMIN" &&
         payload.role !== "PLATFORM_OWNER") ||
-      (payload.tenantId !== null && typeof payload.tenantId !== "string")
+      (payload.tenantId !== null && typeof payload.tenantId !== "string") ||
+      (payload.impersonatedByEmail !== undefined &&
+        typeof payload.impersonatedByEmail !== "string")
     ) {
       return null;
     }
@@ -65,6 +75,10 @@ export async function verifySessionToken(
       email: payload.email,
       role: payload.role,
       tenantId: payload.tenantId ?? null,
+      impersonatedByEmail:
+        typeof payload.impersonatedByEmail === "string"
+          ? payload.impersonatedByEmail
+          : undefined,
     };
   } catch {
     return null;
