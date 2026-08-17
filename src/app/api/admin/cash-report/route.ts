@@ -156,11 +156,23 @@ export const GET = withTenant(async (request: NextRequest) => {
       prisma.order.findMany({
         where: {
           deletedAt: null,
-          paymentStatus: "OPEN",
           createdAt: {
             gte: rangeStart,
             lt: rangeEnd,
           },
+
+          /*
+           * Historischer Stand: eine Bestellung zählt für diesen
+           * Berichtszeitraum als offen, wenn sie am Ende des Zeitraums
+           * noch offen war — auch wenn sie inzwischen (nach dem
+           * Zeitraum) bezahlt wurde. Sonst verschwindet eine später
+           * bezahlte Rechnung rückwirkend aus dem Bericht des Tages,
+           * an dem sie tatsächlich offen war.
+           */
+          OR: [
+            { paymentStatus: "OPEN" },
+            { paymentStatus: "PAID", paidAt: { gte: rangeEnd } },
+          ],
         },
 
         include: adminOrderInclude,
@@ -219,9 +231,39 @@ export const GET = withTenant(async (request: NextRequest) => {
       }
     }
 
-    const serializedOpenOrders = openOrders.map((order) =>
-      serializeAdminOrder(order),
-    );
+    const serializedOpenOrders = openOrders.map((order) => {
+      const serialized = serializeAdminOrder(order);
+
+      /*
+       * openPaymentAmount aus serializeAdminOrder ist der aktuelle
+       * (Live-)Stand. Für den Bericht brauchen wir den Stand am Ende
+       * des Zeitraums: nur Zahlungen zählen, die bis dahin bereits
+       * genehmigt waren — spätere Zahlungen dürfen den historischen
+       * offenen Betrag nicht verringern.
+       */
+      const approvedBeforeRangeEnd = Number(
+        order.payments
+          .filter(
+            (payment) =>
+              payment.status === "APPROVED" &&
+              payment.approvedAt !== null &&
+              payment.approvedAt < rangeEnd!,
+          )
+          .reduce((total, payment) => total + Number(payment.amount), 0)
+          .toFixed(2),
+      );
+
+      const historicalOpenAmount = Number(
+        Math.max(0, serialized.totalAmount - approvedBeforeRangeEnd).toFixed(
+          2,
+        ),
+      );
+
+      return {
+        ...serialized,
+        openPaymentAmount: historicalOpenAmount,
+      };
+    });
 
     const openAccountTotal = Number(
       serializedOpenOrders
