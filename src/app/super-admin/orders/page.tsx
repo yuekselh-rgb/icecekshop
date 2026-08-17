@@ -1,8 +1,11 @@
 "use client";
 
 import {
+  AlertCircle,
+  CheckCircle2,
   ChevronDown,
   Loader2,
+  Package,
   PackageCheck,
   Printer,
   Trash2,
@@ -121,6 +124,20 @@ const statusLabels: Record<OrderStatus, { de: string; tr: string }> = {
   OUT_FOR_DELIVERY: { de: "Unterwegs", tr: "Teslimata Çıktı" },
   DELIVERED: { de: "Geliefert", tr: "Teslim Edildi" },
   CANCELLED: { de: "Storniert", tr: "İptal Edildi" },
+};
+
+/*
+ * Farbiger Rand am Bestellkarten-Rand für schnelles visuelles Scannen
+ * des Status, unabhängig vom Status-Dropdown-Text.
+ */
+const statusAccentColors: Record<OrderStatus, string> = {
+  NEW: "border-l-orange-400",
+  CONFIRMED: "border-l-sky-400",
+  PREPARING: "border-l-amber-400",
+  READY: "border-l-indigo-400",
+  OUT_FOR_DELIVERY: "border-l-purple-400",
+  DELIVERED: "border-l-green-500",
+  CANCELLED: "border-l-red-400",
 };
 
 export default function SuperAdminOrdersPage() {
@@ -481,11 +498,11 @@ export default function SuperAdminOrdersPage() {
 
                 <tr>
                   <td>${language === "de" ? "Datum" : "Tarih"}</td>
-                  <td>${new Date(order.createdAt).toLocaleString("de-DE")}</td>
+                  <td>${new Date(order.createdAt).toLocaleString(language === "de" ? "de-DE" : "tr-TR")}</td>
                 </tr>
 
                 <tr>
-                  <td>Status</td>
+                  <td>${language === "de" ? "Status" : "Durum"}</td>
                   <td>${statusLabels[order.status][language]}</td>
                 </tr>
 
@@ -1306,7 +1323,7 @@ export default function SuperAdminOrdersPage() {
         driverName,
         dateKey,
 
-        dateLabel: date.toLocaleDateString("de-DE"),
+        dateLabel: date.toLocaleDateString(language === "de" ? "de-DE" : "tr-TR"),
 
         orderCount: 0,
         paidCount: 0,
@@ -1473,7 +1490,7 @@ export default function SuperAdminOrdersPage() {
 
                   setReportDriverId("ALL");
                 }}
-                className={`rounded-xl px-4 py-2 text-2xl font-black transition ${
+                className={`rounded-xl px-4 py-2.5 text-sm font-black transition ${
                   reportMode === "DAY"
                     ? "bg-orange-500 text-white"
                     : "bg-white text-slate-700 hover:bg-orange-50"
@@ -1489,7 +1506,7 @@ export default function SuperAdminOrdersPage() {
 
                   setReportDriverId("ALL");
                 }}
-                className={`rounded-xl px-4 py-2 text-2xl font-black transition ${
+                className={`rounded-xl px-4 py-2.5 text-sm font-black transition ${
                   reportMode === "RANGE"
                     ? "bg-slate-950 text-white"
                     : "bg-white text-slate-700 hover:bg-slate-100"
@@ -1505,7 +1522,7 @@ export default function SuperAdminOrdersPage() {
 
                   setReportDriverId("ALL");
                 }}
-                className={`rounded-xl px-4 py-2 text-2xl font-black transition ${
+                className={`rounded-xl px-4 py-2.5 text-sm font-black transition ${
                   reportMode === "ALL"
                     ? "bg-green-600 text-white"
                     : "bg-white text-slate-700 hover:bg-green-50"
@@ -1595,78 +1612,73 @@ export default function SuperAdminOrdersPage() {
             </div>
           </div>
 
-          <div
-            className="mt-5 grid gap-4"
-            style={{
-              gridTemplateColumns: "repeat(4, minmax(170px, 1fr))",
-            }}
-          >
-            <div className="rounded-2xl bg-slate-950 px-5 py-5 text-white">
-              <p className="text-xs font-black uppercase leading-none text-slate-400">
+          <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            <div className="rounded-2xl bg-slate-950 px-4 py-4 text-white sm:px-5 sm:py-5">
+              <p className="text-[10px] font-black uppercase leading-none text-slate-400 sm:text-xs">
                 {language === "de" ? "Bestellungen Gesamt" : "Toplam Sipariş"}
               </p>
 
-              <p className="mt-0.5 text-2xl font-black leading-none">
+              <p className="mt-1 text-lg font-black leading-none sm:text-2xl">
                 {reportSummary.totalAmount.toFixed(2)} €
               </p>
             </div>
 
-            <div className="rounded-2xl bg-slate-100 px-5 py-5">
-              <p className="text-xs font-black uppercase leading-none text-slate-500">
+            <div className="rounded-2xl bg-slate-100 px-4 py-4 sm:px-5 sm:py-5">
+              <p className="text-[10px] font-black uppercase leading-none text-slate-500 sm:text-xs">
                 {language === "de" ? "Zum Kunden gefahren" : "Müşteriye Gitti"}
               </p>
 
-              <p className="mt-0.5 text-2xl font-black leading-none text-slate-950">
+              <p className="mt-1 text-lg font-black leading-none text-slate-950 sm:text-2xl">
                 {reportSummary.visitCount}
               </p>
             </div>
 
-            <div className="rounded-2xl bg-blue-50 px-5 py-5">
-              <p className="text-xs font-black uppercase leading-none text-blue-700">
+            <div className="rounded-2xl bg-blue-50 px-4 py-4 sm:px-5 sm:py-5">
+              <p className="text-[10px] font-black uppercase leading-none text-blue-700 sm:text-xs">
                 {language === "de" ? "Geliefert" : "Teslim Etti"}
               </p>
 
-              <p className="mt-0.5 text-2xl font-black leading-none text-blue-900">
+              <p className="mt-1 text-lg font-black leading-none text-blue-900 sm:text-2xl">
                 {reportSummary.deliveredCount}
               </p>
             </div>
 
-            <div className="rounded-2xl bg-green-50 px-5 py-5">
-              <p className="text-xs font-black uppercase leading-none text-green-700">
+            <div className="rounded-2xl bg-green-50 px-4 py-4 sm:px-5 sm:py-5">
+              <p className="text-[10px] font-black uppercase leading-none text-green-700 sm:text-xs">
                 {language === "de" ? "Bezahlt Erhalten" : "Parası Alındı"}
               </p>
 
-              <p className="mt-0.5 text-2xl font-black leading-none text-green-900">
+              <p className="mt-1 text-lg font-black leading-none text-green-900 sm:text-2xl">
                 {reportSummary.paidCount}
               </p>
             </div>
 
-            <div className="rounded-2xl bg-red-50 px-5 py-5">
-              <p className="text-xs font-black uppercase leading-none text-red-700">
+            <div className="rounded-2xl bg-red-50 px-4 py-4 sm:px-5 sm:py-5">
+              <p className="text-[10px] font-black uppercase leading-none text-red-700 sm:text-xs">
                 {language === "de" ? "Zahlung Offen" : "Ödeme Açık"}
               </p>
 
-              <p className="mt-0.5 text-2xl font-black leading-none text-red-900">
+              <p className="mt-1 text-lg font-black leading-none text-red-900 sm:text-2xl">
                 {reportSummary.openCount}
               </p>
             </div>
 
-            <div className="rounded-2xl bg-green-50 px-5 py-5">
-              <p className="text-xs font-black uppercase leading-none text-green-700">
+            <div className="rounded-2xl bg-green-50 px-4 py-4 sm:px-5 sm:py-5">
+              <p className="text-[10px] font-black uppercase leading-none text-green-700 sm:text-xs">
                 {language === "de" ? "Eingenommen" : "Tahsil Edilen"}
               </p>
 
-              <p className="mt-0.5 text-2xl font-black leading-none text-green-900">
+              <p className="mt-1 text-lg font-black leading-none text-green-900 sm:text-2xl">
                 {reportSummary.paidAmount.toFixed(2)} €
               </p>
             </div>
 
-            <div className="rounded-2xl bg-red-50 px-5 py-5">
-              <p className="text-xs font-black uppercase leading-none text-red-700">
+            <div className="rounded-2xl bg-red-50 px-4 py-4 sm:px-5 sm:py-5">
+              <p className="text-[10px] font-black uppercase leading-none text-red-700 sm:text-xs">
                 {language === "de" ? "Offener Betrag" : "Açık Tutar"}
               </p>
 
-              <p className="mt-0.5 text-2xl font-black leading-none text-red-900">
+              <p className="mt-1 text-lg font-black leading-none text-red-900 sm:text-2xl">
                 {reportSummary.openAmount.toFixed(2)} €
               </p>
             </div>
@@ -1760,7 +1772,8 @@ export default function SuperAdminOrdersPage() {
                 className="flex w-full items-center justify-between bg-green-50 px-4 py-3 text-left transition hover:bg-green-100"
               >
                 <div>
-                  <h3 className="font-black text-green-900">
+                  <h3 className="flex items-center gap-1.5 font-black text-green-900">
+                    <WalletCards size={15} />
                     {language === "de" ? "Bezahlt Erhalten" : "Parası Alınanlar"}
                   </h3>
 
@@ -1807,7 +1820,7 @@ export default function SuperAdminOrdersPage() {
                       return (
                         <div
                           key={order.id}
-                          className="grid gap-2 p-4 sm:grid-cols-[1fr_auto]"
+                          className="grid gap-2 p-4 transition-colors hover:bg-green-50/50 sm:grid-cols-[1fr_auto] sm:items-center"
                         >
                           <div>
                             <p className="text-xs font-black text-orange-500">
@@ -1821,16 +1834,18 @@ export default function SuperAdminOrdersPage() {
                             <p className="mt-1 text-xs text-slate-500">
                               {language === "de" ? "Zahlung:" : "Ödeme:"}{" "}
                               {order.paidAt
-                                ? new Date(order.paidAt).toLocaleString("de-DE")
+                                ? new Date(order.paidAt).toLocaleString(
+                                    language === "de" ? "de-DE" : "tr-TR",
+                                  )
                                 : language === "de"
                                   ? "Kein Zeitstempel"
                                   : "Zaman kaydı yok"}
                             </p>
                           </div>
 
-                          <p className="font-black text-green-700">
+                          <span className="inline-flex items-center justify-center rounded-full bg-green-50 px-3 py-1.5 font-black text-green-700 sm:justify-self-end">
                             {getEffectiveOrderTotal(order).toFixed(2)} €
-                          </p>
+                          </span>
                         </div>
                       );
                     })}
@@ -1847,7 +1862,8 @@ export default function SuperAdminOrdersPage() {
                 className="flex w-full items-center justify-between bg-red-50 px-4 py-3 text-left transition hover:bg-red-100"
               >
                 <div>
-                  <h3 className="font-black text-red-900">
+                  <h3 className="flex items-center gap-1.5 font-black text-red-900">
+                    <AlertCircle size={15} />
                     {language === "de" ? "Offene Zahlungen" : "Ödemesi Açık Kalanlar"}
                   </h3>
 
@@ -1894,7 +1910,7 @@ export default function SuperAdminOrdersPage() {
                       return (
                         <div
                           key={order.id}
-                          className="grid gap-2 p-4 sm:grid-cols-[1fr_auto]"
+                          className="grid gap-2 p-4 transition-colors hover:bg-red-50/50 sm:grid-cols-[1fr_auto] sm:items-center"
                         >
                           <div>
                             <p className="text-xs font-black text-orange-500">
@@ -1915,13 +1931,15 @@ export default function SuperAdminOrdersPage() {
                               {language === "de" ? "Datum:" : "Tarih:"}{" "}
                               {new Date(
                                 order.assignedAt || order.createdAt,
-                              ).toLocaleString("de-DE")}
+                              ).toLocaleString(
+                                language === "de" ? "de-DE" : "tr-TR",
+                              )}
                             </p>
                           </div>
 
-                          <p className="font-black text-red-700">
+                          <span className="inline-flex items-center justify-center rounded-full bg-red-50 px-3 py-1.5 font-black text-red-700 sm:justify-self-end">
                             {getEffectiveOrderTotal(order).toFixed(2)} €
-                          </p>
+                          </span>
                         </div>
                       );
                     })}
@@ -1941,12 +1959,13 @@ export default function SuperAdminOrdersPage() {
 
                 setPaymentFilter("ALL");
               }}
-              className={`rounded-xl px-4 py-2 text-2xl font-black transition ${
+              className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-black transition ${
                 deliveryFilter === "ALL" && paymentFilter === "ALL"
                   ? "bg-orange-500 text-white"
                   : "bg-orange-50 text-orange-700 hover:bg-orange-100"
               }`}
             >
+              <Package size={15} />
               {language === "de" ? "Alle Bestellungen" : "Tüm Siparişler"}
             </button>
 
@@ -1957,12 +1976,13 @@ export default function SuperAdminOrdersPage() {
 
                 setPaymentFilter("ALL");
               }}
-              className={`rounded-xl px-4 py-2 text-2xl font-black transition ${
+              className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-black transition ${
                 deliveryFilter === "ACTIVE" && paymentFilter === "ALL"
                   ? "bg-slate-950 text-white"
                   : "bg-slate-100 text-slate-700 hover:bg-slate-200"
               }`}
             >
+              <Truck size={15} />
               {language === "de" ? "Aktive Bestellungen" : "Aktif Siparişler"}
             </button>
 
@@ -1973,12 +1993,13 @@ export default function SuperAdminOrdersPage() {
 
                 setPaymentFilter("ALL");
               }}
-              className={`rounded-xl px-4 py-2 text-2xl font-black transition ${
+              className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-black transition ${
                 deliveryFilter === "DELIVERED" && paymentFilter === "ALL"
                   ? "bg-green-600 text-white"
                   : "bg-green-50 text-green-700 hover:bg-green-100"
               }`}
             >
+              <CheckCircle2 size={15} />
               {language === "de" ? "Gelieferte" : "Teslim Edilenler"}
             </button>
 
@@ -1991,12 +2012,13 @@ export default function SuperAdminOrdersPage() {
 
                 setPaymentFilter("OPEN");
               }}
-              className={`rounded-xl px-4 py-2 text-2xl font-black transition ${
+              className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-black transition ${
                 paymentFilter === "OPEN"
                   ? "bg-red-600 text-white"
                   : "bg-red-50 text-red-700 hover:bg-red-100"
               }`}
             >
+              <AlertCircle size={15} />
               {language === "de" ? "Zahlung Offen" : "Ödeme Açık"}
             </button>
 
@@ -2007,20 +2029,21 @@ export default function SuperAdminOrdersPage() {
 
                 setPaymentFilter("PAID");
               }}
-              className={`rounded-xl px-4 py-2 text-2xl font-black transition ${
+              className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-black transition ${
                 paymentFilter === "PAID"
                   ? "bg-green-600 text-white"
                   : "bg-green-50 text-green-700 hover:bg-green-100"
               }`}
             >
+              <WalletCards size={15} />
               {language === "de" ? "Bezahlt" : "Parası Ödendi"}
             </button>
 
             <Link
               href="/super-admin/trash"
-              className="ml-0 inline-flex items-center gap-2 rounded-xl bg-red-50 px-4 py-2 text-2xl font-black text-red-700 transition hover:bg-red-100 xl:ml-auto"
+              className="ml-0 inline-flex items-center gap-1.5 rounded-xl bg-red-50 px-4 py-2.5 text-sm font-black text-red-700 transition hover:bg-red-100 xl:ml-auto"
             >
-              <Trash2 size={16} />
+              <Trash2 size={15} />
               {language === "de" ? "Papierkorb" : "Çöp Kutusu"}
             </Link>
           </div>
@@ -2048,9 +2071,9 @@ export default function SuperAdminOrdersPage() {
                 return (
                   <article
                     key={order.id}
-                    className="rounded-xl border border-slate-200 px-3 py-2.5"
+                    className={`rounded-xl border border-l-4 border-slate-200 px-4 py-3.5 shadow-sm transition-shadow hover:shadow-md ${statusAccentColors[order.status]}`}
                   >
-                    <div className="grid items-start gap-2.5 md:grid-cols-2 xl:grid-cols-6">
+                    <div className="grid items-start gap-3 md:grid-cols-2 xl:grid-cols-6">
                       <div className="xl:col-span-2">
                         <p className="text-base font-black leading-tight text-orange-500">
                           {order.orderNumber}
@@ -2061,7 +2084,9 @@ export default function SuperAdminOrdersPage() {
                         </h2>
 
                         <p className="mt-0.5 text-xs text-slate-500">
-                          {new Date(order.createdAt).toLocaleString("de-DE")}
+                          {new Date(order.createdAt).toLocaleString(
+                            language === "de" ? "de-DE" : "tr-TR",
+                          )}
                         </p>
 
                         {isAwaitingConfirmation(order) ? (
@@ -2155,11 +2180,11 @@ export default function SuperAdminOrdersPage() {
                           {language === "de" ? "Zahlung" : "Ödeme"}
                         </p>
 
-                        <p
-                          className={`mt-1 text-sm font-black ${
+                        <span
+                          className={`mt-1 inline-flex items-center rounded-full px-2.5 py-1 text-xs font-black ${
                             order.paymentStatus === "PAID"
-                              ? "text-green-700"
-                              : "text-red-600"
+                              ? "bg-green-50 text-green-700"
+                              : "bg-red-50 text-red-600"
                           }`}
                         >
                           {order.paymentStatus === "PAID"
@@ -2169,7 +2194,7 @@ export default function SuperAdminOrdersPage() {
                             : language === "de"
                               ? "Zahlung offen"
                               : "Ödeme Açık"}
-                        </p>
+                        </span>
                       </div>
 
                       <div>
