@@ -49,6 +49,7 @@ type Movement = {
   companyName: string | null;
   description: string | null;
   createdAt: string;
+  orderId: string | null;
   purchaseItems: PurchaseItem[];
 };
 
@@ -190,6 +191,7 @@ const categoryLabels: Record<string, string> =
           cashMovements: "Kassenbewegungen",
           goodsPurchase: "Wareneingang speichern und Lager aktualisieren",
           companyNotSpecified: "Firma nicht angegeben",
+          settledOpenAccount: "Beglichene offene Rechnung",
           selectProduct: "Produkt auswählen",
           selectCategoryFirst: "Zuerst Kategorie auswählen",
 
@@ -298,6 +300,7 @@ const categoryLabels: Record<string, string> =
           cashMovements: "Kasa Hareketleri",
           goodsPurchase: "Mal girişini kaydet ve stoğu güncelle",
           companyNotSpecified: "Firma belirtilmedi",
+          settledOpenAccount: "Kapatılan açık hesap",
           selectProduct: "Ürün seçin",
           selectCategoryFirst: "Önce kategori seçin",
 
@@ -2293,10 +2296,19 @@ const categoryLabels: Record<string, string> =
               </p>
             ) : (
               <div className="mt-6 space-y-3">
-                {filteredMovements.map((movement) => (
+                {filteredMovements.map((movement) => {
+                  const isSettledOpenAccount =
+                    movement.category === "MANUAL_INCOME" &&
+                    movement.orderId !== null;
+
+                  return (
                   <article
                     key={movement.id}
-                    className="rounded-2xl border border-slate-200 p-4"
+                    className={`rounded-2xl border p-4 ${
+                      isSettledOpenAccount
+                        ? "border-green-200 bg-green-50/60"
+                        : "border-slate-200"
+                    }`}
                   >
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                       <div
@@ -2314,10 +2326,18 @@ const categoryLabels: Record<string, string> =
                       </div>
 
                       <div className="min-w-0 flex-1">
-                        <span className="inline-block rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-black text-slate-700">
-                          {categoryLabels[movement.category] ||
-                            movement.category}
-                        </span>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="inline-block rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-black text-slate-700">
+                            {categoryLabels[movement.category] ||
+                              movement.category}
+                          </span>
+
+                          {isSettledOpenAccount ? (
+                            <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-black text-green-700">
+                              {t.settledOpenAccount}
+                            </span>
+                          ) : null}
+                        </div>
 
                         <p className="mt-1.5 text-sm font-bold text-slate-600">
                           {movement.companyName || t.companyNotSpecified}
@@ -2416,7 +2436,8 @@ const categoryLabels: Record<string, string> =
                       </div>
                     ) : null}
                   </article>
-                ))}
+                  );
+                })}
               </div>
             )}
           </section>

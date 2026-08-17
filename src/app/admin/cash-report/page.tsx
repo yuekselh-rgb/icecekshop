@@ -24,6 +24,7 @@ type CashMovementRow = {
   description: string | null;
   supplierName: string | null;
   createdAt: string;
+  orderId: string | null;
   createdBy: {
     name: string | null;
   };
@@ -105,6 +106,7 @@ export default function CashReportPage() {
           openAccountOrders: "Offene Bestellungen",
           noOpenAccountOrders: "Keine offenen Bestellungen in diesem Zeitraum.",
           settledAfterPeriod: "Inzwischen bezahlt",
+          settledOpenAccount: "Beglichene offene Rechnung",
           orderNumber: "Bestellnr.",
           customer: "Kunde",
           amount: "Betrag",
@@ -161,6 +163,7 @@ export default function CashReportPage() {
           openAccountOrders: "Açık Hesap Siparişleri",
           noOpenAccountOrders: "Bu dönemde açık hesap siparişi bulunmuyor.",
           settledAfterPeriod: "Daha sonra ödendi",
+          settledOpenAccount: "Kapatılan açık hesap",
           orderNumber: "Sipariş No",
           customer: "Müşteri",
           amount: "Tutar",
@@ -578,8 +581,18 @@ export default function CashReportPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {report.movements.map((movement) => (
-                        <tr key={movement.id} className="border-b border-slate-100 last:border-b-0">
+                      {report.movements.map((movement) => {
+                        const isSettledOpenAccount =
+                          movement.category === "MANUAL_INCOME" &&
+                          movement.orderId !== null;
+
+                        return (
+                        <tr
+                          key={movement.id}
+                          className={`border-b border-slate-100 last:border-b-0 ${
+                            isSettledOpenAccount ? "bg-green-50/60" : ""
+                          }`}
+                        >
                           <td className="py-2 pr-4 text-slate-600">
                             {new Date(movement.createdAt).toLocaleString("de-DE")}
                           </td>
@@ -587,7 +600,15 @@ export default function CashReportPage() {
                             {t.accountLabels[movement.accountType] || movement.accountType}
                           </td>
                           <td className="py-2 pr-4 text-slate-600">
-                            {t.categoryLabels[movement.category] || movement.category}
+                            <div className="flex flex-wrap items-center gap-2">
+                              {t.categoryLabels[movement.category] || movement.category}
+
+                              {isSettledOpenAccount ? (
+                                <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-black uppercase text-green-700">
+                                  {t.settledOpenAccount}
+                                </span>
+                              ) : null}
+                            </div>
                           </td>
                           <td className="py-2 pr-4 text-slate-500">
                             {movement.description || movement.companyName || movement.supplierName || "—"}
@@ -606,7 +627,8 @@ export default function CashReportPage() {
                             {formatEuro(movement.amount)}
                           </td>
                         </tr>
-                      ))}
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>

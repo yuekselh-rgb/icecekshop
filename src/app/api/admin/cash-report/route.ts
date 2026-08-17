@@ -335,6 +335,7 @@ export const GET = withTenant(async (request: NextRequest) => {
           description: movement.description,
           supplierName: movement.supplier?.name ?? null,
           createdAt: movement.createdAt,
+          orderId: movement.orderId,
           createdBy: {
             name: creatorName,
           },
