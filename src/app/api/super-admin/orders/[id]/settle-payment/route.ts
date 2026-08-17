@@ -159,6 +159,11 @@ export const POST = withTenant(async (
 
     const now = new Date();
 
+    const customerName =
+      order.user.companyName ||
+      [order.user.firstName, order.user.lastName].filter(Boolean).join(" ") ||
+      order.user.email;
+
     const updatedOrder = await prisma.$transaction(async (tx) => {
       await tx.orderPayment.create({
         data: {
@@ -181,6 +186,30 @@ export const POST = withTenant(async (
             language === "de"
               ? "Manuell erfasste Zahlung durch Super-Admin."
               : "Süper admin tarafından manuel olarak kaydedilen ödeme.",
+        },
+      });
+
+      /*
+       * Ohne diesen Eintrag taucht die manuell erfasste Zahlung im
+       * Bestellbericht (Order.paidAt-basiert) auf, aber nicht im
+       * Kassenbericht (CashMovement-basiert) — die beiden Berichte
+       * driften dann auseinander.
+       */
+      await tx.cashMovement.create({
+        data: {
+          tenantId: tenant.id,
+          accountType: "BAR",
+          direction: "IN",
+          category: "MANUAL_INCOME",
+          amount: roundedAmount,
+          orderId: order.id,
+          createdById: session.userId,
+          companyName: customerName,
+
+          description:
+            language === "de"
+              ? `Manuell erfasste Zahlung (Super-Admin) für Bestellung ${order.orderNumber}.`
+              : `Süper admin tarafından manuel olarak kaydedilen ödeme, sipariş ${order.orderNumber}.`,
         },
       });
 
