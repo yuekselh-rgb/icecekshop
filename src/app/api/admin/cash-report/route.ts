@@ -130,58 +130,88 @@ export const GET = withTenant(async (request: NextRequest) => {
   }
 
   try {
-    const [movements, openOrders] = await Promise.all([
-      prisma.cashMovement.findMany({
-        where: {
-          createdAt: {
-            gte: rangeStart,
-            lt: rangeEnd,
-          },
-        },
-
-        include: {
-          supplier: {
-            select: {
-              id: true,
-              name: true,
+    const [movements, openOrders, incomeBeforePeriod, expenseBeforePeriod] =
+      await Promise.all([
+        prisma.cashMovement.findMany({
+          where: {
+            createdAt: {
+              gte: rangeStart,
+              lt: rangeEnd,
             },
           },
-        },
 
-        orderBy: {
-          createdAt: "asc",
-        },
-      }),
-
-      prisma.order.findMany({
-        where: {
-          deletedAt: null,
-          createdAt: {
-            gte: rangeStart,
-            lt: rangeEnd,
+          include: {
+            supplier: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
           },
 
-          /*
-           * Historischer Stand: eine Bestellung zählt für diesen
-           * Berichtszeitraum als offen, wenn sie am Ende des Zeitraums
-           * noch offen war — auch wenn sie inzwischen (nach dem
-           * Zeitraum) bezahlt wurde. Sonst verschwindet eine später
-           * bezahlte Rechnung rückwirkend aus dem Bericht des Tages,
-           * an dem sie tatsächlich offen war.
-           */
-          OR: [
-            { paymentStatus: "OPEN" },
-            { paymentStatus: "PAID", paidAt: { gte: rangeEnd } },
-          ],
-        },
+          orderBy: {
+            createdAt: "asc",
+          },
+        }),
 
-        include: adminOrderInclude,
+        prisma.order.findMany({
+          where: {
+            deletedAt: null,
+            createdAt: {
+              gte: rangeStart,
+              lt: rangeEnd,
+            },
 
-        orderBy: {
-          createdAt: "asc",
-        },
-      }),
-    ]);
+            /*
+             * Historischer Stand: eine Bestellung zählt für diesen
+             * Berichtszeitraum als offen, wenn sie am Ende des Zeitraums
+             * noch offen war — auch wenn sie inzwischen (nach dem
+             * Zeitraum) bezahlt wurde. Sonst verschwindet eine später
+             * bezahlte Rechnung rückwirkend aus dem Bericht des Tages,
+             * an dem sie tatsächlich offen war.
+             */
+            OR: [
+              { paymentStatus: "OPEN" },
+              { paymentStatus: "PAID", paidAt: { gte: rangeEnd } },
+            ],
+          },
+
+          include: adminOrderInclude,
+
+          orderBy: {
+            createdAt: "asc",
+          },
+        }),
+
+        /*
+         * Anfangsbestand: laufender Kassenstand aus allen Bewegungen vor
+         * diesem Zeitraum — damit spiegelt "Nettokasse" den tatsächlichen
+         * Stand der physischen Kasse wider (inkl. Übertrag aus Vortagen),
+         * nicht nur die Bewegungen des gewählten Zeitraums für sich.
+         */
+        prisma.cashMovement.aggregate({
+          where: {
+            createdAt: { lt: rangeStart },
+            direction: "IN",
+          },
+          _sum: { amount: true },
+        }),
+
+        prisma.cashMovement.aggregate({
+          where: {
+            createdAt: { lt: rangeStart },
+            direction: "OUT",
+          },
+          _sum: { amount: true },
+        }),
+      ]);
+
+    const openingBalance = Number(
+      (
+        Number(incomeBeforePeriod._sum.amount || 0) -
+        Number(expenseBeforePeriod._sum.amount || 0)
+      ).toFixed(2),
+    );
 
     const creatorIds = Array.from(
       new Set(movements.map((movement) => movement.createdById)),
@@ -298,7 +328,11 @@ export const GET = withTenant(async (request: NextRequest) => {
         byCategory: expenseByCategory,
       },
 
-      net: Number((incomeTotal - expenseTotal).toFixed(2)),
+      openingBalance,
+
+      net: Number(
+        (openingBalance + incomeTotal - expenseTotal).toFixed(2),
+      ),
 
       openAccount: {
         total: openAccountTotal,

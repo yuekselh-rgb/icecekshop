@@ -5,6 +5,7 @@ import {
   ArrowLeft,
   HandCoins,
   Loader2,
+  PiggyBank,
   Printer,
   TrendingDown,
   TrendingUp,
@@ -55,6 +56,7 @@ type ReportData = {
     total: number;
     byCategory: Record<string, number>;
   };
+  openingBalance: number;
   net: number;
   openAccount: {
     total: number;
@@ -100,6 +102,7 @@ export default function CashReportPage() {
           print: "Drucken",
           loading: "Wird geladen...",
           loadError: "Kassenbericht konnte nicht geladen werden.",
+          openingBalance: "Anfangsbestand",
           totalIncome: "Gesamteinnahmen",
           totalExpense: "Gesamtausgaben",
           net: "Nettokasse",
@@ -173,6 +176,7 @@ export default function CashReportPage() {
           print: "Yazdır",
           loading: "Yükleniyor...",
           loadError: "Kasa raporu yüklenemedi.",
+          openingBalance: "Devir Bakiyesi",
           totalIncome: "Toplam Gelir",
           totalExpense: "Toplam Gider",
           net: "Net Kasa",
@@ -519,7 +523,17 @@ export default function CashReportPage() {
           </div>
         ) : report ? (
           <>
-            <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 print:grid-cols-4 print:gap-2">
+            <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5 print:grid-cols-5 print:gap-2">
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 print:border print:border-slate-300 print:bg-white">
+                <div className="flex items-center gap-2 text-xs font-black uppercase text-slate-600">
+                  <PiggyBank size={16} />
+                  {t.openingBalance}
+                </div>
+                <p className="mt-2 text-2xl font-black text-slate-950">
+                  {formatEuro(report.openingBalance)}
+                </p>
+              </div>
+
               <div className="rounded-2xl border border-green-200 bg-green-50 p-5 print:border print:border-slate-300 print:bg-white">
                 <div className="flex items-center gap-2 text-xs font-black uppercase text-green-700 print:text-slate-600">
                   <TrendingUp size={16} />
