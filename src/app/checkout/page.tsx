@@ -12,6 +12,7 @@ import {
   type BusinessHoursDay,
 } from "@/lib/business-hours";
 import { trackMetaPixelEvent } from "@/lib/meta-pixel-events";
+import { trackTikTokPixelEvent } from "@/lib/tiktok-pixel-events";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -226,6 +227,18 @@ export default function CheckoutPage() {
       value: Number(subtotal.toFixed(2)),
       currency: "EUR",
     });
+
+    trackTikTokPixelEvent("InitiateCheckout", {
+      contents: items.map((item) => ({
+        content_id: item.productId,
+        content_name: item.name,
+        content_type: "product",
+        quantity: item.quantity,
+        price: item.price,
+      })),
+      value: Number(subtotal.toFixed(2)),
+      currency: "EUR",
+    });
   }, [items, subtotal]);
 
   const deliveryMessage = isDealer
@@ -428,6 +441,18 @@ export default function CheckoutPage() {
         content_ids: items.map((item) => item.productId),
         content_type: "product",
         num_items: items.reduce((total, item) => total + item.quantity, 0),
+        value: Number(data.order.totalAmount),
+        currency: "EUR",
+      });
+
+      trackTikTokPixelEvent("CompletePayment", {
+        contents: items.map((item) => ({
+          content_id: item.productId,
+          content_name: item.name,
+          content_type: "product",
+          quantity: item.quantity,
+          price: item.price,
+        })),
         value: Number(data.order.totalAmount),
         currency: "EUR",
       });

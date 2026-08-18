@@ -60,6 +60,7 @@ const fallbackSettings = {
   businessHours: null,
 
   metaPixelId: null,
+  tiktokPixelId: null,
 };
 
 export const GET = withTenant(async (_request, _context, tenant) => {

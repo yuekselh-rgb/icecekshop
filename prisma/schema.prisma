@@ -663,7 +663,8 @@ model CompanySetting {
   businessHoursEnabled Boolean @default(false)
   businessHours        Json?
 
-  metaPixelId String?
+  metaPixelId   String?
+  tiktokPixelId String?
 
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt

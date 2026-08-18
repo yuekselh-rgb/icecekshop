@@ -227,6 +227,22 @@ export const PATCH = withTenant(async (request: Request, _context, tenant) => {
       );
     }
 
+    const tiktokPixelId = String(body.tiktokPixelId || "").trim();
+
+    if (tiktokPixelId && !/^[A-Za-z0-9]{10,30}$/.test(tiktokPixelId)) {
+      return NextResponse.json(
+        {
+          error:
+            language === "de"
+              ? "Die TikTok Pixel-ID ist ungültig."
+              : "TikTok Pixel Kimliği geçersiz.",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
     if (!companyName) {
       return NextResponse.json(
         {
@@ -316,6 +332,7 @@ export const PATCH = withTenant(async (request: Request, _context, tenant) => {
         twitter: twitter || null,
 
         metaPixelId: metaPixelId || null,
+        tiktokPixelId: tiktokPixelId || null,
 
         showOffers,
         minOrderValueEnabled,
@@ -368,6 +385,7 @@ export const PATCH = withTenant(async (request: Request, _context, tenant) => {
         twitter: twitter || null,
 
         metaPixelId: metaPixelId || null,
+        tiktokPixelId: tiktokPixelId || null,
 
         showOffers,
         minOrderValueEnabled,

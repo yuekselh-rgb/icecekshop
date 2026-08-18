@@ -20,6 +20,7 @@ export const getTenantCompanySettings = cache(async () => {
       companyDescription: true,
       logoUrl: true,
       metaPixelId: true,
+      tiktokPixelId: true,
       street: true,
       houseNumber: true,
       postalCode: true,

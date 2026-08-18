@@ -62,6 +62,7 @@ type Settings = {
   twitter: string;
 
   metaPixelId: string;
+  tiktokPixelId: string;
 
   showOffers: boolean;
 
@@ -122,6 +123,7 @@ const emptySettings: Settings = {
   twitter: "",
 
   metaPixelId: "",
+  tiktokPixelId: "",
 
   showOffers: true,
 
@@ -215,6 +217,7 @@ export default function CompanySettingsPage() {
           tiktok: data.settings.tiktok || "",
           twitter: data.settings.twitter || "",
           metaPixelId: data.settings.metaPixelId || "",
+          tiktokPixelId: data.settings.tiktokPixelId || "",
 
           showOffers: data.settings.showOffers !== false,
 
@@ -401,6 +404,7 @@ export default function CompanySettingsPage() {
         tiktok: data.settings.tiktok || "",
         twitter: data.settings.twitter || "",
         metaPixelId: data.settings.metaPixelId || "",
+        tiktokPixelId: data.settings.tiktokPixelId || "",
 
         showOffers: data.settings.showOffers !== false,
 
@@ -514,6 +518,7 @@ export default function CompanySettingsPage() {
         tiktok: data.settings.tiktok || "",
         twitter: data.settings.twitter || "",
         metaPixelId: data.settings.metaPixelId || "",
+        tiktokPixelId: data.settings.tiktokPixelId || "",
 
         showOffers: data.settings.showOffers !== false,
 
@@ -1131,6 +1136,23 @@ export default function CompanySettingsPage() {
                   }
                   placeholder="1234567890123456"
                   inputMode="numeric"
+                  className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3"
+                />
+              </label>
+
+              <label>
+                <span className="text-sm font-bold text-slate-700">
+                  TikTok Pixel-ID
+                </span>
+                <input
+                  value={settings.tiktokPixelId}
+                  onChange={(e) =>
+                    setSettings((c) => ({
+                      ...c,
+                      tiktokPixelId: e.target.value,
+                    }))
+                  }
+                  placeholder="DA2AU7JC77U9J4MB0370"
                   className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3"
                 />
               </label>

@@ -1,6 +1,7 @@
 "use client";
 
 import { trackMetaPixelEvent } from "@/lib/meta-pixel-events";
+import { trackTikTokPixelEvent } from "@/lib/tiktok-pixel-events";
 import {
   createContext,
   ReactNode,
@@ -140,6 +141,16 @@ export function CartProvider({ children }: CartProviderProps) {
       content_ids: [item.productId],
       content_name: item.name,
       content_type: "product",
+      value: Number((item.price * quantity).toFixed(2)),
+      currency: "EUR",
+    });
+
+    trackTikTokPixelEvent("AddToCart", {
+      content_id: item.productId,
+      content_name: item.name,
+      content_type: "product",
+      quantity,
+      price: item.price,
       value: Number((item.price * quantity).toFixed(2)),
       currency: "EUR",
     });

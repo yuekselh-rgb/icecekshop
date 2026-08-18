@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import Script from "next/script";
 import CookieConsentBanner from "@/components/CookieConsentBanner";
 import MetaPixel from "@/components/MetaPixel";
+import TikTokPixel from "@/components/TikTokPixel";
 import { CartProvider } from "@/context/CartContext";
 import { LanguageProvider } from "@/context/LanguageContext";
 import "./globals.css";
@@ -145,6 +146,7 @@ export default async function RootLayout({
           <CartProvider>{children}</CartProvider>
           <CookieConsentBanner />
           <MetaPixel pixelId={settings?.metaPixelId || null} />
+          <TikTokPixel pixelId={settings?.tiktokPixelId || null} />
         </LanguageProvider>
       </body>
     </html>
