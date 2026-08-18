@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Script from "next/script";
+import CookieConsentBanner from "@/components/CookieConsentBanner";
 import { CartProvider } from "@/context/CartContext";
 import { LanguageProvider } from "@/context/LanguageContext";
 import "./globals.css";
@@ -61,6 +62,7 @@ export default function RootLayout({
         </Script>
         <LanguageProvider>
           <CartProvider>{children}</CartProvider>
+          <CookieConsentBanner />
         </LanguageProvider>
       </body>
     </html>

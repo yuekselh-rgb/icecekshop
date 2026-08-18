@@ -1,5 +1,6 @@
 "use client";
 
+import { openCookieSettings } from "@/components/CookieConsentBanner";
 import { useLanguage } from "@/context/LanguageContext";
 import { Globe, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import Link from "next/link";
@@ -49,6 +50,7 @@ fetch("/api/company-settings")
           privacy: "Datenschutz",
           terms: "Nutzungsbedingungen",
           imprint: "Impressum",
+          cookieSettings: "Cookie-Einstellungen",
           companyInfo: "Firmendaten",
           companyType: "Rechtsform",
           managingDirector: "Geschäftsführer",
@@ -70,6 +72,7 @@ fetch("/api/company-settings")
           privacy: "Gizlilik",
           terms: "Kullanım Şartları",
           imprint: "Künye",
+          cookieSettings: "Çerez Ayarları",
           companyInfo: "Firma Bilgileri",
           companyType: "Firma Türü",
           managingDirector: "Şirket Müdürü",
@@ -311,6 +314,14 @@ fetch("/api/company-settings")
           <Link href="/privacy" className="hover:text-[#05090A]">{t.privacy}</Link>
 
           <Link href="/terms" className="hover:text-[#05090A]">{t.terms}</Link>
+
+          <button
+            type="button"
+            onClick={openCookieSettings}
+            className="hover:text-[#05090A]"
+          >
+            {t.cookieSettings}
+          </button>
         </div>
       </div>
     </footer>
