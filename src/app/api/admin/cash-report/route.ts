@@ -280,6 +280,8 @@ export const GET = withTenant(async (request: NextRequest) => {
     );
 
     return NextResponse.json({
+      permissions: admin.permissions,
+
       period: {
         mode,
         startDate: rangeStart.toISOString(),

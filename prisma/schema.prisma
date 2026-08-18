@@ -125,6 +125,7 @@ enum CashMovementCategory {
   RENT
   MANUAL_INCOME
   OTHER_EXPENSE
+  CASH_HANDOVER
 }
 
 model Tenant {
@@ -730,6 +731,7 @@ model AdminPermission {
   createBarCashExpense  Boolean @default(false)
   deleteBarCashMovement Boolean @default(false)
   viewCashReport        Boolean @default(false)
+  createCashHandover    Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

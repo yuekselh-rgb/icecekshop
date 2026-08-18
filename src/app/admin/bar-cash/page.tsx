@@ -166,6 +166,7 @@ const categoryLabels: Record<string, string> =
           RENT: "Miete",
           MANUAL_INCOME: "Manuelle Einnahme",
           OTHER_EXPENSE: "Sonstige Ausgaben",
+          CASH_HANDOVER: "Kassenübergabe",
         }
       : {
           BAR_SALE: "Bar Satışı",
@@ -177,6 +178,7 @@ const categoryLabels: Record<string, string> =
           RENT: "Kira",
           MANUAL_INCOME: "Manuel Gelir",
           OTHER_EXPENSE: "Diğer Gider",
+          CASH_HANDOVER: "Kasa Devri",
         };
 
 

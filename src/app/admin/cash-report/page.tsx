@@ -3,14 +3,16 @@
 import { useLanguage } from "@/context/LanguageContext";
 import {
   ArrowLeft,
+  HandCoins,
   Loader2,
   Printer,
   TrendingDown,
   TrendingUp,
   Wallet,
+  X,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 type ReportMode = "day" | "month" | "range";
 
@@ -60,6 +62,10 @@ type ReportData = {
     orders: OpenOrderRow[];
   };
   movements: CashMovementRow[];
+  permissions: {
+    createCashHandover?: boolean;
+    [key: string]: boolean | undefined;
+  };
 };
 
 function formatEuro(value: number) {
@@ -132,11 +138,27 @@ export default function CashReportPage() {
             RENT: "Miete",
             MANUAL_INCOME: "Manuelle Einnahme",
             OTHER_EXPENSE: "Sonstige Ausgaben",
+            CASH_HANDOVER: "Kassenübergabe",
           } as Record<string, string>,
           months: [
             "Januar", "Februar", "März", "April", "Mai", "Juni",
             "Juli", "August", "September", "Oktober", "November", "Dezember",
           ],
+          handoverButton: "Kassenübergabe erfassen",
+          handoverTitle: "Kassenübergabe erfassen",
+          handoverDescription:
+            "Wie viel Bargeld übergeben Sie und an wen? Der Betrag wird sofort aus der Kasse gebucht.",
+          handoverAmount: "Übergebener Betrag (€)",
+          handoverRecipient: "Übergeben an",
+          handoverRecipientPlaceholder: "Name der Person",
+          handoverNote: "Notiz (optional)",
+          handoverCancel: "Abbrechen",
+          handoverSubmit: "Übergabe erfassen",
+          handoverSaving: "Wird gespeichert...",
+          handoverSuccess: "Kassenübergabe wurde erfasst.",
+          handoverAmountError: "Bitte geben Sie einen gültigen Betrag ein.",
+          handoverRecipientError: "Bitte geben Sie an, wer die Kasse erhalten hat.",
+          handoverGenericError: "Kassenübergabe konnte nicht gespeichert werden.",
         }
       : {
           back: "Admin Paneli",
@@ -189,11 +211,27 @@ export default function CashReportPage() {
             RENT: "Kira",
             MANUAL_INCOME: "Manuel Gelir",
             OTHER_EXPENSE: "Diğer Gider",
+            CASH_HANDOVER: "Kasa Devri",
           } as Record<string, string>,
           months: [
             "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
             "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık",
           ],
+          handoverButton: "Kasa Devri Kaydet",
+          handoverTitle: "Kasa Devri Kaydet",
+          handoverDescription:
+            "Ne kadar nakit devrediyorsunuz ve kime? Tutar hemen kasadan düşülecek.",
+          handoverAmount: "Devredilen Tutar (€)",
+          handoverRecipient: "Kime Devredildi",
+          handoverRecipientPlaceholder: "Kişinin adı",
+          handoverNote: "Not (opsiyonel)",
+          handoverCancel: "Vazgeç",
+          handoverSubmit: "Devri Kaydet",
+          handoverSaving: "Kaydediliyor...",
+          handoverSuccess: "Kasa devri kaydedildi.",
+          handoverAmountError: "Lütfen geçerli bir tutar girin.",
+          handoverRecipientError: "Lütfen kasayı kime devrettiğinizi belirtin.",
+          handoverGenericError: "Kasa devri kaydedilemedi.",
         };
 
   const today = useMemo(() => new Date(), []);
@@ -209,42 +247,106 @@ export default function CashReportPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    async function loadReport() {
-      setLoading(true);
-      setError("");
+  const loadReport = useCallback(async () => {
+    setLoading(true);
+    setError("");
 
-      try {
-        const params = new URLSearchParams({ mode });
+    try {
+      const params = new URLSearchParams({ mode });
 
-        if (mode === "day") {
-          params.set("date", selectedDate);
-        } else if (mode === "month") {
-          params.set("year", String(selectedYear));
-          params.set("month", String(selectedMonth));
-        } else {
-          params.set("startDate", startDate);
-          params.set("endDate", endDate);
-        }
-
-        const response = await fetch(`/api/admin/cash-report?${params.toString()}`);
-        const data = await response.json();
-
-        if (!response.ok) {
-          setError(data.error || t.loadError);
-          return;
-        }
-
-        setReport(data);
-      } catch {
-        setError(t.loadError);
-      } finally {
-        setLoading(false);
+      if (mode === "day") {
+        params.set("date", selectedDate);
+      } else if (mode === "month") {
+        params.set("year", String(selectedYear));
+        params.set("month", String(selectedMonth));
+      } else {
+        params.set("startDate", startDate);
+        params.set("endDate", endDate);
       }
+
+      const response = await fetch(`/api/admin/cash-report?${params.toString()}`);
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || t.loadError);
+        return;
+      }
+
+      setReport(data);
+    } catch {
+      setError(t.loadError);
+    } finally {
+      setLoading(false);
+    }
+  }, [mode, selectedDate, selectedYear, selectedMonth, startDate, endDate]);
+
+  useEffect(() => {
+    loadReport();
+  }, [loadReport]);
+
+  const [showHandoverModal, setShowHandoverModal] = useState(false);
+  const [handoverAmount, setHandoverAmount] = useState("");
+  const [handoverRecipient, setHandoverRecipient] = useState("");
+  const [handoverNote, setHandoverNote] = useState("");
+  const [handoverSubmitting, setHandoverSubmitting] = useState(false);
+  const [handoverError, setHandoverError] = useState("");
+
+  function openHandoverModal() {
+    setHandoverAmount("");
+    setHandoverRecipient("");
+    setHandoverNote("");
+    setHandoverError("");
+    setShowHandoverModal(true);
+  }
+
+  async function submitHandover() {
+    const amount = Number(handoverAmount);
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+      setHandoverError(t.handoverAmountError);
+      return;
     }
 
-    loadReport();
-  }, [mode, selectedDate, selectedYear, selectedMonth, startDate, endDate]);
+    if (!handoverRecipient.trim()) {
+      setHandoverError(t.handoverRecipientError);
+      return;
+    }
+
+    setHandoverSubmitting(true);
+    setHandoverError("");
+
+    try {
+      const response = await fetch("/api/admin/bar-cash", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          direction: "OUT",
+          category: "CASH_HANDOVER",
+          amount,
+          companyName: handoverRecipient.trim(),
+          description: handoverNote.trim(),
+          idempotencyKey:
+            typeof crypto !== "undefined" && "randomUUID" in crypto
+              ? crypto.randomUUID()
+              : `handover-${Date.now()}-${Math.random()}`,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setHandoverError(data.error || t.handoverGenericError);
+        return;
+      }
+
+      setShowHandoverModal(false);
+      await loadReport();
+    } catch {
+      setHandoverError(t.handoverGenericError);
+    } finally {
+      setHandoverSubmitting(false);
+    }
+  }
 
   const incomeCategories = report
     ? Object.entries(report.income.byCategory).sort((a, b) => b[1] - a[1])
@@ -274,14 +376,27 @@ export default function CashReportPage() {
             <p className="mt-2 text-slate-500">{t.subtitle}</p>
           </div>
 
-          <button
-            type="button"
-            onClick={() => window.print()}
-            className="inline-flex items-center gap-2 rounded-2xl bg-slate-950 px-5 py-3 font-black text-white transition hover:bg-slate-800"
-          >
-            <Printer size={18} />
-            {t.print}
-          </button>
+          <div className="flex flex-wrap items-center gap-3">
+            {report?.permissions?.createCashHandover ? (
+              <button
+                type="button"
+                onClick={openHandoverModal}
+                className="inline-flex items-center gap-2 rounded-2xl bg-orange-500 px-5 py-3 font-black text-white transition hover:bg-orange-600"
+              >
+                <HandCoins size={18} />
+                {t.handoverButton}
+              </button>
+            ) : null}
+
+            <button
+              type="button"
+              onClick={() => window.print()}
+              className="inline-flex items-center gap-2 rounded-2xl bg-slate-950 px-5 py-3 font-black text-white transition hover:bg-slate-800"
+            >
+              <Printer size={18} />
+              {t.print}
+            </button>
+          </div>
         </div>
 
         <div className="hidden print:mb-6 print:block">
@@ -694,6 +809,112 @@ export default function CashReportPage() {
           </>
         ) : null}
       </div>
+
+      {showHandoverModal ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4 print:hidden">
+          <div className="w-full max-w-md rounded-[28px] bg-white p-6 shadow-xl">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-orange-50 text-orange-500">
+                  <HandCoins size={22} />
+                </div>
+
+                <h2 className="text-xl font-black text-slate-950">
+                  {t.handoverTitle}
+                </h2>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowHandoverModal(false)}
+                className="rounded-xl p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <p className="mt-3 text-sm text-slate-500">
+              {t.handoverDescription}
+            </p>
+
+            <label className="mt-5 block">
+              <span className="text-xs font-black uppercase text-slate-500">
+                {t.handoverAmount}
+              </span>
+
+              <input
+                type="number"
+                min={0}
+                step={0.01}
+                value={handoverAmount}
+                onChange={(event) => setHandoverAmount(event.target.value)}
+                className="mt-1.5 w-full rounded-xl border border-slate-200 px-4 py-3 text-lg font-black outline-none focus:border-orange-500"
+                placeholder="0,00"
+                autoFocus
+              />
+            </label>
+
+            <label className="mt-4 block">
+              <span className="text-xs font-black uppercase text-slate-500">
+                {t.handoverRecipient}
+              </span>
+
+              <input
+                type="text"
+                value={handoverRecipient}
+                onChange={(event) => setHandoverRecipient(event.target.value)}
+                className="mt-1.5 w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-orange-500"
+                placeholder={t.handoverRecipientPlaceholder}
+              />
+            </label>
+
+            <label className="mt-4 block">
+              <span className="text-xs font-black uppercase text-slate-500">
+                {t.handoverNote}
+              </span>
+
+              <textarea
+                value={handoverNote}
+                onChange={(event) => setHandoverNote(event.target.value)}
+                rows={2}
+                className="mt-1.5 w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-orange-500"
+              />
+            </label>
+
+            {handoverError ? (
+              <p className="mt-4 rounded-xl bg-red-50 p-3 text-sm font-bold text-red-600">
+                {handoverError}
+              </p>
+            ) : null}
+
+            <div className="mt-6 flex gap-3">
+              <button
+                type="button"
+                onClick={() => setShowHandoverModal(false)}
+                className="flex-1 rounded-xl border border-slate-200 px-4 py-3 font-black text-slate-600 transition hover:bg-slate-50"
+              >
+                {t.handoverCancel}
+              </button>
+
+              <button
+                type="button"
+                onClick={submitHandover}
+                disabled={handoverSubmitting}
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-orange-500 px-4 py-3 font-black text-white transition hover:bg-orange-600 disabled:opacity-60"
+              >
+                {handoverSubmitting ? (
+                  <>
+                    <Loader2 size={18} className="animate-spin" />
+                    {t.handoverSaving}
+                  </>
+                ) : (
+                  t.handoverSubmit
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }

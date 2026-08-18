@@ -13,6 +13,7 @@ const allowedCategories = [
   "RENT",
   "MANUAL_INCOME",
   "OTHER_EXPENSE",
+  "CASH_HANDOVER",
 ] as const;
 
 type AllowedCategory = (typeof allowedCategories)[number];
@@ -266,11 +267,18 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
       );
     }
 
-    if (
-      direction === "OUT" &&
-      !admin.isSuperAdmin &&
-      !admin.permissions.createBarCashExpense
-    ) {
+    /*
+     * Kassenübergabe (CASH_HANDOVER) hat eine eigene, von
+     * createBarCashExpense unabhängige Berechtigung — genau dafür
+     * gedacht, dass Admins ohne vollen Kassenzugriff (viewBarCash)
+     * trotzdem eine Übergabe vom Kassenbericht aus erfassen können.
+     */
+    const canCreateOutMovement =
+      admin.isSuperAdmin ||
+      admin.permissions.createBarCashExpense ||
+      (category === "CASH_HANDOVER" && admin.permissions.createCashHandover);
+
+    if (direction === "OUT" && !canCreateOutMovement) {
       return NextResponse.json(
         {
           error:
