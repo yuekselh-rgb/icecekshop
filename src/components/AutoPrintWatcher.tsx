@@ -76,8 +76,15 @@ export default function AutoPrintWatcher() {
           return;
         }
 
+        /*
+         * Barverkäufe (BAR-Bestellnummern) werden direkt vor Ort erstellt
+         * und sofort manuell gedruckt — kein automatischer Druck dafür.
+         * Nur online eingegangene Bestellungen lösen Auto-Druck aus.
+         */
         const newOrders = orders.filter(
-          (order) => !seenOrderIdsRef.current!.has(order.id),
+          (order) =>
+            !seenOrderIdsRef.current!.has(order.id) &&
+            !order.orderNumber.startsWith("BAR-"),
         );
 
         fetchedIds.forEach((id) => seenOrderIdsRef.current!.add(id));

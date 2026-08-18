@@ -488,7 +488,7 @@ export default function SuperAdminOrdersPage() {
             ${renderCompanyHeader(company, language)}
 
             <div class="doc-meta">
-              <div class="doc-title">${language === "de" ? "Rechnung" : "Fatura"}</div>
+              <div class="doc-title">${language === "de" ? "Lieferschein" : "İrsaliye"}</div>
 
               <table class="meta-table">
                 <tr>
