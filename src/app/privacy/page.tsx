@@ -72,7 +72,7 @@ export default function PrivacyPolicyPage() {
               heading: "5. Cookies",
               body: `Beim Besuch unseres Onlineshops verwenden wir Cookies. Notwendige Cookies sind für den Betrieb der Website erforderlich (z. B. Warenkorb, Anmeldung, Spracheinstellung) und können nicht deaktiviert werden. Analyse-Cookies helfen uns zu verstehen, wie die Website genutzt wird. Marketing-Cookies setzen wir ein, um Ihnen relevantere Angebote zu zeigen${
                 settings.metaPixelId
-                  ? " — konkret binden wir das Meta-Pixel (Facebook/Instagram) ein, das den Besuch unserer Seite an Meta übermittelt"
+                  ? " — konkret binden wir das Meta-Pixel (Facebook/Instagram) ein, das den Besuch unserer Seite an Meta übermittelt. Über den automatischen erweiterten Abgleich von Meta können zusätzlich Ort, Postleitzahl und Land (vor der Übertragung gehasht) an Meta übermittelt werden, um Werbeanzeigen besser zuzuordnen"
                   : ""
               }. Beide Kategorien setzen wir nur mit Ihrer Einwilligung ein, die Sie beim ersten Besuch über unseren Cookie-Banner erteilen oder ablehnen.${
                 settings.metaPixelId
@@ -128,7 +128,7 @@ export default function PrivacyPolicyPage() {
               heading: "5. Çerezler",
               body: `Online mağazamızı ziyaret ettiğinizde çerezler kullanıyoruz. Zorunlu çerezler web sitesinin çalışması için gereklidir (ör. sepet, giriş, dil tercihi) ve devre dışı bırakılamaz. Analiz çerezleri web sitesinin nasıl kullanıldığını anlamamıza yardımcı olur. Pazarlama çerezlerini size daha uygun teklifler göstermek için kullanıyoruz${
                 settings.metaPixelId
-                  ? " — somut olarak, ziyaretinizi Meta'ya ileten Meta Pixel'ini (Facebook/Instagram) kullanıyoruz"
+                  ? " — somut olarak, ziyaretinizi Meta'ya ileten Meta Pixel'ini (Facebook/Instagram) kullanıyoruz. Meta'nın otomatik gelişmiş eşleştirmesi ile, reklamları daha iyi eşleştirmek amacıyla şehir, posta kodu ve ülke bilgileri de (aktarılmadan önce hashlenerek) Meta'ya iletilebilir"
                   : ""
               }. Her iki kategoriyi de yalnızca ilk ziyaretinizde çerez banner'ımız üzerinden verdiğiniz veya reddettiğiniz izinle kullanırız.${
                 settings.metaPixelId
