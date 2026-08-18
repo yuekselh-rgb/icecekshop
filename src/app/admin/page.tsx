@@ -74,7 +74,9 @@ export default async function AdminPage() {
         lang === "de" ? "Z-Bericht: Einnahmen, Ausgaben und offene Rechnungen." : "Z Raporu: Gelir, gider ve veresiye özeti.",
       href: "/admin/cash-report",
       icon: FileBarChart,
-      permission: admin.permissions.viewCashReport,
+      permission:
+        admin.permissions.viewCashReport ||
+        admin.permissions.createCashHandover,
       featured: false,
     },
     {
