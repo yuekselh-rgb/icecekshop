@@ -598,7 +598,7 @@ export function buildOrderReceiptHtml(
           </div>
 
           ${
-            order.customerNote
+            order.customerNote && !order.orderNumber.startsWith("BAR-")
               ? `
                 <div class="note-block">
                   <div class="party-label">${language === "de" ? "Kundennotiz" : "Müşteri Notu"}</div>
