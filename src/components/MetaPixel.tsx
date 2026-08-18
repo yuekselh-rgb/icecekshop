@@ -1,24 +1,11 @@
 "use client";
 
+import {
+  CONSENT_UPDATED_EVENT,
+  hasMarketingConsent,
+} from "@/lib/cookie-consent";
 import Script from "next/script";
 import { useEffect, useState } from "react";
-
-const STORAGE_KEY = "paketmarket-cookie-consent";
-const CONSENT_UPDATED_EVENT = "paketmarket:cookie-consent-updated";
-
-function hasMarketingConsent() {
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-
-    if (!raw) {
-      return false;
-    }
-
-    return JSON.parse(raw)?.marketing === true;
-  } catch {
-    return false;
-  }
-}
 
 export default function MetaPixel({ pixelId }: { pixelId: string | null }) {
   const [allowed, setAllowed] = useState(false);

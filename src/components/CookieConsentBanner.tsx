@@ -1,50 +1,22 @@
 "use client";
 
 import { useLanguage } from "@/context/LanguageContext";
+import {
+  CONSENT_COOKIE_KEY,
+  CONSENT_STORAGE_KEY,
+  CONSENT_UPDATED_EVENT,
+  readStoredConsent,
+  type ConsentSelection,
+  type StoredConsent,
+} from "@/lib/cookie-consent";
 import { Cookie, ShieldCheck } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
-const STORAGE_KEY = "paketmarket-cookie-consent";
-const COOKIE_KEY = "paketmarket_cookie_consent";
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 180;
 const REOPEN_EVENT = "paketmarket:open-cookie-settings";
-const CONSENT_UPDATED_EVENT = "paketmarket:cookie-consent-updated";
 
 const STAFF_PATH_PREFIXES = ["/admin", "/driver", "/super-admin", "/platform"];
-
-type ConsentSelection = {
-  analytics: boolean;
-  marketing: boolean;
-};
-
-type StoredConsent = ConsentSelection & {
-  necessary: true;
-  updatedAt: string;
-};
-
-function readStoredConsent(): StoredConsent | null {
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-
-    if (!raw) {
-      return null;
-    }
-
-    const parsed = JSON.parse(raw);
-
-    if (
-      typeof parsed?.analytics !== "boolean" ||
-      typeof parsed?.marketing !== "boolean"
-    ) {
-      return null;
-    }
-
-    return parsed as StoredConsent;
-  } catch {
-    return null;
-  }
-}
 
 function writeConsent(selection: ConsentSelection) {
   const stored: StoredConsent = {
@@ -55,12 +27,12 @@ function writeConsent(selection: ConsentSelection) {
   };
 
   try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
+    window.localStorage.setItem(CONSENT_STORAGE_KEY, JSON.stringify(stored));
   } catch {
     // Speicher nicht verfügbar (z. B. privater Modus) — Banner erscheint dann beim nächsten Besuch erneut.
   }
 
-  document.cookie = `${COOKIE_KEY}=${encodeURIComponent(
+  document.cookie = `${CONSENT_COOKIE_KEY}=${encodeURIComponent(
     JSON.stringify({ necessary: true, ...selection }),
   )}; path=/; max-age=${COOKIE_MAX_AGE}; samesite=lax`;
 

@@ -11,6 +11,7 @@ import {
   normalizeBusinessHours,
   type BusinessHoursDay,
 } from "@/lib/business-hours";
+import { trackMetaPixelEvent } from "@/lib/meta-pixel-events";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -20,7 +21,7 @@ import {
   Wallet,
 } from "lucide-react";
 import Link from "next/link";
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 
 type CheckoutForm = {
   firstName: string;
@@ -208,6 +209,24 @@ export default function CheckoutPage() {
         : deliveryFeeSettings.amount;
 
   const total = Math.max(0, subtotal + deliveryFee - pfandReturnTotal);
+
+  const initiateCheckoutFiredRef = useRef(false);
+
+  useEffect(() => {
+    if (initiateCheckoutFiredRef.current || items.length === 0) {
+      return;
+    }
+
+    initiateCheckoutFiredRef.current = true;
+
+    trackMetaPixelEvent("InitiateCheckout", {
+      content_ids: items.map((item) => item.productId),
+      content_type: "product",
+      num_items: items.reduce((total, item) => total + item.quantity, 0),
+      value: Number(subtotal.toFixed(2)),
+      currency: "EUR",
+    });
+  }, [items, subtotal]);
 
   const deliveryMessage = isDealer
     ? t.dealerDeliveryText
@@ -404,6 +423,14 @@ export default function CheckoutPage() {
         setError(data.error || t.orderFailed);
         return;
       }
+
+      trackMetaPixelEvent("Purchase", {
+        content_ids: items.map((item) => item.productId),
+        content_type: "product",
+        num_items: items.reduce((total, item) => total + item.quantity, 0),
+        value: Number(data.order.totalAmount),
+        currency: "EUR",
+      });
 
       setCompletedOrder({
         orderNumber: data.order.orderNumber,

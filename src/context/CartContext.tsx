@@ -1,5 +1,6 @@
 "use client";
 
+import { trackMetaPixelEvent } from "@/lib/meta-pixel-events";
 import {
   createContext,
   ReactNode,
@@ -135,6 +136,14 @@ export function CartProvider({ children }: CartProviderProps) {
   }, [items, pfandItems, isLoaded]);
 
   function addToCart(item: Omit<CartItem, "quantity">, quantity = 1) {
+    trackMetaPixelEvent("AddToCart", {
+      content_ids: [item.productId],
+      content_name: item.name,
+      content_type: "product",
+      value: Number((item.price * quantity).toFixed(2)),
+      currency: "EUR",
+    });
+
     setItems((currentItems) => {
       const existingItem = currentItems.find(
         (currentItem) => currentItem.id === item.id,
