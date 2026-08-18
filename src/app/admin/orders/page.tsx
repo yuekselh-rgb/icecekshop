@@ -1768,16 +1768,6 @@ export default function AdminOrdersPage() {
                   {reportSummary.openCount}
                 </p>
               </div>
-
-              <div className="rounded-xl bg-red-50 px-3 py-2.5">
-                <p className="text-[10px] font-black uppercase leading-tight text-red-700">
-                  {language === "de" ? "Offener Betrag" : "Açık Tutar"}
-                </p>
-
-                <p className="mt-1 text-lg font-black leading-none text-red-900">
-                  {reportSummary.openAmount.toFixed(2)} €
-                </p>
-              </div>
             </div>
 
             <div className="mt-5 overflow-hidden rounded-2xl border border-slate-200">
