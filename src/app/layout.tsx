@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import Script from "next/script";
 import CookieConsentBanner from "@/components/CookieConsentBanner";
 import MetaPixel from "@/components/MetaPixel";
@@ -6,8 +7,17 @@ import { CartProvider } from "@/context/CartContext";
 import { LanguageProvider } from "@/context/LanguageContext";
 import "./globals.css";
 import { cn } from "@/lib/utils";
-import { prisma } from "@/lib/prisma";
-import { getCurrentTenant } from "@/lib/tenant";
+import { getTenantCompanySettings } from "@/lib/tenant-company";
+
+const SCHEMA_DAY_NAMES = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
 
 
 export const viewport = {
@@ -17,18 +27,21 @@ export const viewport = {
 };
 
 export async function generateMetadata(): Promise<Metadata> {
-  const tenant = await getCurrentTenant();
+  const host = (await headers()).get("host");
+  const result = await getTenantCompanySettings();
+  const settings = result?.settings;
 
-  const companySettings = tenant
-    ? await prisma.companySetting.findUnique({
-        where: { tenantId: tenant.id },
-        select: { companyName: true, logoUrl: true },
-      })
-    : null;
+  const title = settings?.companyName || result?.tenant.name || "Online Shop";
 
-  const title = companySettings?.companyName || tenant?.name || "Online Shop";
+  const description = settings?.city
+    ? `${title} – Getränke-Lieferservice in ${settings.city}. Getränke, Verpackungen und Reinigungsprodukte bequem online bestellen und liefern lassen.`
+    : "Getränke, Verpackungen und Reinigungsprodukte bequem bestellen.";
+
+  const siteUrl = host ? `https://${host}` : undefined;
 
   return {
+    metadataBase: siteUrl ? new URL(siteUrl) : undefined,
+
     formatDetection: {
       telephone: false,
       email: false,
@@ -36,17 +49,26 @@ export async function generateMetadata(): Promise<Metadata> {
     },
 
     title,
-    description:
-      "Getränke, Verpackungen und Reinigungsprodukte bequem bestellen.",
+    description,
 
-    icons: companySettings?.logoUrl
+    icons: settings?.logoUrl
       ? {
-          icon: companySettings.logoUrl,
-          apple: companySettings.logoUrl,
+          icon: settings.logoUrl,
+          apple: settings.logoUrl,
         }
       : undefined,
 
     manifest: "/manifest.webmanifest",
+
+    openGraph: {
+      title,
+      description,
+      url: siteUrl,
+      siteName: title,
+      locale: "de_DE",
+      type: "website",
+      images: settings?.logoUrl ? [settings.logoUrl] : undefined,
+    },
   };
 }
 
@@ -55,13 +77,53 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const tenant = await getCurrentTenant();
+  const host = (await headers()).get("host");
+  const result = await getTenantCompanySettings();
+  const settings = result?.settings;
 
-  const companySettings = tenant
-    ? await prisma.companySetting.findUnique({
-        where: { tenantId: tenant.id },
-        select: { metaPixelId: true },
-      })
+  const hasAddress = Boolean(settings?.street && settings?.city);
+
+  const localBusinessJsonLd = hasAddress
+    ? {
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        name: settings!.companyName,
+        image: settings!.logoUrl || undefined,
+        url: host ? `https://${host}` : undefined,
+        telephone: settings!.phone || undefined,
+        email: settings!.email || undefined,
+
+        address: {
+          "@type": "PostalAddress",
+          streetAddress: [settings!.street, settings!.houseNumber]
+            .filter(Boolean)
+            .join(" "),
+          addressLocality: settings!.city,
+          postalCode: settings!.postalCode || undefined,
+          addressCountry: "DE",
+        },
+
+        openingHoursSpecification:
+          settings!.businessHoursEnabled && Array.isArray(settings!.businessHours)
+            ? (settings!.businessHours as Array<Record<string, unknown>>)
+                .filter((entry) => !entry.closed)
+                .map((entry) => ({
+                  "@type": "OpeningHoursSpecification",
+                  dayOfWeek: SCHEMA_DAY_NAMES[Number(entry.day)],
+                  opens: entry.open,
+                  closes: entry.close,
+                }))
+            : undefined,
+
+        sameAs:
+          [
+            settings!.instagram,
+            settings!.facebook,
+            settings!.linkedin,
+            settings!.tiktok,
+            settings!.twitter,
+          ].filter(Boolean) || undefined,
+      }
     : null;
 
   return (
@@ -70,10 +132,19 @@ export default async function RootLayout({
         <Script id="disable-scroll-restoration" strategy="beforeInteractive">
           {"try{if('scrollRestoration' in history){history.scrollRestoration='manual';}}catch(e){}"}
         </Script>
+        {localBusinessJsonLd ? (
+          <Script
+            id="local-business-jsonld"
+            type="application/ld+json"
+            strategy="beforeInteractive"
+          >
+            {JSON.stringify(localBusinessJsonLd)}
+          </Script>
+        ) : null}
         <LanguageProvider>
           <CartProvider>{children}</CartProvider>
           <CookieConsentBanner />
-          <MetaPixel pixelId={companySettings?.metaPixelId || null} />
+          <MetaPixel pixelId={settings?.metaPixelId || null} />
         </LanguageProvider>
       </body>
     </html>
