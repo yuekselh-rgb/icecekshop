@@ -48,14 +48,8 @@ export default function HeroSection() {
         />
         <div className="absolute inset-0 bg-[#05090A]/75" />
 
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -top-32 right-[-10%] h-96 w-96 rounded-full bg-[#0AA0FA] opacity-25 blur-[100px]"
-        />
-
         <div className="relative flex min-h-[26rem] flex-col items-center justify-center px-6 py-14 text-center sm:px-10 md:min-h-[32rem] md:py-20">
-          <span className="mb-5 flex w-fit items-center gap-2 rounded-full bg-[#0AA0FA]/15 px-4 py-2 text-sm font-bold text-[#0AA0FA] md:mb-6">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#0AA0FA]" />
+          <span className="mb-5 w-fit rounded-full bg-[#5F7F93]/20 px-4 py-2 text-sm font-bold text-[#91CBDA] md:mb-6">
             {t.badge}
           </span>
 

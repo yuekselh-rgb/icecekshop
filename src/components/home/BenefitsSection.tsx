@@ -56,9 +56,7 @@ export default function BenefitsSection() {
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           <div className="flex flex-col justify-center border border-[#05090a26] bg-[#D1DAE0] p-6 sm:col-span-2 lg:col-span-2">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#0AA0FA]">
-              <Truck size={22} className="text-[#05090A]" />
-            </div>
+            <Truck size={28} className="text-[#1B4965]" />
             <h3 className="mt-5 text-xl font-medium text-[#05090A]">{t.bigTitle}</h3>
             <p className="mt-2 text-[#05090A]">{t.bigText}</p>
             <Link href="/products" onClick={scrollToProducts} className="mt-4 w-fit font-medium text-[#05090A] underline">
@@ -67,17 +65,13 @@ export default function BenefitsSection() {
           </div>
 
           <div className="flex flex-col justify-center border border-[#05090a26] bg-[#D1DAE0] p-6">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#0AA0FA]">
-              <PackageCheck size={22} className="text-[#05090A]" />
-            </div>
+            <PackageCheck size={28} className="text-[#1B4965]" />
             <h3 className="mt-5 text-xl font-medium text-[#05090A]">{t.secureTitle}</h3>
             <p className="mt-2 text-[#05090A]">{t.secureText}</p>
           </div>
 
           <div className="flex flex-col justify-center border border-[#05090a26] bg-[#D1DAE0] p-6">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#0AA0FA]">
-              <RotateCcw size={22} className="text-[#05090A]" />
-            </div>
+            <RotateCcw size={28} className="text-[#1B4965]" />
             <h3 className="mt-5 text-xl font-medium text-[#05090A]">{t.pfandTitle}</h3>
             <p className="mt-2 text-[#05090A]">{t.pfandText}</p>
             <Link href="/pfand" className="mt-4 w-fit font-medium text-[#05090A] underline">
