@@ -38,7 +38,13 @@ export const GET = withTenant(async (request: NextRequest) => {
 
   const admin = await getAdminWithPermissions();
 
-  if (!admin || (!admin.isSuperAdmin && !admin.permissions.viewCashReport)) {
+  const canViewFinancials =
+    Boolean(admin?.isSuperAdmin) || Boolean(admin?.permissions.viewCashReport);
+
+  if (
+    !admin ||
+    (!canViewFinancials && !admin.permissions.createCashHandover)
+  ) {
     return NextResponse.json(
       {
         error:
@@ -127,6 +133,24 @@ export const GET = withTenant(async (request: NextRequest) => {
       },
       { status: 400 },
     );
+  }
+
+  /*
+   * Admins mit ausschließlich createCashHandover (ohne viewCashReport)
+   * dürfen die Seite laden, um eine Kassenübergabe zu erfassen — sehen
+   * dabei aber keine Finanzzahlen. Keine der Bericht-Queries wird für
+   * sie ausgeführt.
+   */
+  if (!canViewFinancials) {
+    return NextResponse.json({
+      permissions: admin.permissions,
+
+      period: {
+        mode,
+        startDate: rangeStart.toISOString(),
+        endDate: addDays(rangeEnd, -1).toISOString(),
+      },
+    });
   }
 
   try {

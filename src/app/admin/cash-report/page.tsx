@@ -48,22 +48,22 @@ type ReportData = {
     startDate: string;
     endDate: string;
   };
-  income: {
+  income?: {
     total: number;
     byCategory: Record<string, number>;
   };
-  expense: {
+  expense?: {
     total: number;
     byCategory: Record<string, number>;
   };
-  openingBalance: number;
-  net: number;
-  openAccount: {
+  openingBalance?: number;
+  net?: number;
+  openAccount?: {
     total: number;
     orderCount: number;
     orders: OpenOrderRow[];
   };
-  movements: CashMovementRow[];
+  movements?: CashMovementRow[];
   permissions: {
     createCashHandover?: boolean;
     [key: string]: boolean | undefined;
@@ -150,7 +150,9 @@ export default function CashReportPage() {
           handoverButton: "Kassenübergabe erfassen",
           handoverTitle: "Kassenübergabe erfassen",
           handoverDescription:
-            "Wie viel Bargeld übergeben Sie und an wen? Der Betrag wird sofort aus der Kasse gebucht.",
+            "Wie viel Bargeld übergeben Sie und an wen? Das Geld bleibt im Unternehmen, nur die verantwortliche Person wechselt.",
+          handoverOnlyExplanation:
+            "Sie haben ausschließlich die Berechtigung, eine Kassenübergabe zu erfassen. Finanzzahlen wie Anfangsbestand, Einnahmen, Ausgaben und Nettokasse sind für Ihr Konto nicht sichtbar.",
           handoverAmount: "Übergebener Betrag (€)",
           handoverRecipient: "Übergeben an",
           handoverRecipientPlaceholder: "Name der Person",
@@ -224,7 +226,9 @@ export default function CashReportPage() {
           handoverButton: "Kasa Devri Kaydet",
           handoverTitle: "Kasa Devri Kaydet",
           handoverDescription:
-            "Ne kadar nakit devrediyorsunuz ve kime? Tutar hemen kasadan düşülecek.",
+            "Ne kadar nakit devrediyorsunuz ve kime? Para işletmede kalır, yalnızca sorumlu kişi değişir.",
+          handoverOnlyExplanation:
+            "Yalnızca kasa devri kaydetme yetkiniz bulunuyor. Açılış bakiyesi, gelir, gider ve net kasa gibi finansal veriler hesabınız için görünür değildir.",
           handoverAmount: "Devredilen Tutar (€)",
           handoverRecipient: "Kime Devredildi",
           handoverRecipientPlaceholder: "Kişinin adı",
@@ -352,11 +356,13 @@ export default function CashReportPage() {
     }
   }
 
-  const incomeCategories = report
+  const canViewFinancials = Boolean(report?.income);
+
+  const incomeCategories = report?.income
     ? Object.entries(report.income.byCategory).sort((a, b) => b[1] - a[1])
     : [];
 
-  const expenseCategories = report
+  const expenseCategories = report?.expense
     ? Object.entries(report.expense.byCategory).sort((a, b) => b[1] - a[1])
     : [];
 
@@ -392,14 +398,16 @@ export default function CashReportPage() {
               </button>
             ) : null}
 
-            <button
-              type="button"
-              onClick={() => window.print()}
-              className="inline-flex items-center gap-2 rounded-2xl bg-slate-950 px-5 py-3 font-black text-white transition hover:bg-slate-800"
-            >
-              <Printer size={18} />
-              {t.print}
-            </button>
+            {canViewFinancials ? (
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="inline-flex items-center gap-2 rounded-2xl bg-slate-950 px-5 py-3 font-black text-white transition hover:bg-slate-800"
+              >
+                <Printer size={18} />
+                {t.print}
+              </button>
+            ) : null}
           </div>
         </div>
 
@@ -414,7 +422,11 @@ export default function CashReportPage() {
           ) : null}
         </div>
 
-        <div className="mb-6 rounded-[28px] bg-white p-5 shadow-sm print:hidden">
+        <div
+          className={`mb-6 rounded-[28px] bg-white p-5 shadow-sm print:hidden ${
+            canViewFinancials ? "" : "hidden"
+          }`}
+        >
           <div className="flex flex-wrap gap-2">
             {(["day", "month", "range"] as ReportMode[]).map((option) => (
               <button
@@ -521,7 +533,7 @@ export default function CashReportPage() {
             <Loader2 className="animate-spin" />
             {t.loading}
           </div>
-        ) : report ? (
+        ) : report ? canViewFinancials ? (
           <>
             <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5 print:grid-cols-5 print:gap-2">
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 print:border print:border-slate-300 print:bg-white">
@@ -530,7 +542,7 @@ export default function CashReportPage() {
                   {t.openingBalance}
                 </div>
                 <p className="mt-2 text-2xl font-black text-slate-950">
-                  {formatEuro(report.openingBalance)}
+                  {formatEuro(report.openingBalance!)}
                 </p>
               </div>
 
@@ -540,7 +552,7 @@ export default function CashReportPage() {
                   {t.totalIncome}
                 </div>
                 <p className="mt-2 text-2xl font-black text-green-800 print:text-slate-950">
-                  {formatEuro(report.income.total)}
+                  {formatEuro(report.income!.total)}
                 </p>
               </div>
 
@@ -550,7 +562,7 @@ export default function CashReportPage() {
                   {t.totalExpense}
                 </div>
                 <p className="mt-2 text-2xl font-black text-red-800 print:text-slate-950">
-                  {formatEuro(report.expense.total)}
+                  {formatEuro(report.expense!.total)}
                 </p>
               </div>
 
@@ -560,7 +572,7 @@ export default function CashReportPage() {
                   {t.net}
                 </div>
                 <p className="mt-2 text-2xl font-black text-slate-950">
-                  {formatEuro(report.net)}
+                  {formatEuro(report.net!)}
                 </p>
               </div>
 
@@ -569,10 +581,10 @@ export default function CashReportPage() {
                   {t.openAccount}
                 </div>
                 <p className="mt-2 text-2xl font-black text-amber-800 print:text-slate-950">
-                  {formatEuro(report.openAccount.total)}
+                  {formatEuro(report.openAccount!.total)}
                 </p>
                 <p className="mt-1 text-xs font-bold text-amber-700 print:text-slate-500">
-                  {t.orderCount(report.openAccount.orderCount)}
+                  {t.orderCount(report.openAccount!.orderCount)}
                 </p>
               </div>
             </div>
@@ -634,11 +646,11 @@ export default function CashReportPage() {
                 {t.openAccountOrders}
               </h2>
 
-              {report.openAccount.orders.length === 0 ? (
+              {report.openAccount!.orders.length === 0 ? (
                 <p className="text-sm text-slate-500">{t.noOpenAccountOrders}</p>
               ) : (
                 <div className="divide-y divide-slate-100">
-                  {report.openAccount.orders.map((order) => (
+                  {report.openAccount!.orders.map((order) => (
                     <div
                       key={order.id}
                       className={`grid gap-1 py-3 sm:grid-cols-[1fr_auto] sm:items-center sm:gap-4 ${
@@ -687,7 +699,7 @@ export default function CashReportPage() {
                 {t.movements}
               </h2>
 
-              {report.movements.length === 0 ? (
+              {report.movements!.length === 0 ? (
                 <p className="text-sm text-slate-500">{t.noMovements}</p>
               ) : (
                 <>
@@ -704,7 +716,7 @@ export default function CashReportPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {report.movements.map((movement) => {
+                        {report.movements!.map((movement) => {
                           const isSettledOpenAccount =
                             movement.category === "MANUAL_INCOME" &&
                             movement.orderId !== null;
@@ -766,7 +778,7 @@ export default function CashReportPage() {
                   </div>
 
                   <div className="divide-y divide-slate-100 sm:hidden">
-                    {report.movements.map((movement) => {
+                    {report.movements!.map((movement) => {
                       const isSettledOpenAccount =
                         movement.category === "MANUAL_INCOME" &&
                         movement.orderId !== null;
@@ -839,6 +851,13 @@ export default function CashReportPage() {
               )}
             </div>
           </>
+        ) : (
+          <div className="rounded-[28px] bg-white p-7 text-center">
+            <HandCoins className="mx-auto text-orange-500" size={32} />
+            <p className="mx-auto mt-4 max-w-md text-sm font-bold text-slate-500">
+              {t.handoverOnlyExplanation}
+            </p>
+          </div>
         ) : null}
       </div>
 
