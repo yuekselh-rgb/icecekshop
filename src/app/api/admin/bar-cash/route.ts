@@ -121,8 +121,15 @@ export const GET = withTenant(async () => {
       .filter((item) => item.direction === "IN")
       .reduce((total, item) => total + item.amount, 0);
 
+    /*
+     * Kassenübergabe verlässt die Kasse nicht — das Geld bleibt im
+     * Unternehmen, nur die verantwortliche Person wechselt. Zählt daher
+     * nicht als Ausgabe und verringert den Kassenstand nicht.
+     */
     const totalOut = serialized
-      .filter((item) => item.direction === "OUT")
+      .filter(
+        (item) => item.direction === "OUT" && item.category !== "CASH_HANDOVER",
+      )
       .reduce((total, item) => total + item.amount, 0);
 
     return NextResponse.json({

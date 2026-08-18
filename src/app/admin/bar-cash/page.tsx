@@ -4,6 +4,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import {
   ArrowDownCircle,
   ArrowLeft,
+  ArrowRightLeft,
   ArrowUpCircle,
   Loader2,
   Minus,
@@ -2303,6 +2304,13 @@ const categoryLabels: Record<string, string> =
                     movement.category === "MANUAL_INCOME" &&
                     movement.orderId !== null;
 
+                  /*
+                   * Kassenübergabe verlässt die Kasse nicht — das Geld
+                   * bleibt im Unternehmen, nur die verantwortliche Person
+                   * wechselt. Daher neutral statt rot/minus dargestellt.
+                   */
+                  const isHandover = movement.category === "CASH_HANDOVER";
+
                   return (
                   <article
                     key={movement.id}
@@ -2315,12 +2323,16 @@ const categoryLabels: Record<string, string> =
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                       <div
                         className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${
-                          movement.direction === "IN"
-                            ? "bg-green-50 text-green-600"
-                            : "bg-red-50 text-red-600"
+                          isHandover
+                            ? "bg-slate-100 text-slate-600"
+                            : movement.direction === "IN"
+                              ? "bg-green-50 text-green-600"
+                              : "bg-red-50 text-red-600"
                         }`}
                       >
-                        {movement.direction === "IN" ? (
+                        {isHandover ? (
+                          <ArrowRightLeft />
+                        ) : movement.direction === "IN" ? (
                           <ArrowUpCircle />
                         ) : (
                           <ArrowDownCircle />
@@ -2358,12 +2370,14 @@ const categoryLabels: Record<string, string> =
 
                       <strong
                         className={
-                          movement.direction === "IN"
-                            ? "text-green-700"
-                            : "text-red-600"
+                          isHandover
+                            ? "text-slate-600"
+                            : movement.direction === "IN"
+                              ? "text-green-700"
+                              : "text-red-600"
                         }
                       >
-                        {movement.direction === "IN" ? "+" : "-"}
+                        {isHandover ? "" : movement.direction === "IN" ? "+" : "-"}
                         {movement.amount.toLocaleString("de-DE", {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2,

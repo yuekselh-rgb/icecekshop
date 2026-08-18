@@ -197,10 +197,17 @@ export const GET = withTenant(async (request: NextRequest) => {
           _sum: { amount: true },
         }),
 
+        /*
+         * Kassenübergabe verlässt die Kasse nicht — das Geld bleibt im
+         * Unternehmen, nur die verantwortliche Person wechselt. Zählt
+         * daher nicht als Ausgabe und fließt nicht in den Anfangsbestand
+         * ein.
+         */
         prisma.cashMovement.aggregate({
           where: {
             createdAt: { lt: rangeStart },
             direction: "OUT",
+            category: { not: "CASH_HANDOVER" },
           },
           _sum: { amount: true },
         }),
@@ -244,6 +251,15 @@ export const GET = withTenant(async (request: NextRequest) => {
     let expenseTotal = 0;
 
     for (const movement of movements) {
+      /*
+       * Kassenübergabe verlässt die Kasse nicht — das Geld bleibt im
+       * Unternehmen, nur die verantwortliche Person wechselt. Zählt daher
+       * nicht als Ausgabe (erscheint aber weiterhin in der Bewegungsliste).
+       */
+      if (movement.category === "CASH_HANDOVER") {
+        continue;
+      }
+
       const amount = Number(movement.amount);
 
       if (movement.direction === "IN") {

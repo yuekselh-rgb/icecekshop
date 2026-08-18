@@ -709,6 +709,9 @@ export default function CashReportPage() {
                             movement.category === "MANUAL_INCOME" &&
                             movement.orderId !== null;
 
+                          const isHandover =
+                            movement.category === "CASH_HANDOVER";
+
                           return (
                           <tr
                             key={movement.id}
@@ -741,12 +744,18 @@ export default function CashReportPage() {
                             </td>
                             <td
                               className={`py-2 text-right font-black ${
-                                movement.direction === "IN"
-                                  ? "text-green-700"
-                                  : "text-red-700"
+                                isHandover
+                                  ? "text-slate-600"
+                                  : movement.direction === "IN"
+                                    ? "text-green-700"
+                                    : "text-red-700"
                               }`}
                             >
-                              {movement.direction === "IN" ? "+" : "-"}
+                              {isHandover
+                                ? ""
+                                : movement.direction === "IN"
+                                  ? "+"
+                                  : "-"}
                               {formatEuro(movement.amount)}
                             </td>
                           </tr>
@@ -761,6 +770,9 @@ export default function CashReportPage() {
                       const isSettledOpenAccount =
                         movement.category === "MANUAL_INCOME" &&
                         movement.orderId !== null;
+
+                      const isHandover =
+                        movement.category === "CASH_HANDOVER";
 
                       return (
                         <div
@@ -778,12 +790,18 @@ export default function CashReportPage() {
 
                             <p
                               className={`shrink-0 font-black ${
-                                movement.direction === "IN"
-                                  ? "text-green-700"
-                                  : "text-red-700"
+                                isHandover
+                                  ? "text-slate-600"
+                                  : movement.direction === "IN"
+                                    ? "text-green-700"
+                                    : "text-red-700"
                               }`}
                             >
-                              {movement.direction === "IN" ? "+" : "-"}
+                              {isHandover
+                                ? ""
+                                : movement.direction === "IN"
+                                  ? "+"
+                                  : "-"}
                               {formatEuro(movement.amount)}
                             </p>
                           </div>
