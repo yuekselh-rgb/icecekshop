@@ -274,15 +274,15 @@ export default function CategorySection({
             aria-pressed={activeCategory === "all"}
             className={`group flex shrink-0 items-center gap-2.5 rounded-full border px-4 py-3 transition ${
               activeCategory === "all"
-                ? "border-[#1B4965] bg-[#1B4965] text-white shadow-md"
-                : "border-[#05090a26] bg-white text-[#05090A] hover:border-[#1B4965] hover:bg-[#E8ECEF]"
+                ? "border-[#0E6FAE] bg-[#0E6FAE] text-white shadow-md"
+                : "border-[#05090a26] bg-white text-[#05090A] hover:border-[#0E6FAE] hover:bg-[#EAF2F8]"
             }`}
           >
             <span
               className={`flex h-9 w-9 items-center justify-center rounded-full ${
                 activeCategory === "all"
                   ? "bg-white/20 text-white"
-                  : "bg-[#E8ECEF] text-[#1B4965]"
+                  : "bg-[#EAF2F8] text-[#0E6FAE]"
               }`}
             >
               <ShoppingBasket size={19} />
@@ -330,15 +330,15 @@ export default function CategorySection({
                 aria-pressed={isActive}
                 className={`group flex shrink-0 items-center gap-2.5 rounded-full border px-4 py-3 transition ${
                   isActive
-                    ? "border-[#1B4965] bg-[#1B4965] text-white shadow-md"
-                    : "border-[#05090a26] bg-white text-[#05090A] hover:border-[#1B4965] hover:bg-[#E8ECEF]"
+                    ? "border-[#0E6FAE] bg-[#0E6FAE] text-white shadow-md"
+                    : "border-[#05090a26] bg-white text-[#05090A] hover:border-[#0E6FAE] hover:bg-[#EAF2F8]"
                 }`}
               >
                 <span
                   className={`flex h-9 w-9 items-center justify-center rounded-full transition ${
                     isActive
                       ? "bg-white/20 text-white"
-                      : "bg-[#E8ECEF] text-[#1B4965] group-hover:bg-[#1B4965] group-hover:text-white"
+                      : "bg-[#EAF2F8] text-[#0E6FAE] group-hover:bg-[#0E6FAE] group-hover:text-white"
                   }`}
                 >
                   <Icon size={19} />

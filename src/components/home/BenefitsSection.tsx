@@ -46,7 +46,7 @@ export default function BenefitsSection() {
 
   return (
     // Relume layout-369: light section, eyebrow+heading, 1 big card + 2 regular cards
-    <section className="bg-[#E8ECEF] px-4 py-16 lg:px-8 lg:py-24">
+    <section className="bg-[#EAF2F8] px-4 py-16 lg:px-8 lg:py-24">
       <div className="mx-auto max-w-7xl">
         <div className="mx-auto mb-12 max-w-lg text-center lg:mb-20">
           <p className="mb-3 font-semibold text-[#05090A]">{t.eyebrow}</p>
@@ -55,8 +55,10 @@ export default function BenefitsSection() {
         </div>
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="flex flex-col justify-center border border-[#05090a26] bg-[#D1DAE0] p-6 sm:col-span-2 lg:col-span-2">
-            <Truck size={28} className="text-[#1B4965]" />
+          <div className="flex flex-col justify-center border border-[#05090a26] bg-[#D8E7F0] p-6 sm:col-span-2 lg:col-span-2">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#0E6FAE]">
+              <Truck size={22} className="text-white" />
+            </div>
             <h3 className="mt-5 text-xl font-medium text-[#05090A]">{t.bigTitle}</h3>
             <p className="mt-2 text-[#05090A]">{t.bigText}</p>
             <Link href="/products" onClick={scrollToProducts} className="mt-4 w-fit font-medium text-[#05090A] underline">
@@ -64,14 +66,18 @@ export default function BenefitsSection() {
             </Link>
           </div>
 
-          <div className="flex flex-col justify-center border border-[#05090a26] bg-[#D1DAE0] p-6">
-            <PackageCheck size={28} className="text-[#1B4965]" />
+          <div className="flex flex-col justify-center border border-[#05090a26] bg-[#D8E7F0] p-6">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#0E6FAE]">
+              <PackageCheck size={22} className="text-white" />
+            </div>
             <h3 className="mt-5 text-xl font-medium text-[#05090A]">{t.secureTitle}</h3>
             <p className="mt-2 text-[#05090A]">{t.secureText}</p>
           </div>
 
-          <div className="flex flex-col justify-center border border-[#05090a26] bg-[#D1DAE0] p-6">
-            <RotateCcw size={28} className="text-[#1B4965]" />
+          <div className="flex flex-col justify-center border border-[#05090a26] bg-[#D8E7F0] p-6">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#0E6FAE]">
+              <RotateCcw size={22} className="text-white" />
+            </div>
             <h3 className="mt-5 text-xl font-medium text-[#05090A]">{t.pfandTitle}</h3>
             <p className="mt-2 text-[#05090A]">{t.pfandText}</p>
             <Link href="/pfand" className="mt-4 w-fit font-medium text-[#05090A] underline">

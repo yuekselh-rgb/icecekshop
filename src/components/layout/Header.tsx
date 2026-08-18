@@ -277,7 +277,7 @@ export default function Header() {
                 <button
                   type="button"
                   aria-label={t.menu}
-                  className="rounded-full border border-[#05090a26] p-2.5 transition hover:border-[#1B4965] hover:text-[#1B4965] lg:hidden"
+                  className="rounded-full border border-[#05090a26] p-2.5 transition hover:border-[#0E6FAE] hover:text-[#0E6FAE] lg:hidden"
                 />
               }
             >
@@ -309,7 +309,7 @@ export default function Header() {
                         {currentUser.role === "SUPER_ADMIN" ? (
                           <Crown className="text-amber-500" size={28} />
                         ) : currentUser.role === "ADMIN" ? (
-                          <Shield className="text-[#1B4965]" size={28} />
+                          <Shield className="text-[#0E6FAE]" size={28} />
                         ) : currentUser.role === "DRIVER" ? (
                           <Truck className="text-emerald-500" size={28} />
                         ) : (
@@ -362,7 +362,7 @@ export default function Header() {
       <>
         <Link
           href="/driver"
-          className="flex items-center gap-3 rounded-none px-4 py-3 font-semibold transition hover:bg-[#E8ECEF] hover:text-[#1B4965]"
+          className="flex items-center gap-3 rounded-none px-4 py-3 font-semibold transition hover:bg-[#EAF2F8] hover:text-[#0E6FAE]"
         >
           <Truck size={20} />
           <span>{t.driverPanel}</span>
@@ -370,7 +370,7 @@ export default function Header() {
 
         <Link
           href="/driver?tab=orders"
-          className="flex items-center gap-3 rounded-none px-4 py-3 font-semibold transition hover:bg-[#E8ECEF] hover:text-[#1B4965]"
+          className="flex items-center gap-3 rounded-none px-4 py-3 font-semibold transition hover:bg-[#EAF2F8] hover:text-[#0E6FAE]"
         >
           <Package size={20} />
           <span>{t.incomingOrders}</span>
@@ -378,7 +378,7 @@ export default function Header() {
 
         <Link
           href="/driver?tab=stock"
-          className="flex items-center gap-3 rounded-none px-4 py-3 font-semibold transition hover:bg-[#E8ECEF] hover:text-[#1B4965]"
+          className="flex items-center gap-3 rounded-none px-4 py-3 font-semibold transition hover:bg-[#EAF2F8] hover:text-[#0E6FAE]"
         >
           <Package size={20} />
           <span>{t.vehicleStock}</span>
@@ -396,41 +396,41 @@ export default function Header() {
             {currentUser?.role === "SUPER_ADMIN" && (
               <Link
                 href="/super-admin"
-                className="flex items-center gap-3 rounded-none px-4 py-3 font-semibold transition hover:bg-[#E8ECEF] hover:text-[#1B4965]"
+                className="flex items-center gap-3 rounded-none px-4 py-3 font-semibold transition hover:bg-[#EAF2F8] hover:text-[#0E6FAE]"
               >
                 <Crown size={20}/>
                 <span>{t.superAdmin}</span>
               </Link>
             )}
 
-            <Link href="/admin" className="flex items-center gap-3 rounded-none px-4 py-3 font-semibold transition hover:bg-[#E8ECEF] hover:text-[#1B4965]">
+            <Link href="/admin" className="flex items-center gap-3 rounded-none px-4 py-3 font-semibold transition hover:bg-[#EAF2F8] hover:text-[#0E6FAE]">
               <Shield size={20}/>
               <span>{t.admin}</span>
             </Link>
 
             {permissions.viewOrders && (
-              <Link href="/admin/orders" className="flex items-center gap-3 rounded-none px-4 py-3 font-semibold transition hover:bg-[#E8ECEF] hover:text-[#1B4965]">
+              <Link href="/admin/orders" className="flex items-center gap-3 rounded-none px-4 py-3 font-semibold transition hover:bg-[#EAF2F8] hover:text-[#0E6FAE]">
                 <Package size={20}/>
                 <span>{t.orders}</span>
               </Link>
             )}
 
             {permissions.viewProducts && (
-              <Link href="/admin/products" className="flex items-center gap-3 rounded-none px-4 py-3 font-semibold transition hover:bg-[#E8ECEF] hover:text-[#1B4965]">
+              <Link href="/admin/products" className="flex items-center gap-3 rounded-none px-4 py-3 font-semibold transition hover:bg-[#EAF2F8] hover:text-[#0E6FAE]">
                 <Package size={20}/>
                 <span>{t.products}</span>
               </Link>
             )}
 
             {permissions.viewDriverStock && (
-              <Link href="/admin/driver-stock" className="flex items-center gap-3 rounded-none px-4 py-3 font-semibold transition hover:bg-[#E8ECEF] hover:text-[#1B4965]">
+              <Link href="/admin/driver-stock" className="flex items-center gap-3 rounded-none px-4 py-3 font-semibold transition hover:bg-[#EAF2F8] hover:text-[#0E6FAE]">
                 <Truck size={20}/>
                 <span>{t.driverStocks}</span>
               </Link>
             )}
 
             {permissions.viewDealers && (
-              <Link href="/admin/dealers" className="flex items-center gap-3 rounded-none px-4 py-3 font-semibold transition hover:bg-[#E8ECEF] hover:text-[#1B4965]">
+              <Link href="/admin/dealers" className="flex items-center gap-3 rounded-none px-4 py-3 font-semibold transition hover:bg-[#EAF2F8] hover:text-[#0E6FAE]">
                 <UserRound size={20}/>
                 <span>{t.dealers}</span>
               </Link>
@@ -438,33 +438,33 @@ export default function Header() {
           </>
         )}
 
-        <Link href="/" className="flex items-center gap-3 rounded-none px-4 py-3 font-semibold transition hover:bg-[#E8ECEF] hover:text-[#1B4965]">
+        <Link href="/" className="flex items-center gap-3 rounded-none px-4 py-3 font-semibold transition hover:bg-[#EAF2F8] hover:text-[#0E6FAE]">
       <House size={20}/>
       <span>{t.home}</span>
     </Link>
 
-    <Link href={productsHref} onClick={handleProductsClick} className="flex items-center gap-3 rounded-none px-4 py-3 font-semibold transition hover:bg-[#E8ECEF] hover:text-[#1B4965]">
+    <Link href={productsHref} onClick={handleProductsClick} className="flex items-center gap-3 rounded-none px-4 py-3 font-semibold transition hover:bg-[#EAF2F8] hover:text-[#0E6FAE]">
       <Package size={20}/>
       <span>{t.products}</span>
     </Link>
 
-    <Link href="/pfand" className="flex items-center gap-3 rounded-none px-4 py-3 font-semibold transition hover:bg-[#E8ECEF] hover:text-[#1B4965]">
+    <Link href="/pfand" className="flex items-center gap-3 rounded-none px-4 py-3 font-semibold transition hover:bg-[#EAF2F8] hover:text-[#0E6FAE]">
       <Recycle size={20}/>
       <span>{t.pfand}</span>
     </Link>
 
-    <Link href={accountHref} className="flex items-center gap-3 rounded-none px-4 py-3 font-semibold transition hover:bg-[#E8ECEF] hover:text-[#1B4965]">
+    <Link href={accountHref} className="flex items-center gap-3 rounded-none px-4 py-3 font-semibold transition hover:bg-[#EAF2F8] hover:text-[#0E6FAE]">
       <UserRound size={20}/>
       <span>{t.account}</span>
     </Link>
 
-    <Link href="/cart" className="flex items-center justify-between rounded-none bg-[#F2F2F2] px-4 py-3 font-semibold transition hover:bg-[#E8ECEF]">
+    <Link href="/cart" className="flex items-center justify-between rounded-none bg-[#F2F2F2] px-4 py-3 font-semibold transition hover:bg-[#EAF2F8]">
       <div className="flex items-center gap-3">
         <ShoppingCart size={20}/>
         <span>{t.cartText}</span>
       </div>
 
-      <span className="rounded-full bg-[#1B4965] px-2 py-1 text-xs font-bold text-white">
+      <span className="rounded-full bg-[#0E6FAE] px-2 py-1 text-xs font-bold text-white">
         {totalItems}
       </span>
     </Link>
@@ -482,7 +482,7 @@ export default function Header() {
         onClick={() => setLanguage("de")}
         className={`rounded-none py-2 font-bold ${
           language==="de"
-          ? "bg-[#1B4965] text-white"
+          ? "bg-[#0E6FAE] text-white"
           : "border border-[#05090a26]"
         }`}
       >
@@ -493,7 +493,7 @@ export default function Header() {
         onClick={() => setLanguage("tr")}
         className={`rounded-none py-2 font-bold ${
           language==="tr"
-          ? "bg-[#1B4965] text-white"
+          ? "bg-[#0E6FAE] text-white"
           : "border border-[#05090a26]"
         }`}
       >
@@ -515,13 +515,13 @@ export default function Header() {
           </Sheet>
 
           <nav className="hidden items-center gap-1 lg:flex">
-            <Link href={productsHref} onClick={handleProductsClick} className="rounded-full px-4 py-2 font-semibold text-[#05090A] transition hover:bg-[#E8ECEF]">
+            <Link href={productsHref} onClick={handleProductsClick} className="rounded-full px-4 py-2 font-semibold text-[#05090A] transition hover:bg-[#EAF2F8]">
               {t.products}
             </Link>
-            <Link href="/pfand" className="rounded-full px-4 py-2 font-semibold text-[#05090A] transition hover:bg-[#E8ECEF]">
+            <Link href="/pfand" className="rounded-full px-4 py-2 font-semibold text-[#05090A] transition hover:bg-[#EAF2F8]">
               {t.pfand}
             </Link>
-            <Link href="/register" className="rounded-full px-4 py-2 font-semibold text-[#05090A] transition hover:bg-[#E8ECEF]">
+            <Link href="/register" className="rounded-full px-4 py-2 font-semibold text-[#05090A] transition hover:bg-[#EAF2F8]">
               {language === "de" ? "Gastro" : "İşletmeler"}
             </Link>
           </nav>
@@ -558,9 +558,9 @@ export default function Header() {
               type="button"
               aria-label={t.search}
               onClick={() => setSearchOpen((open) => !open)}
-              className={`rounded-full border p-2.5 transition hover:border-[#1B4965] hover:text-[#1B4965] ${
+              className={`rounded-full border p-2.5 transition hover:border-[#0E6FAE] hover:text-[#0E6FAE] ${
                 searchOpen
-                  ? "border-[#1B4965] text-[#1B4965]"
+                  ? "border-[#0E6FAE] text-[#0E6FAE]"
                   : "border-[#05090a26]"
               }`}
             >
@@ -570,7 +570,7 @@ export default function Header() {
             <Link
               href={accountHref}
               aria-label={t.account}
-              className="rounded-full border border-[#05090a26] p-2.5 transition hover:border-[#1B4965] hover:text-[#1B4965]"
+              className="rounded-full border border-[#05090a26] p-2.5 transition hover:border-[#0E6FAE] hover:text-[#0E6FAE]"
             >
               <UserRound size={20} />
             </Link>
@@ -589,11 +589,11 @@ export default function Header() {
             <Link
               href="/cart"
               aria-label={t.cart}
-              className="relative rounded-full bg-[#05090A] p-2.5 text-white transition hover:bg-[#1B4965]"
+              className="relative rounded-full bg-[#05090A] p-2.5 text-white transition hover:bg-[#0E6FAE]"
             >
               <ShoppingCart size={20} />
 
-              <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#1B4965] px-1 text-xs font-bold text-white">
+              <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#0E6FAE] px-1 text-xs font-bold text-white">
                 {totalItems}
               </span>
             </Link>
@@ -617,7 +617,7 @@ export default function Header() {
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
                 placeholder={t.search}
-                className="w-full rounded-[12px] border border-[#05090a26] py-3 pl-12 pr-12 outline-none transition focus:border-[#1B4965]"
+                className="w-full rounded-[12px] border border-[#05090a26] py-3 pl-12 pr-12 outline-none transition focus:border-[#0E6FAE]"
               />
 
               <button

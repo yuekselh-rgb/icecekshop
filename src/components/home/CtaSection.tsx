@@ -25,16 +25,16 @@ export default function CtaSection() {
 
   return (
     // Relume cta-36: two centered icon+text columns with dual CTAs
-    <section className="bg-[#E8ECEF] px-4 py-16 lg:px-8 lg:py-24">
+    <section className="bg-[#EAF2F8] px-4 py-16 lg:px-8 lg:py-24">
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 md:grid-cols-2 lg:gap-16">
         <div className="flex flex-col items-center text-center">
-          <div className="mb-5 flex h-12 w-12 items-center justify-center border-2 border-[#05090A] md:mb-6">
-            <Home size={22} />
+          <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-full bg-[#0E6FAE] md:mb-6">
+            <Home size={22} className="text-white" />
           </div>
           <h2 className="text-3xl font-medium sm:text-4xl">{t.home.title}</h2>
           <p className="mt-4 text-[#05090A]">{t.home.text}</p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
-            <Link href="/products" onClick={scrollToProducts} className="rounded-full bg-[#1B4965] px-6 py-2.5 font-bold text-white transition hover:bg-[#153A50]">
+            <Link href="/products" onClick={scrollToProducts} className="rounded-full bg-[#0E6FAE] px-6 py-2.5 font-bold text-white transition hover:bg-[#0B5A8C]">
               {t.home.cta}
             </Link>
             <Link href="/products" onClick={scrollToProducts} className="rounded-full border border-[#05090a26] px-6 py-2.5 font-bold text-[#05090A]">
@@ -44,13 +44,13 @@ export default function CtaSection() {
         </div>
 
         <div className="flex flex-col items-center text-center">
-          <div className="mb-5 flex h-12 w-12 items-center justify-center border-2 border-[#05090A] md:mb-6">
-            <Store size={22} />
+          <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-full bg-[#0E6FAE] md:mb-6">
+            <Store size={22} className="text-white" />
           </div>
           <h2 className="text-3xl font-medium sm:text-4xl">{t.business.title}</h2>
           <p className="mt-4 text-[#05090A]">{t.business.text}</p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
-            <Link href="/register" className="rounded-full bg-[#1B4965] px-6 py-2.5 font-bold text-white transition hover:bg-[#153A50]">
+            <Link href="/register" className="rounded-full bg-[#0E6FAE] px-6 py-2.5 font-bold text-white transition hover:bg-[#0B5A8C]">
               {t.business.cta}
             </Link>
             <Link href="/register" className="rounded-full border border-[#05090a26] px-6 py-2.5 font-bold text-[#05090A]">

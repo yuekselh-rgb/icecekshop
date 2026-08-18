@@ -101,7 +101,7 @@ fetch("/api/company-settings")
   ].filter(Boolean);
 
   return (
-    <footer className="bg-[#E8ECEF] px-4 py-12 text-[#05090A] lg:px-8">
+    <footer className="bg-[#EAF2F8] px-4 py-12 text-[#05090A] lg:px-8">
       <div className="mx-auto grid max-w-7xl gap-12 border-t border-[#05090a26] pt-12 lg:grid-cols-[2.2fr_1fr]">
 
         <div>
@@ -197,12 +197,12 @@ fetch("/api/company-settings")
 
           <div className="mt-4 space-y-4 text-sm text-[#505253]">
             <div className="flex items-start gap-3">
-              <Phone size={18} className="text-[#1B4965]" />
+              <Phone size={18} className="text-[#0E6FAE]" />
               <span>{settings.phone || "+49 000 000 00 00"}</span>
             </div>
 
             <div className="flex items-start gap-3">
-              <Mail size={18} className="text-[#1B4965]" />
+              <Mail size={18} className="text-[#0E6FAE]" />
               <span>{settings.email || "info@firma.de"}</span>
             </div>
 
@@ -215,12 +215,12 @@ fetch("/api/company-settings")
 
             {settings.website ? (
               <div className="flex items-start gap-3">
-                <Globe size={18} className="text-[#1B4965]" />
+                <Globe size={18} className="text-[#0E6FAE]" />
                 <a
                   href={settings.website}
                   target="_blank"
                   rel="noreferrer"
-                  className="hover:text-[#1B4965]"
+                  className="hover:text-[#0E6FAE]"
                 >
                   {settings.website}
                 </a>
@@ -229,7 +229,7 @@ fetch("/api/company-settings")
 
             {addressLines.length > 0 ? (
               <div className="flex items-start gap-3">
-                <MapPin size={18} className="text-[#1B4965]" />
+                <MapPin size={18} className="text-[#0E6FAE]" />
                 <span>{addressLines.join(", ")}</span>
               </div>
             ) : null}
@@ -246,7 +246,7 @@ fetch("/api/company-settings")
                     target="_blank"
                     rel="noreferrer"
                     aria-label="Facebook"
-                    className="flex h-10 w-10 items-center justify-center rounded-full border border-[#05090a26] text-[#05090A] transition hover:border-[#1B4965] hover:text-[#1B4965]"
+                    className="flex h-10 w-10 items-center justify-center rounded-full border border-[#05090a26] text-[#05090A] transition hover:border-[#0E6FAE] hover:text-[#0E6FAE]"
                   >
                     <FaFacebookF size={16} />
                   </a>
@@ -258,7 +258,7 @@ fetch("/api/company-settings")
                     target="_blank"
                     rel="noreferrer"
                     aria-label="Instagram"
-                    className="flex h-10 w-10 items-center justify-center rounded-full border border-[#05090a26] text-[#05090A] transition hover:border-[#1B4965] hover:text-[#1B4965]"
+                    className="flex h-10 w-10 items-center justify-center rounded-full border border-[#05090a26] text-[#05090A] transition hover:border-[#0E6FAE] hover:text-[#0E6FAE]"
                   >
                     <FaInstagram size={17} />
                   </a>
@@ -270,7 +270,7 @@ fetch("/api/company-settings")
                     target="_blank"
                     rel="noreferrer"
                     aria-label="X"
-                    className="flex h-10 w-10 items-center justify-center rounded-full border border-[#05090a26] text-[#05090A] transition hover:border-[#1B4965] hover:text-[#1B4965]"
+                    className="flex h-10 w-10 items-center justify-center rounded-full border border-[#05090a26] text-[#05090A] transition hover:border-[#0E6FAE] hover:text-[#0E6FAE]"
                   >
                     <FaXTwitter size={16} />
                   </a>
@@ -282,7 +282,7 @@ fetch("/api/company-settings")
                     target="_blank"
                     rel="noreferrer"
                     aria-label="LinkedIn"
-                    className="flex h-10 w-10 items-center justify-center rounded-full border border-[#05090a26] text-[#05090A] transition hover:border-[#1B4965] hover:text-[#1B4965]"
+                    className="flex h-10 w-10 items-center justify-center rounded-full border border-[#05090a26] text-[#05090A] transition hover:border-[#0E6FAE] hover:text-[#0E6FAE]"
                   >
                     <FaLinkedinIn size={16} />
                   </a>
@@ -294,7 +294,7 @@ fetch("/api/company-settings")
                     target="_blank"
                     rel="noreferrer"
                     aria-label="TikTok"
-                    className="flex h-10 w-10 items-center justify-center rounded-full border border-[#05090a26] text-[#05090A] transition hover:border-[#1B4965] hover:text-[#1B4965]"
+                    className="flex h-10 w-10 items-center justify-center rounded-full border border-[#05090a26] text-[#05090A] transition hover:border-[#0E6FAE] hover:text-[#0E6FAE]"
                   >
                     <FaTiktok size={16} />
                   </a>

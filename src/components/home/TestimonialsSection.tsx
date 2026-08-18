@@ -79,7 +79,7 @@ export default function TestimonialsSection() {
               key={review.name}
               className="flex flex-col justify-between border border-[#05090a26] bg-white p-6 md:p-8"
             >
-              <div className="mb-5 text-xl tracking-widest text-[#1B4965] md:mb-6">★★★★★</div>
+              <div className="mb-5 text-xl tracking-widest text-[#0E6FAE] md:mb-6">★★★★★</div>
 
               <p className="text-lg text-[#05090A]">"{review.quote}"</p>
 

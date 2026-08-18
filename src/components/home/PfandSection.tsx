@@ -58,7 +58,7 @@ export default function PfandSection() {
 
   return (
     // Relume layout-492: centered eyebrow+heading+CTA, split tabs/content layout
-    <section className="bg-[#E8ECEF] px-4 py-16 lg:px-8 lg:py-24">
+    <section className="bg-[#EAF2F8] px-4 py-16 lg:px-8 lg:py-24">
       <div className="mx-auto max-w-7xl">
         <div className="mx-auto mb-12 max-w-lg text-center lg:mb-20">
           <p className="mb-3 font-semibold text-[#05090A]">{t.eyebrow}</p>

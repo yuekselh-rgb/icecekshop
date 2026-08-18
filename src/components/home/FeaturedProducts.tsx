@@ -320,7 +320,7 @@ export default function FeaturedProducts({
           <button
             type="button"
             onClick={() => toggleCategoryExpanded(group.slug)}
-            className="flex shrink-0 items-center gap-1.5 text-sm font-semibold text-[#1B4965] transition hover:text-[#05090A]"
+            className="flex shrink-0 items-center gap-1.5 text-sm font-semibold text-[#0E6FAE] transition hover:text-[#05090A]"
           >
             {isExpanded ? t.showLess : t.showAll}
             {isExpanded ? (

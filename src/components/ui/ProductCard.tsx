@@ -204,7 +204,7 @@ export default function ProductCard({
 
       <div className="flex flex-1 flex-col px-2.5 pb-2.5 pt-2">
         <div className="flex items-center justify-between gap-2">
-          <p className="truncate text-[10px] font-bold text-[#1B4965]">
+          <p className="truncate text-[10px] font-bold text-[#0E6FAE]">
             {localizedCategory}
           </p>
 
@@ -218,7 +218,7 @@ export default function ProductCard({
         </div>
 
         <Link href={`/products/${id}`}>
-          <h3 className="mt-0.5 line-clamp-2 min-h-9 text-sm font-bold leading-4 text-[#05090A] transition hover:text-[#1B4965]">
+          <h3 className="mt-0.5 line-clamp-2 min-h-9 text-sm font-bold leading-4 text-[#05090A] transition hover:text-[#0E6FAE]">
             {localizedName}
           </h3>
         </Link>
@@ -269,7 +269,7 @@ export default function ProductCard({
               ) : null}
 
               {effectivePfand > 0 ? (
-                <p className="mt-0.5 text-[9px] font-bold text-[#1B4965]">
+                <p className="mt-0.5 text-[9px] font-bold text-[#0E6FAE]">
                   {effectivePrice.toFixed(2)} € + {effectivePfand.toFixed(2)} €{" "}
                   {t.pfand}
                 </p>
@@ -284,7 +284,7 @@ export default function ProductCard({
                 onClick={decreaseQuantity}
                 disabled={quantity <= 1 || !inStock}
                 aria-label={t.decreaseQuantity}
-                className="flex h-full w-8 items-center justify-center text-[#505253] transition hover:text-[#1B4965] disabled:text-[#D9DADA]"
+                className="flex h-full w-8 items-center justify-center text-[#505253] transition hover:text-[#0E6FAE] disabled:text-[#D9DADA]"
               >
                 <Minus size={14} />
               </button>
@@ -314,7 +314,7 @@ export default function ProductCard({
                 onClick={increaseQuantity}
                 disabled={!inStock}
                 aria-label={t.increaseQuantity}
-                className="flex h-full w-8 items-center justify-center text-[#505253] transition hover:text-[#1B4965] disabled:text-[#D9DADA]"
+                className="flex h-full w-8 items-center justify-center text-[#505253] transition hover:text-[#0E6FAE] disabled:text-[#D9DADA]"
               >
                 <Plus size={14} />
               </button>
@@ -325,7 +325,7 @@ export default function ProductCard({
               disabled={!inStock}
               onClick={handleAddToCart}
               aria-label={added ? (language === 'de' ? 'Hinzugefügt' : 'Eklendi') : t.addToCart}
-              className={`flex h-8 min-w-0 flex-1 items-center justify-center gap-1 rounded-full px-2 text-[10px] font-bold text-white transition ${added ? 'bg-[#1B4965]' : 'bg-[#05090A] hover:bg-[#1B4965]'} disabled:bg-[#B4B5B5]`}
+              className={`flex h-8 min-w-0 flex-1 items-center justify-center gap-1 rounded-full px-2 text-[10px] font-bold text-white transition ${added ? 'bg-[#0E6FAE]' : 'bg-[#05090A] hover:bg-[#0E6FAE]'} disabled:bg-[#B4B5B5]`}
             >
               {added ? <Check size={15} /> : <ShoppingCart size={15} />}
 

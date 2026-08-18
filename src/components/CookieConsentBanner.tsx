@@ -172,7 +172,7 @@ export default function CookieConsentBanner() {
     >
       <div className="w-full max-w-lg rounded-2xl border border-[#05090a26] bg-white p-6 shadow-2xl">
         <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#E8ECEF] text-[#1B4965]">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#EAF2F8] text-[#0E6FAE]">
             <Cookie size={20} />
           </div>
 
@@ -190,7 +190,7 @@ export default function CookieConsentBanner() {
             <div className="flex items-start justify-between gap-4 rounded-xl border border-[#05090a26] bg-[#F2F2F2] p-3.5">
               <div>
                 <div className="flex items-center gap-2 text-sm font-bold text-[#05090A]">
-                  <ShieldCheck size={16} className="text-[#1B4965]" />
+                  <ShieldCheck size={16} className="text-[#0E6FAE]" />
                   {t.necessary}
                 </div>
 
@@ -219,7 +219,7 @@ export default function CookieConsentBanner() {
                 type="checkbox"
                 checked={analytics}
                 onChange={(event) => setAnalytics(event.target.checked)}
-                className="mt-1 h-5 w-9 shrink-0 accent-[#1B4965]"
+                className="mt-1 h-5 w-9 shrink-0 accent-[#0E6FAE]"
               />
             </label>
 
@@ -238,7 +238,7 @@ export default function CookieConsentBanner() {
                 type="checkbox"
                 checked={marketing}
                 onChange={(event) => setMarketing(event.target.checked)}
-                className="mt-1 h-5 w-9 shrink-0 accent-[#1B4965]"
+                className="mt-1 h-5 w-9 shrink-0 accent-[#0E6FAE]"
               />
             </label>
           </div>
@@ -250,7 +250,7 @@ export default function CookieConsentBanner() {
               <button
                 type="button"
                 onClick={saveSelection}
-                className="rounded-full bg-[#05090A] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#1B4965]"
+                className="rounded-full bg-[#05090A] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#0E6FAE]"
               >
                 {t.save}
               </button>
@@ -258,7 +258,7 @@ export default function CookieConsentBanner() {
               <button
                 type="button"
                 onClick={() => setCustomizing(false)}
-                className="rounded-full border border-[#05090a26] px-4 py-3 text-sm font-bold text-[#05090A] transition hover:border-[#1B4965] hover:text-[#1B4965]"
+                className="rounded-full border border-[#05090a26] px-4 py-3 text-sm font-bold text-[#05090A] transition hover:border-[#0E6FAE] hover:text-[#0E6FAE]"
               >
                 {t.back}
               </button>
@@ -268,7 +268,7 @@ export default function CookieConsentBanner() {
               <button
                 type="button"
                 onClick={acceptAll}
-                className="rounded-full bg-[#05090A] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#1B4965]"
+                className="rounded-full bg-[#05090A] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#0E6FAE]"
               >
                 {t.acceptAll}
               </button>
@@ -276,7 +276,7 @@ export default function CookieConsentBanner() {
               <button
                 type="button"
                 onClick={() => setCustomizing(true)}
-                className="rounded-full border border-[#05090a26] px-4 py-3 text-sm font-bold text-[#05090A] transition hover:border-[#1B4965] hover:text-[#1B4965]"
+                className="rounded-full border border-[#05090a26] px-4 py-3 text-sm font-bold text-[#05090A] transition hover:border-[#0E6FAE] hover:text-[#0E6FAE]"
               >
                 {t.customize}
               </button>
@@ -284,7 +284,7 @@ export default function CookieConsentBanner() {
               <button
                 type="button"
                 onClick={rejectAll}
-                className="rounded-full border border-[#05090a26] px-4 py-3 text-sm font-bold text-[#05090A] transition hover:border-[#1B4965] hover:text-[#1B4965]"
+                className="rounded-full border border-[#05090a26] px-4 py-3 text-sm font-bold text-[#05090A] transition hover:border-[#0E6FAE] hover:text-[#0E6FAE]"
               >
                 {t.rejectAll}
               </button>
@@ -294,7 +294,7 @@ export default function CookieConsentBanner() {
 
         <a
           href="/privacy"
-          className="mt-4 block text-center text-xs font-semibold text-[#828484] underline-offset-2 hover:text-[#1B4965] hover:underline"
+          className="mt-4 block text-center text-xs font-semibold text-[#828484] underline-offset-2 hover:text-[#0E6FAE] hover:underline"
         >
           {t.privacyLink}
         </a>

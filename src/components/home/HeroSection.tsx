@@ -49,7 +49,7 @@ export default function HeroSection() {
         <div className="absolute inset-0 bg-[#05090A]/75" />
 
         <div className="relative flex min-h-[26rem] flex-col items-center justify-center px-6 py-14 text-center sm:px-10 md:min-h-[32rem] md:py-20">
-          <span className="mb-5 w-fit rounded-full bg-[#5F7F93]/20 px-4 py-2 text-sm font-bold text-[#91CBDA] md:mb-6">
+          <span className="mb-5 w-fit rounded-full bg-[#0E6FAE]/20 px-4 py-2 text-sm font-bold text-[#6FB8E6] md:mb-6">
             {t.badge}
           </span>
 
@@ -81,17 +81,17 @@ export default function HeroSection() {
 
           <div className="mt-8 flex flex-wrap justify-center gap-5 text-sm text-[#B4B5B5]">
             <span className="flex items-center gap-2">
-              <Check size={17} className="text-[#91CBDA]" />
+              <Check size={17} className="text-[#6FB8E6]" />
               {t.fastDelivery}
             </span>
 
             <span className="flex items-center gap-2">
-              <Check size={17} className="text-[#91CBDA]" />
+              <Check size={17} className="text-[#6FB8E6]" />
               {t.secureOrder}
             </span>
 
             <span className="flex items-center gap-2">
-              <Check size={17} className="text-[#91CBDA]" />
+              <Check size={17} className="text-[#6FB8E6]" />
               {t.pfandTracking}
             </span>
           </div>
