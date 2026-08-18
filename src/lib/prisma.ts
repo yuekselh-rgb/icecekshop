@@ -34,6 +34,7 @@ const TENANT_SCOPED_MODELS = new Set([
   "DriverStockMovement",
   "OrderPayment",
   "CashMovement",
+  "CashMovementCustomCategory",
   "Supplier",
   "DealerProfile",
   "DealerPrice",

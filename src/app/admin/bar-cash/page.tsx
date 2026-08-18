@@ -52,6 +52,16 @@ type Movement = {
   createdAt: string;
   orderId: string | null;
   purchaseItems: PurchaseItem[];
+  customCategoryId: string | null;
+  customCategory: CustomCategory | null;
+};
+
+type CustomCategory = {
+  id: string;
+  nameDe: string;
+  nameTr: string;
+  direction: "IN" | "OUT";
+  active: boolean;
 };
 
 type Supplier = {
@@ -168,6 +178,7 @@ const categoryLabels: Record<string, string> =
           MANUAL_INCOME: "Manuelle Einnahme",
           OTHER_EXPENSE: "Sonstige Ausgaben",
           CASH_HANDOVER: "Kassenübergabe",
+          CUSTOM: "Eigene Kategorie",
         }
       : {
           BAR_SALE: "Bar Satışı",
@@ -406,6 +417,9 @@ const categoryLabels: Record<string, string> =
 
   const [movements, setMovements] = useState<Movement[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [customCategories, setCustomCategories] = useState<CustomCategory[]>(
+    [],
+  );
 
   const [productCategories, setProductCategories] = useState<ProductCategory[]>(
     [],
@@ -464,6 +478,7 @@ const categoryLabels: Record<string, string> =
   const [direction, setDirection] = useState<"IN" | "OUT">("OUT");
 
   const [category, setCategory] = useState("");
+  const [customCategoryId, setCustomCategoryId] = useState("");
 
   const [categoryFilter, setCategoryFilter] = useState("ALL");
 
@@ -473,30 +488,57 @@ const categoryLabels: Record<string, string> =
 
   const isGoodsPurchase = direction === "OUT" && category === "GOODS_PURCHASE";
 
+  const getMovementCategoryKey = useCallback(
+    (movement: Movement) =>
+      movement.category === "CUSTOM" && movement.customCategoryId
+        ? `CUSTOM:${movement.customCategoryId}`
+        : movement.category,
+    [],
+  );
+
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = {};
 
     movements.forEach((movement) => {
-      counts[movement.category] = (counts[movement.category] || 0) + 1;
+      const key = getMovementCategoryKey(movement);
+      counts[key] = (counts[key] || 0) + 1;
     });
 
     return counts;
-  }, [movements]);
+  }, [movements, getMovementCategoryKey]);
+
+  const categoryFilterLabels = useMemo(() => {
+    const labels: Record<string, string> = { ...categoryLabels };
+
+    movements.forEach((movement) => {
+      if (movement.category === "CUSTOM" && movement.customCategoryId) {
+        labels[`CUSTOM:${movement.customCategoryId}`] = movement.customCategory
+          ? language === "de"
+            ? movement.customCategory.nameDe
+            : movement.customCategory.nameTr
+          : categoryLabels.CUSTOM;
+      }
+    });
+
+    return labels;
+  }, [movements, language]);
 
   const availableCategoryFilters = useMemo(
     () =>
-      Object.keys(categoryLabels).filter(
+      Object.keys(categoryFilterLabels).filter(
         (categoryKey) => (categoryCounts[categoryKey] || 0) > 0,
       ),
-    [categoryCounts, categoryLabels],
+    [categoryCounts, categoryFilterLabels],
   );
 
   const filteredMovements = useMemo(
     () =>
       categoryFilter === "ALL"
         ? movements
-        : movements.filter((movement) => movement.category === categoryFilter),
-    [movements, categoryFilter],
+        : movements.filter(
+            (movement) => getMovementCategoryKey(movement) === categoryFilter,
+          ),
+    [movements, categoryFilter, getMovementCategoryKey],
   );
 
   const filteredSummary = useMemo(() => {
@@ -578,6 +620,7 @@ const categoryLabels: Record<string, string> =
 
       setMovements(cashData.movements || []);
       setProducts(cashData.products || []);
+      setCustomCategories(cashData.customCategories || []);
       setSummary(cashData.summary);
       setPermissions(cashData.permissions);
 
@@ -1024,6 +1067,7 @@ const categoryLabels: Record<string, string> =
 
             direction,
             category,
+            customCategoryId: category === "CUSTOM" ? customCategoryId : "",
             amount: getFieldValue("amount"),
             companyName: getFieldValue("companyName"),
             description: getFieldValue("description"),
@@ -1060,6 +1104,7 @@ const categoryLabels: Record<string, string> =
       }
 
       setCategory("");
+      setCustomCategoryId("");
 
       setSelectedSupplierId("");
 
@@ -1204,6 +1249,7 @@ const categoryLabels: Record<string, string> =
                 onClick={() => {
                   setDirection("IN");
                   setCategory("");
+                  setCustomCategoryId("");
                 }}
                 className={`rounded-xl border px-4 py-3 font-black transition ${
                   direction === "IN"
@@ -1219,6 +1265,7 @@ const categoryLabels: Record<string, string> =
                 onClick={() => {
                   setDirection("OUT");
                   setCategory("");
+                  setCustomCategoryId("");
                 }}
                 className={`rounded-xl border px-4 py-3 font-black transition ${
                   direction === "OUT"
@@ -1233,8 +1280,18 @@ const categoryLabels: Record<string, string> =
                 {t.category}
                 <select
                   required
-                  value={category}
-                  onChange={(event) => setCategory(event.target.value)}
+                  value={category === "CUSTOM" ? `custom:${customCategoryId}` : category}
+                  onChange={(event) => {
+                    const value = event.target.value;
+
+                    if (value.startsWith("custom:")) {
+                      setCategory("CUSTOM");
+                      setCustomCategoryId(value.slice("custom:".length));
+                    } else {
+                      setCategory(value);
+                      setCustomCategoryId("");
+                    }
+                  }}
                   className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none focus:border-orange-500"
                 >
                   <option value="">{t.selectCategory}</option>
@@ -1256,6 +1313,14 @@ const categoryLabels: Record<string, string> =
                       <option value="OTHER_EXPENSE">{categoryLabels.OTHER_EXPENSE}</option>
                     </>
                   )}
+
+                  {customCategories
+                    .filter((customCategory) => customCategory.direction === direction)
+                    .map((customCategory) => (
+                      <option key={customCategory.id} value={`custom:${customCategory.id}`}>
+                        {language === "de" ? customCategory.nameDe : customCategory.nameTr}
+                      </option>
+                    ))}
                 </select>
               </label>
             </div>
@@ -2257,7 +2322,7 @@ const categoryLabels: Record<string, string> =
                         : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                     }`}
                   >
-                    {categoryLabels[categoryKey] || categoryKey}
+                    {categoryFilterLabels[categoryKey] || categoryKey}
                     <span className="ml-1 opacity-60">
                       {categoryCounts[categoryKey]}
                     </span>
@@ -2342,8 +2407,12 @@ const categoryLabels: Record<string, string> =
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="inline-block rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-black text-slate-700">
-                            {categoryLabels[movement.category] ||
-                              movement.category}
+                            {movement.category === "CUSTOM" && movement.customCategory
+                              ? language === "de"
+                                ? movement.customCategory.nameDe
+                                : movement.customCategory.nameTr
+                              : categoryLabels[movement.category] ||
+                                movement.category}
                           </span>
 
                           {isSettledOpenAccount ? (

@@ -14,6 +14,7 @@ const allowedCategories = [
   "MANUAL_INCOME",
   "OTHER_EXPENSE",
   "CASH_HANDOVER",
+  "CUSTOM",
 ] as const;
 
 type AllowedCategory = (typeof allowedCategories)[number];
@@ -58,7 +59,7 @@ export const GET = withTenant(async () => {
   }
 
   try {
-    const [movements, products] = await Promise.all([
+    const [movements, customCategories, products] = await Promise.all([
       prisma.cashMovement.findMany({
         where: {
           accountType: "BAR",
@@ -66,6 +67,7 @@ export const GET = withTenant(async () => {
 
         include: {
           supplier: true,
+          customCategory: true,
 
           purchaseItems: {
             orderBy: {
@@ -79,6 +81,16 @@ export const GET = withTenant(async () => {
         },
 
         take: 500,
+      }),
+
+      prisma.cashMovementCustomCategory.findMany({
+        where: {
+          active: true,
+        },
+
+        orderBy: {
+          createdAt: "asc",
+        },
       }),
 
       prisma.product.findMany({
@@ -134,6 +146,8 @@ export const GET = withTenant(async () => {
 
     return NextResponse.json({
       movements: serialized,
+
+      customCategories,
 
       products: products.map((product) => ({
         ...product,
@@ -254,6 +268,50 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
           status: 400,
         },
       );
+    }
+
+    const rawCustomCategoryId = String(body.customCategoryId || "").trim();
+
+    let customCategoryId: string | null = null;
+
+    if (category === "CUSTOM") {
+      if (!rawCustomCategoryId) {
+        return NextResponse.json(
+          {
+            error:
+              language === "de"
+                ? "Bitte wählen Sie eine Kategorie aus."
+                : "Lütfen bir kategori seçin.",
+          },
+          {
+            status: 400,
+          },
+        );
+      }
+
+      const customCategory = await prisma.cashMovementCustomCategory.findUnique({
+        where: { id: rawCustomCategoryId },
+      });
+
+      if (
+        !customCategory ||
+        !customCategory.active ||
+        customCategory.direction !== direction
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              language === "de"
+                ? "Ungültige Kassenkategorie."
+                : "Geçersiz kasa kategorisi.",
+          },
+          {
+            status: 400,
+          },
+        );
+      }
+
+      customCategoryId = customCategory.id;
     }
 
     if (
@@ -807,6 +865,7 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
           accountType: "BAR",
           direction,
           category,
+          customCategoryId,
           amount: Number(amount.toFixed(2)),
 
           supplierId: supplierId || null,

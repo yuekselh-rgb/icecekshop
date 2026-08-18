@@ -28,6 +28,8 @@ type CashMovementRow = {
   supplierName: string | null;
   createdAt: string;
   orderId: string | null;
+  customCategoryId: string | null;
+  customCategory: { nameDe: string; nameTr: string } | null;
   createdBy: {
     name: string | null;
   };
@@ -56,6 +58,7 @@ type ReportData = {
     total: number;
     byCategory: Record<string, number>;
   };
+  customCategoryNames?: Record<string, { nameDe: string; nameTr: string }>;
   openingBalance?: number;
   net?: number;
   openAccount?: {
@@ -142,6 +145,7 @@ export default function CashReportPage() {
             MANUAL_INCOME: "Manuelle Einnahme",
             OTHER_EXPENSE: "Sonstige Ausgaben",
             CASH_HANDOVER: "Kassenübergabe",
+            CUSTOM: "Eigene Kategorie",
           } as Record<string, string>,
           months: [
             "Januar", "Februar", "März", "April", "Mai", "Juni",
@@ -218,6 +222,7 @@ export default function CashReportPage() {
             MANUAL_INCOME: "Manuel Gelir",
             OTHER_EXPENSE: "Diğer Gider",
             CASH_HANDOVER: "Kasa Devri",
+            CUSTOM: "Özel Kategori",
           } as Record<string, string>,
           months: [
             "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
@@ -357,6 +362,27 @@ export default function CashReportPage() {
   }
 
   const canViewFinancials = Boolean(report?.income);
+
+  const getMovementCategoryKey = useCallback(
+    (movement: CashMovementRow) =>
+      movement.category === "CUSTOM" && movement.customCategoryId
+        ? `CUSTOM:${movement.customCategoryId}`
+        : movement.category,
+    [],
+  );
+
+  const resolveCategoryLabel = useCallback(
+    (categoryKey: string) => {
+      const customName = report?.customCategoryNames?.[categoryKey];
+
+      if (customName) {
+        return language === "de" ? customName.nameDe : customName.nameTr;
+      }
+
+      return t.categoryLabels[categoryKey] || categoryKey;
+    },
+    [report, language, t.categoryLabels],
+  );
 
   const incomeCategories = report?.income
     ? Object.entries(report.income.byCategory).sort((a, b) => b[1] - a[1])
@@ -603,7 +629,7 @@ export default function CashReportPage() {
                       {incomeCategories.map(([category, amount]) => (
                         <tr key={category} className="border-t border-slate-100">
                           <td className="py-2 text-slate-600">
-                            {t.categoryLabels[category] || category}
+                            {resolveCategoryLabel(category)}
                           </td>
                           <td className="py-2 text-right font-black text-slate-950">
                             {formatEuro(amount)}
@@ -628,7 +654,7 @@ export default function CashReportPage() {
                       {expenseCategories.map(([category, amount]) => (
                         <tr key={category} className="border-t border-slate-100">
                           <td className="py-2 text-slate-600">
-                            {t.categoryLabels[category] || category}
+                            {resolveCategoryLabel(category)}
                           </td>
                           <td className="py-2 text-right font-black text-slate-950">
                             {formatEuro(amount)}
@@ -739,7 +765,7 @@ export default function CashReportPage() {
                             </td>
                             <td className="py-2 pr-4 text-slate-600">
                               <div className="flex flex-wrap items-center gap-2">
-                                {t.categoryLabels[movement.category] || movement.category}
+                                {resolveCategoryLabel(getMovementCategoryKey(movement))}
 
                                 {isSettledOpenAccount ? (
                                   <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-black uppercase text-green-700">
@@ -826,7 +852,7 @@ export default function CashReportPage() {
                             <span className="text-slate-300">·</span>
 
                             <span className="font-bold text-slate-700">
-                              {t.categoryLabels[movement.category] || movement.category}
+                              {resolveCategoryLabel(getMovementCategoryKey(movement))}
                             </span>
 
                             {isSettledOpenAccount ? (

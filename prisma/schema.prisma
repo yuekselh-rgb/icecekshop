@@ -126,6 +126,7 @@ enum CashMovementCategory {
   MANUAL_INCOME
   OTHER_EXPENSE
   CASH_HANDOVER
+  CUSTOM
 }
 
 model Tenant {
@@ -157,6 +158,7 @@ model Tenant {
   driverStockMovements    DriverStockMovement[]
   orderPayments           OrderPayment[]
   cashMovements           CashMovement[]
+  cashMovementCategories  CashMovementCustomCategory[]
   suppliers               Supplier[]
   dealerProfiles          DealerProfile[]
   dealerPrices            DealerPrice[]
@@ -930,6 +932,9 @@ model CashMovement {
   createdById String
   createdAt   DateTime @default(now())
 
+  customCategoryId String?
+  customCategory   CashMovementCustomCategory? @relation(fields: [customCategoryId], references: [id], onDelete: SetNull)
+
   purchaseItems CashPurchaseItem[]
 
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
@@ -942,6 +947,22 @@ model CashMovement {
   @@index([supplierId])
   @@index([createdById])
   @@index([createdAt])
+  @@index([customCategoryId])
+}
+
+model CashMovementCustomCategory {
+  id        String                @id @default(cuid())
+  tenantId  String
+  nameDe    String
+  nameTr    String
+  direction CashMovementDirection
+  active    Boolean               @default(true)
+  createdAt DateTime              @default(now())
+
+  tenant    Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  movements CashMovement[]
+
+  @@index([tenantId])
 }
 
 model CashPurchaseItem {

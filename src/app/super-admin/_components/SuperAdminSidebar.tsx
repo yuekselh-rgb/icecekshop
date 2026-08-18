@@ -16,6 +16,7 @@ import {
   Shield,
   ShieldCheck,
   Store,
+  Tags,
   Trash2,
   Truck,
   Users,
@@ -76,6 +77,11 @@ const navItems: NavItem[] = [
     href: "/super-admin/stock",
     label: { de: "Lagerverwaltung", tr: "Stok Yönetimi" },
     icon: Boxes,
+  },
+  {
+    href: "/super-admin/cash-categories",
+    label: { de: "Kassenkategorien", tr: "Kasa Kategorileri" },
+    icon: Tags,
   },
   {
     href: "/super-admin/trash",

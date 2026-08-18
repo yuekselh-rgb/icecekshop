@@ -33,6 +33,15 @@ function addDays(date: Date, days: number) {
   );
 }
 
+function getCategoryKey(movement: {
+  category: string;
+  customCategoryId: string | null;
+}) {
+  return movement.category === "CUSTOM" && movement.customCategoryId
+    ? `CUSTOM:${movement.customCategoryId}`
+    : movement.category;
+}
+
 export const GET = withTenant(async (request: NextRequest) => {
   const language = await getRequestLanguage();
 
@@ -171,6 +180,13 @@ export const GET = withTenant(async (request: NextRequest) => {
                 name: true,
               },
             },
+            customCategory: {
+              select: {
+                id: true,
+                nameDe: true,
+                nameTr: true,
+              },
+            },
           },
 
           orderBy: {
@@ -270,6 +286,10 @@ export const GET = withTenant(async (request: NextRequest) => {
 
     const incomeByCategory: Record<string, number> = {};
     const expenseByCategory: Record<string, number> = {};
+    const customCategoryNames: Record<
+      string,
+      { nameDe: string; nameTr: string }
+    > = {};
 
     let incomeTotal = 0;
     let expenseTotal = 0;
@@ -285,18 +305,26 @@ export const GET = withTenant(async (request: NextRequest) => {
       }
 
       const amount = Number(movement.amount);
+      const categoryKey = getCategoryKey(movement);
+
+      if (movement.category === "CUSTOM" && movement.customCategory) {
+        customCategoryNames[categoryKey] = {
+          nameDe: movement.customCategory.nameDe,
+          nameTr: movement.customCategory.nameTr,
+        };
+      }
 
       if (movement.direction === "IN") {
         incomeTotal = Number((incomeTotal + amount).toFixed(2));
 
-        incomeByCategory[movement.category] = Number(
-          ((incomeByCategory[movement.category] || 0) + amount).toFixed(2),
+        incomeByCategory[categoryKey] = Number(
+          ((incomeByCategory[categoryKey] || 0) + amount).toFixed(2),
         );
       } else {
         expenseTotal = Number((expenseTotal + amount).toFixed(2));
 
-        expenseByCategory[movement.category] = Number(
-          ((expenseByCategory[movement.category] || 0) + amount).toFixed(2),
+        expenseByCategory[categoryKey] = Number(
+          ((expenseByCategory[categoryKey] || 0) + amount).toFixed(2),
         );
       }
     }
@@ -368,6 +396,8 @@ export const GET = withTenant(async (request: NextRequest) => {
         byCategory: expenseByCategory,
       },
 
+      customCategoryNames,
+
       openingBalance,
 
       net: Number(
@@ -412,6 +442,13 @@ export const GET = withTenant(async (request: NextRequest) => {
           supplierName: movement.supplier?.name ?? null,
           createdAt: movement.createdAt,
           orderId: movement.orderId,
+          customCategoryId: movement.customCategoryId,
+          customCategory: movement.customCategory
+            ? {
+                nameDe: movement.customCategory.nameDe,
+                nameTr: movement.customCategory.nameTr,
+              }
+            : null,
           createdBy: {
             name: creatorName,
           },
