@@ -28,8 +28,8 @@ export default function CtaSection() {
     <section className="bg-[#E8ECEF] px-4 py-16 lg:px-8 lg:py-24">
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 md:grid-cols-2 lg:gap-16">
         <div className="flex flex-col items-center text-center">
-          <div className="mb-5 flex h-12 w-12 items-center justify-center border-2 border-[#05090A] md:mb-6">
-            <Home size={22} />
+          <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-full bg-[#0AA0FA] md:mb-6">
+            <Home size={22} className="text-[#05090A]" />
           </div>
           <h2 className="text-3xl font-medium sm:text-4xl">{t.home.title}</h2>
           <p className="mt-4 text-[#05090A]">{t.home.text}</p>
@@ -44,8 +44,8 @@ export default function CtaSection() {
         </div>
 
         <div className="flex flex-col items-center text-center">
-          <div className="mb-5 flex h-12 w-12 items-center justify-center border-2 border-[#05090A] md:mb-6">
-            <Store size={22} />
+          <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-full bg-[#0AA0FA] md:mb-6">
+            <Store size={22} className="text-[#05090A]" />
           </div>
           <h2 className="text-3xl font-medium sm:text-4xl">{t.business.title}</h2>
           <p className="mt-4 text-[#05090A]">{t.business.text}</p>
