@@ -9,6 +9,7 @@ const STORAGE_KEY = "paketmarket-cookie-consent";
 const COOKIE_KEY = "paketmarket_cookie_consent";
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 180;
 const REOPEN_EVENT = "paketmarket:open-cookie-settings";
+const CONSENT_UPDATED_EVENT = "paketmarket:cookie-consent-updated";
 
 const STAFF_PATH_PREFIXES = ["/admin", "/driver", "/super-admin", "/platform"];
 
@@ -62,6 +63,8 @@ function writeConsent(selection: ConsentSelection) {
   document.cookie = `${COOKIE_KEY}=${encodeURIComponent(
     JSON.stringify({ necessary: true, ...selection }),
   )}; path=/; max-age=${COOKIE_MAX_AGE}; samesite=lax`;
+
+  window.dispatchEvent(new Event(CONSENT_UPDATED_EVENT));
 }
 
 export function openCookieSettings() {

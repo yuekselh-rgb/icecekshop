@@ -58,6 +58,8 @@ const fallbackSettings = {
 
   businessHoursEnabled: false,
   businessHours: null,
+
+  metaPixelId: null,
 };
 
 export const GET = withTenant(async (_request, _context, tenant) => {

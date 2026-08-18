@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Script from "next/script";
 import CookieConsentBanner from "@/components/CookieConsentBanner";
+import MetaPixel from "@/components/MetaPixel";
 import { CartProvider } from "@/context/CartContext";
 import { LanguageProvider } from "@/context/LanguageContext";
 import "./globals.css";
@@ -49,11 +50,20 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const tenant = await getCurrentTenant();
+
+  const companySettings = tenant
+    ? await prisma.companySetting.findUnique({
+        where: { tenantId: tenant.id },
+        select: { metaPixelId: true },
+      })
+    : null;
+
   return (
     <html lang="de" className="font-sans" data-scroll-behavior="smooth">
       <body>
@@ -63,6 +73,7 @@ export default function RootLayout({
         <LanguageProvider>
           <CartProvider>{children}</CartProvider>
           <CookieConsentBanner />
+          <MetaPixel pixelId={companySettings?.metaPixelId || null} />
         </LanguageProvider>
       </body>
     </html>

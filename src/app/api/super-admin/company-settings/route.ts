@@ -211,6 +211,22 @@ export const PATCH = withTenant(async (request: Request, _context, tenant) => {
     const tiktok = String(body.tiktok || "").trim();
     const twitter = String(body.twitter || "").trim();
 
+    const metaPixelId = String(body.metaPixelId || "").trim();
+
+    if (metaPixelId && !/^\d{5,20}$/.test(metaPixelId)) {
+      return NextResponse.json(
+        {
+          error:
+            language === "de"
+              ? "Die Meta Pixel-ID darf nur Ziffern enthalten."
+              : "Meta Pixel Kimliği yalnızca rakam içerebilir.",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
     if (!companyName) {
       return NextResponse.json(
         {
@@ -299,6 +315,8 @@ export const PATCH = withTenant(async (request: Request, _context, tenant) => {
         tiktok: tiktok || null,
         twitter: twitter || null,
 
+        metaPixelId: metaPixelId || null,
+
         showOffers,
         minOrderValueEnabled,
         minOrderValue,
@@ -348,6 +366,8 @@ export const PATCH = withTenant(async (request: Request, _context, tenant) => {
         linkedin: linkedin || null,
         tiktok: tiktok || null,
         twitter: twitter || null,
+
+        metaPixelId: metaPixelId || null,
 
         showOffers,
         minOrderValueEnabled,

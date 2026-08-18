@@ -15,6 +15,7 @@ type CompanySettings = {
   country?: string | null;
   email?: string | null;
   phone?: string | null;
+  metaPixelId?: string | null;
 };
 
 export default function PrivacyPolicyPage() {
@@ -69,7 +70,15 @@ export default function PrivacyPolicyPage() {
             },
             {
               heading: "5. Cookies",
-              body: "Beim Besuch unseres Onlineshops verwenden wir Cookies. Notwendige Cookies sind für den Betrieb der Website erforderlich (z. B. Warenkorb, Anmeldung, Spracheinstellung) und können nicht deaktiviert werden. Analyse-Cookies helfen uns zu verstehen, wie die Website genutzt wird, und Marketing-Cookies würden genutzt, um Ihnen relevantere Angebote zu zeigen — beide Kategorien setzen wir nur mit Ihrer Einwilligung ein, die Sie beim ersten Besuch über unseren Cookie-Banner erteilen oder ablehnen. Aktuell sind keine Analyse- oder Marketing-Cookies aktiv im Einsatz. Ihre Auswahl können Sie jederzeit ändern.",
+              body: `Beim Besuch unseres Onlineshops verwenden wir Cookies. Notwendige Cookies sind für den Betrieb der Website erforderlich (z. B. Warenkorb, Anmeldung, Spracheinstellung) und können nicht deaktiviert werden. Analyse-Cookies helfen uns zu verstehen, wie die Website genutzt wird. Marketing-Cookies setzen wir ein, um Ihnen relevantere Angebote zu zeigen${
+                settings.metaPixelId
+                  ? " — konkret binden wir das Meta-Pixel (Facebook/Instagram) ein, das den Besuch unserer Seite an Meta übermittelt"
+                  : ""
+              }. Beide Kategorien setzen wir nur mit Ihrer Einwilligung ein, die Sie beim ersten Besuch über unseren Cookie-Banner erteilen oder ablehnen.${
+                settings.metaPixelId
+                  ? ""
+                  : " Aktuell sind keine Analyse- oder Marketing-Cookies aktiv im Einsatz."
+              } Ihre Auswahl können Sie jederzeit ändern.`,
               cookieSettingsButton: true,
             },
             {
@@ -117,7 +126,15 @@ export default function PrivacyPolicyPage() {
             },
             {
               heading: "5. Çerezler",
-              body: "Online mağazamızı ziyaret ettiğinizde çerezler kullanıyoruz. Zorunlu çerezler web sitesinin çalışması için gereklidir (ör. sepet, giriş, dil tercihi) ve devre dışı bırakılamaz. Analiz çerezleri web sitesinin nasıl kullanıldığını anlamamıza yardımcı olur, pazarlama çerezleri ise size daha uygun teklifler göstermek için kullanılır — her iki kategoriyi de yalnızca ilk ziyaretinizde çerez banner'ımız üzerinden verdiğiniz veya reddettiğiniz izinle kullanırız. Şu anda aktif olarak kullanılan analiz veya pazarlama çerezi bulunmamaktadır. Seçiminizi istediğiniz zaman değiştirebilirsiniz.",
+              body: `Online mağazamızı ziyaret ettiğinizde çerezler kullanıyoruz. Zorunlu çerezler web sitesinin çalışması için gereklidir (ör. sepet, giriş, dil tercihi) ve devre dışı bırakılamaz. Analiz çerezleri web sitesinin nasıl kullanıldığını anlamamıza yardımcı olur. Pazarlama çerezlerini size daha uygun teklifler göstermek için kullanıyoruz${
+                settings.metaPixelId
+                  ? " — somut olarak, ziyaretinizi Meta'ya ileten Meta Pixel'ini (Facebook/Instagram) kullanıyoruz"
+                  : ""
+              }. Her iki kategoriyi de yalnızca ilk ziyaretinizde çerez banner'ımız üzerinden verdiğiniz veya reddettiğiniz izinle kullanırız.${
+                settings.metaPixelId
+                  ? ""
+                  : " Şu anda aktif olarak kullanılan analiz veya pazarlama çerezi bulunmamaktadır."
+              } Seçiminizi istediğiniz zaman değiştirebilirsiniz.`,
               cookieSettingsButton: true,
             },
             {

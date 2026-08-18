@@ -61,6 +61,8 @@ type Settings = {
   tiktok: string;
   twitter: string;
 
+  metaPixelId: string;
+
   showOffers: boolean;
 
   minOrderValueEnabled: boolean;
@@ -118,6 +120,8 @@ const emptySettings: Settings = {
   linkedin: "",
   tiktok: "",
   twitter: "",
+
+  metaPixelId: "",
 
   showOffers: true,
 
@@ -210,6 +214,7 @@ export default function CompanySettingsPage() {
           linkedin: data.settings.linkedin || "",
           tiktok: data.settings.tiktok || "",
           twitter: data.settings.twitter || "",
+          metaPixelId: data.settings.metaPixelId || "",
 
           showOffers: data.settings.showOffers !== false,
 
@@ -395,6 +400,7 @@ export default function CompanySettingsPage() {
         linkedin: data.settings.linkedin || "",
         tiktok: data.settings.tiktok || "",
         twitter: data.settings.twitter || "",
+        metaPixelId: data.settings.metaPixelId || "",
 
         showOffers: data.settings.showOffers !== false,
 
@@ -507,6 +513,7 @@ export default function CompanySettingsPage() {
         linkedin: data.settings.linkedin || "",
         tiktok: data.settings.tiktok || "",
         twitter: data.settings.twitter || "",
+        metaPixelId: data.settings.metaPixelId || "",
 
         showOffers: data.settings.showOffers !== false,
 
@@ -1092,6 +1099,38 @@ export default function CompanySettingsPage() {
                     }))
                   }
                   placeholder="https://x.com/..."
+                  className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3"
+                />
+              </label>
+            </div>
+          </section>
+
+          <section className="rounded-3xl border border-slate-200 p-5">
+            <h2 className="text-xl font-black text-slate-950">
+              {language === "de" ? "Marketing & Tracking" : "Pazarlama ve Takip"}
+            </h2>
+
+            <p className="mt-1 text-sm text-slate-500">
+              {language === "de"
+                ? "Wird nur geladen, wenn Kunden dem Marketing-Cookie im Cookie-Banner zustimmen."
+                : "Yalnızca müşteriler çerez bannerındaki pazarlama çerezini onayladığında yüklenir."}
+            </p>
+
+            <div className="mt-5 grid gap-5 sm:grid-cols-2">
+              <label>
+                <span className="text-sm font-bold text-slate-700">
+                  Meta Pixel-ID
+                </span>
+                <input
+                  value={settings.metaPixelId}
+                  onChange={(e) =>
+                    setSettings((c) => ({
+                      ...c,
+                      metaPixelId: e.target.value,
+                    }))
+                  }
+                  placeholder="1234567890123456"
+                  inputMode="numeric"
                   className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3"
                 />
               </label>
