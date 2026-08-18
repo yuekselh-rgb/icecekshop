@@ -1,5 +1,6 @@
 "use client";
 
+import { openCookieSettings } from "@/components/CookieConsentBanner";
 import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
 import { useLanguage } from "@/context/LanguageContext";
@@ -67,18 +68,24 @@ export default function PrivacyPolicyPage() {
               body: "Für die Funktion des Warenkorbs und Ihrer Spracheinstellung nutzen wir den lokalen Speicher (Local Storage) Ihres Browsers. Diese Daten verbleiben auf Ihrem Gerät und werden nicht an uns übertragen, bis Sie eine Bestellung abschließen.",
             },
             {
-              heading: "5. Weitergabe an Dritte",
+              heading: "5. Cookies",
+              body: "Beim Besuch unseres Onlineshops verwenden wir Cookies. Notwendige Cookies sind für den Betrieb der Website erforderlich (z. B. Warenkorb, Anmeldung, Spracheinstellung) und können nicht deaktiviert werden. Analyse-Cookies helfen uns zu verstehen, wie die Website genutzt wird, und Marketing-Cookies würden genutzt, um Ihnen relevantere Angebote zu zeigen — beide Kategorien setzen wir nur mit Ihrer Einwilligung ein, die Sie beim ersten Besuch über unseren Cookie-Banner erteilen oder ablehnen. Aktuell sind keine Analyse- oder Marketing-Cookies aktiv im Einsatz. Ihre Auswahl können Sie jederzeit ändern.",
+              cookieSettingsButton: true,
+            },
+            {
+              heading: "6. Weitergabe an Dritte",
               body: "Eine Weitergabe Ihrer Daten erfolgt nur, soweit dies zur Auftragsabwicklung notwendig ist (z. B. an mit der Zustellung beauftragte Fahrer) oder wir gesetzlich dazu verpflichtet sind. Ihre Daten werden nicht zu Werbezwecken an Dritte verkauft.",
             },
             {
-              heading: "6. Speicherdauer",
+              heading: "7. Speicherdauer",
               body: "Wir speichern personenbezogene Daten nur so lange, wie es für die genannten Zwecke erforderlich ist bzw. gesetzliche Aufbewahrungsfristen (z. B. handels- und steuerrechtliche Vorgaben) dies verlangen.",
             },
             {
-              heading: "7. Ihre Rechte",
+              heading: "8. Ihre Rechte",
               body: "Sie haben das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Datenübertragbarkeit sowie Widerspruch gegen die Verarbeitung Ihrer personenbezogenen Daten. Wenden Sie sich hierzu an die oben genannte Kontaktadresse. Ihnen steht zudem ein Beschwerderecht bei der zuständigen Datenschutzaufsichtsbehörde zu.",
             },
           ],
+          cookieSettingsButtonLabel: "Cookie-Einstellungen ändern",
           notice:
             "Hinweis: Dies ist ein allgemeiner Text und ersetzt keine individuelle Rechtsberatung. Bitte lassen Sie diese Datenschutzerklärung von einem Rechtsanwalt oder Datenschutzbeauftragten auf Vollständigkeit prüfen (u. a. hinsichtlich eingesetzter Zahlungsdienstleister, Analyse- oder Marketing-Tools).",
         }
@@ -109,18 +116,24 @@ export default function PrivacyPolicyPage() {
               body: "Sepet işlevi ve dil tercihiniz için tarayıcınızın yerel depolama alanını (Local Storage) kullanıyoruz. Bu veriler cihazınızda kalır ve siz bir sipariş tamamlayana kadar bize aktarılmaz.",
             },
             {
-              heading: "5. Üçüncü Taraflarla Paylaşım",
+              heading: "5. Çerezler",
+              body: "Online mağazamızı ziyaret ettiğinizde çerezler kullanıyoruz. Zorunlu çerezler web sitesinin çalışması için gereklidir (ör. sepet, giriş, dil tercihi) ve devre dışı bırakılamaz. Analiz çerezleri web sitesinin nasıl kullanıldığını anlamamıza yardımcı olur, pazarlama çerezleri ise size daha uygun teklifler göstermek için kullanılır — her iki kategoriyi de yalnızca ilk ziyaretinizde çerez banner'ımız üzerinden verdiğiniz veya reddettiğiniz izinle kullanırız. Şu anda aktif olarak kullanılan analiz veya pazarlama çerezi bulunmamaktadır. Seçiminizi istediğiniz zaman değiştirebilirsiniz.",
+              cookieSettingsButton: true,
+            },
+            {
+              heading: "6. Üçüncü Taraflarla Paylaşım",
               body: "Verileriniz yalnızca siparişin işlenmesi için gerekli olduğunda (ör. teslimatla görevli şoförlerle) veya yasal olarak zorunlu olduğumuzda paylaşılır. Verileriniz reklam amacıyla üçüncü taraflara satılmaz.",
             },
             {
-              heading: "6. Saklama Süresi",
+              heading: "7. Saklama Süresi",
               body: "Kişisel verileri yalnızca belirtilen amaçlar için gerekli olduğu sürece veya yasal saklama süreleri (ör. ticari ve vergisel gereklilikler) gerektirdiği sürece saklıyoruz.",
             },
             {
-              heading: "7. Haklarınız",
+              heading: "8. Haklarınız",
               body: "Kişisel verilerinizle ilgili bilgi alma, düzeltme, silme, işlemeyi kısıtlama, veri taşınabilirliği ve işlemeye itiraz etme hakkına sahipsiniz. Bu haklarınızı kullanmak için yukarıdaki iletişim adresine başvurabilirsiniz. Ayrıca yetkili veri koruma denetim makamına şikayette bulunma hakkınız da bulunmaktadır.",
             },
           ],
+          cookieSettingsButtonLabel: "Çerez Ayarlarını Değiştir",
           notice:
             "Not: Bu genel bir metindir ve bireysel hukuki danışmanlığın yerini tutmaz. Lütfen bu gizlilik politikasının eksiksizliğini (kullanılan ödeme hizmet sağlayıcıları, analiz veya pazarlama araçları dahil) bir avukat veya veri koruma görevlisine kontrol ettirin.",
         };
@@ -150,6 +163,17 @@ export default function PrivacyPolicyPage() {
               </h2>
 
               <p className="mt-3 leading-6 text-slate-600">{section.body}</p>
+
+              {"cookieSettingsButton" in section &&
+              section.cookieSettingsButton ? (
+                <button
+                  type="button"
+                  onClick={openCookieSettings}
+                  className="mt-4 rounded-full border border-slate-300 px-4 py-2 text-sm font-bold text-slate-950 transition hover:border-slate-950"
+                >
+                  {t.cookieSettingsButtonLabel}
+                </button>
+              ) : null}
             </div>
           ))}
 
