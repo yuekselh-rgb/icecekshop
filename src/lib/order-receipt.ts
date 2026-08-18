@@ -1,4 +1,5 @@
 import { escapeHtml } from "@/lib/html-escape";
+import { isPlaceholderEmail } from "@/lib/utils";
 import QRCode from "qrcode";
 
 export type ReceiptOrderStatus =
@@ -563,9 +564,15 @@ export function buildOrderReceiptHtml(
               <div class="party-label">${language === "de" ? "Kunde" : "Müşteri"}</div>
 
               <div class="party-body">
-                ${order.user.companyName ? `${escapeHtml(order.user.companyName)}<br />` : ""}
-                ${escapeHtml(order.user.firstName || "")} ${escapeHtml(order.user.lastName || "")}<br />
-                ${escapeHtml(order.user.email)}<br />
+                ${
+                  isPlaceholderEmail(order.user.email)
+                    ? `${language === "de" ? "Barverkauf" : "Bar Satışı"}<br />`
+                    : `
+                      ${order.user.companyName ? `${escapeHtml(order.user.companyName)}<br />` : ""}
+                      ${escapeHtml(order.user.firstName || "")} ${escapeHtml(order.user.lastName || "")}<br />
+                      ${escapeHtml(order.user.email)}<br />
+                    `
+                }
                 ${escapeHtml(order.user.phone || "")}
               </div>
             </div>

@@ -16,6 +16,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import { escapeHtml } from "@/lib/html-escape";
+import { isPlaceholderEmail } from "@/lib/utils";
 import {
   fetchReceiptCompany,
   getDeliveryQrCode,
@@ -546,12 +547,18 @@ export default function SuperAdminOrdersPage() {
 
               <div class="party-body">
                 ${
-                  order.user.companyName
-                    ? `${escapeHtml(order.user.companyName)}<br />`
-                    : ""
+                  isPlaceholderEmail(order.user.email)
+                    ? `${language === "de" ? "Barverkauf" : "Bar Satışı"}<br />`
+                    : `
+                      ${
+                        order.user.companyName
+                          ? `${escapeHtml(order.user.companyName)}<br />`
+                          : ""
+                      }
+                      ${escapeHtml(order.user.firstName || "")} ${escapeHtml(order.user.lastName || "")}<br />
+                      ${escapeHtml(order.user.email)}<br />
+                    `
                 }
-                ${escapeHtml(order.user.firstName || "")} ${escapeHtml(order.user.lastName || "")}<br />
-                ${escapeHtml(order.user.email)}<br />
                 ${escapeHtml(order.user.phone || "")}
               </div>
             </div>
