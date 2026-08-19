@@ -102,8 +102,17 @@ export default function Header({
       if (trimmed && !hasScrolledForSearchRef.current) {
         hasScrolledForSearchRef.current = true;
 
+        /*
+         * Bewusst "home-products" statt des "produkte"-Sentinels: der
+         * Sentinel sitzt genau an der Kipp-Schwelle des Sticky-
+         * Kategorie-Leiste-Observers (CategorySection). Ändert sich
+         * kurz danach die Höhe der gefilterten Ergebnisliste, kippt
+         * der Observer hin und her und reißt die Seite sichtbar nach
+         * oben — v. a. auf Mobile mit eingeblendeter Tastatur auffällig.
+         * "home-products" liegt sicher unterhalb dieser Schwelle.
+         */
         document
-          .getElementById("produkte")
+          .getElementById("home-products")
           ?.scrollIntoView({ behavior: "smooth", block: "start" });
       }
     }, 250);
