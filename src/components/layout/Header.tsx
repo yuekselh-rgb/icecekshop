@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -71,70 +71,41 @@ export default function Header({
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const hasScrolledForSearchRef = useRef(false);
-
-  useEffect(() => {
-    if (!searchOpen) {
-      hasScrolledForSearchRef.current = false;
-    }
-  }, [searchOpen]);
-
   /*
-   * Live-Suche auf der Startseite: während des Tippens wird gefiltert
-   * (leicht verzögert, damit nicht bei jedem Tastenanschlag neu gerendert
-   * wird) — kein Enter nötig. Auf anderen Seiten bleibt es bei Enter →
-   * Weiterleitung zu /products, da es dort keine Live-Ergebnisliste gibt.
+   * Auf der Startseite gibt es direkt im Produktbereich ein eigenes,
+   * live filterndes Suchfeld (FeaturedProducts) — kein Scrollen bei
+   * jedem Tastenanschlag mehr nötig (das führte auf Mobile zu einem
+   * Konflikt mit der sticky Kategorie-Leiste). Das Kopfzeilen-Symbol
+   * scrollt hier nur noch einmalig dorthin und fokussiert es. Auf
+   * allen anderen Seiten bleibt das bisherige Verhalten (Enter →
+   * Weiterleitung zu /products) unverändert.
    */
-  useEffect(() => {
-    if (!searchOpen || pathname !== "/") {
+  function handleSearchClick() {
+    if (pathname === "/") {
+      window.dispatchEvent(new Event("focus-home-search"));
+
+      document
+        .getElementById("home-products")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+
       return;
     }
 
-    const trimmed = searchQuery.trim();
-
-    const timeout = setTimeout(() => {
-      window.dispatchEvent(
-        new CustomEvent("home-search", {
-          detail: { query: trimmed },
-        }),
-      );
-
-      if (trimmed && !hasScrolledForSearchRef.current) {
-        hasScrolledForSearchRef.current = true;
-
-        /*
-         * Bewusst "home-products" statt des "produkte"-Sentinels: der
-         * Sentinel sitzt genau an der Kipp-Schwelle des Sticky-
-         * Kategorie-Leiste-Observers (CategorySection). Ändert sich
-         * kurz danach die Höhe der gefilterten Ergebnisliste, kippt
-         * der Observer hin und her und reißt die Seite sichtbar nach
-         * oben — v. a. auf Mobile mit eingeblendeter Tastatur auffällig.
-         * "home-products" liegt sicher unterhalb dieser Schwelle.
-         */
-        document
-          .getElementById("home-products")
-          ?.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
-    }, 250);
-
-    return () => clearTimeout(timeout);
-  }, [searchQuery, searchOpen, pathname]);
+    setSearchOpen((open) => !open);
+  }
 
   function submitSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (pathname !== "/") {
-      const trimmed = searchQuery.trim();
+    const trimmed = searchQuery.trim();
 
-      router.push(
-        trimmed
-          ? `/products?search=${encodeURIComponent(trimmed)}`
-          : "/products",
-      );
+    router.push(
+      trimmed
+        ? `/products?search=${encodeURIComponent(trimmed)}`
+        : "/products",
+    );
 
-      setSearchQuery("");
-    }
-
+    setSearchQuery("");
     setSearchOpen(false);
   }
 
@@ -635,7 +606,7 @@ export default function Header({
             <button
               type="button"
               aria-label={t.search}
-              onClick={() => setSearchOpen((open) => !open)}
+              onClick={handleSearchClick}
               className={`rounded-full border p-2.5 transition hover:border-[#0E6FAE] hover:text-[#0E6FAE] ${
                 searchOpen
                   ? "border-[#0E6FAE] text-[#0E6FAE]"

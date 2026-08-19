@@ -2,8 +2,8 @@
 
 import ProductCard from "@/components/ui/ProductCard";
 import { useLanguage } from "@/context/LanguageContext";
-import { ChevronDown, ChevronUp, Loader2 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { ChevronDown, ChevronUp, Loader2, Search, X } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 /*
  * Auf der Startseite wird pro Kategorie zunächst nur eine Vorschau
@@ -64,6 +64,8 @@ export default function FeaturedProducts({
     new Set(),
   );
 
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
   function toggleCategoryExpanded(slug: string) {
     setExpandedCategories((current) => {
       const next = new Set(current);
@@ -94,6 +96,7 @@ export default function FeaturedProducts({
           error: "Produkte konnten nicht geladen werden.",
           showAll: "Alle anzeigen",
           showLess: "Weniger anzeigen",
+          searchPlaceholder: "Produkt suchen",
           searchResultsFor: (query: string) => `Suchergebnisse für „${query}“`,
           clearSearch: "Suche zurücksetzen",
           noSearchResults: (query: string) =>
@@ -113,6 +116,7 @@ export default function FeaturedProducts({
           error: "Ürünler yüklenemedi.",
           showAll: "Tümünü gör",
           showLess: "Daha az göster",
+          searchPlaceholder: "Ürün ara",
           searchResultsFor: (query: string) => `„${query}“ için arama sonuçları`,
           clearSearch: "Aramayı temizle",
           noSearchResults: (query: string) =>
@@ -220,18 +224,20 @@ export default function FeaturedProducts({
     };
   }, []);
 
+  /*
+   * Das Kopfzeilen-Suchsymbol scrollt hierher und feuert dieses Event
+   * einmalig, um das lokale Suchfeld zu fokussieren — die eigentliche
+   * Live-Filterung passiert direkt hier über das Suchfeld selbst.
+   */
   useEffect(() => {
-    function handleSearch(event: Event) {
-      const customEvent = event as CustomEvent<{ query: string }>;
-
-      setSelectedCategory("all");
-      setSearchQuery(customEvent.detail.query || "");
+    function handleFocusRequest() {
+      searchInputRef.current?.focus();
     }
 
-    window.addEventListener("home-search", handleSearch);
+    window.addEventListener("focus-home-search", handleFocusRequest);
 
     return () => {
-      window.removeEventListener("home-search", handleSearch);
+      window.removeEventListener("focus-home-search", handleFocusRequest);
     };
   }, []);
 
@@ -311,19 +317,41 @@ export default function FeaturedProducts({
             ) : null}
 
             <section id="home-products" className="scroll-mt-28">
+              <div className="relative mx-auto mb-8 max-w-md">
+                <Search
+                  size={20}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-[#828484]"
+                />
+
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  value={searchQuery}
+                  onChange={(event) => {
+                    setSearchQuery(event.target.value);
+                    setSelectedCategory("all");
+                  }}
+                  placeholder={t.searchPlaceholder}
+                  className="w-full rounded-full border border-[#05090a26] py-3 pl-12 pr-12 outline-none transition focus:border-[#0E6FAE]"
+                />
+
+                {searchQuery ? (
+                  <button
+                    type="button"
+                    aria-label={t.clearSearch}
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-[#828484] transition hover:text-[#05090A]"
+                  >
+                    <X size={18} />
+                  </button>
+                ) : null}
+              </div>
+
               {searchQuery.trim() ? (
-                <div className="mx-auto mb-8 flex max-w-lg flex-wrap items-center justify-center gap-3 text-center">
+                <div className="mx-auto mb-8 max-w-lg text-center">
                   <p className="font-semibold text-[#05090A]">
                     {t.searchResultsFor(searchQuery.trim())}
                   </p>
-
-                  <button
-                    type="button"
-                    onClick={() => setSearchQuery("")}
-                    className="rounded-full border border-[#05090a26] px-3 py-1 text-xs font-bold text-[#505253] transition hover:border-[#0E6FAE] hover:text-[#0E6FAE]"
-                  >
-                    {t.clearSearch}
-                  </button>
                 </div>
               ) : (
                 <div className="mx-auto mb-12 max-w-lg text-center">
