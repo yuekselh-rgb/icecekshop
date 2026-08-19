@@ -231,7 +231,12 @@ export default function FeaturedProducts({
    */
   useEffect(() => {
     function handleFocusRequest() {
-      searchInputRef.current?.focus();
+      /*
+       * preventScroll ist wichtig: ohne das scrollt der Browser beim
+       * Fokussieren selbst (und dabei oft mittig statt an den Anfang),
+       * was mit dem gezielten scrollIntoView aus dem Header kollidiert.
+       */
+      searchInputRef.current?.focus({ preventScroll: true });
     }
 
     window.addEventListener("focus-home-search", handleFocusRequest);
@@ -296,6 +301,26 @@ export default function FeaturedProducts({
           </div>
         ) : (
           <div>
+            {showOffers && offerProducts.length > 0 ? (
+              <section className="mb-16">
+                <div className="mx-auto mb-8 max-w-lg text-center">
+                  <p className="font-semibold text-[#05090A]">{t.offersEyebrow}</p>
+
+                  <h2 className="mt-3 text-3xl font-medium tracking-tight text-[#05090A] sm:text-4xl">
+                    {t.offersTitle}
+                  </h2>
+
+                  <p className="mt-3 text-[#505253]">
+                    {t.offersDescription}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+                  {offerProducts.map(renderProductCard)}
+                </div>
+              </section>
+            ) : null}
+
             <section id="home-products" className="scroll-mt-28">
               <div className="relative mx-auto mb-8 max-w-md">
                 <Search
@@ -326,29 +351,7 @@ export default function FeaturedProducts({
                   </button>
                 ) : null}
               </div>
-            </section>
 
-            {showOffers && offerProducts.length > 0 ? (
-              <section className="mb-16">
-                <div className="mx-auto mb-8 max-w-lg text-center">
-                  <p className="font-semibold text-[#05090A]">{t.offersEyebrow}</p>
-
-                  <h2 className="mt-3 text-3xl font-medium tracking-tight text-[#05090A] sm:text-4xl">
-                    {t.offersTitle}
-                  </h2>
-
-                  <p className="mt-3 text-[#505253]">
-                    {t.offersDescription}
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-                  {offerProducts.map(renderProductCard)}
-                </div>
-              </section>
-            ) : null}
-
-            <section>
               {searchQuery.trim() ? (
                 <div className="mx-auto mb-8 max-w-lg text-center">
                   <p className="font-semibold text-[#05090A]">
