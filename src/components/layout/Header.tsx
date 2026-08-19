@@ -76,11 +76,23 @@ export default function Header({
 
     const trimmed = searchQuery.trim();
 
-    router.push(
-      trimmed
-        ? `/products?search=${encodeURIComponent(trimmed)}`
-        : "/products",
-    );
+    if (pathname === "/") {
+      window.dispatchEvent(
+        new CustomEvent("home-search", {
+          detail: { query: trimmed },
+        }),
+      );
+
+      document
+        .getElementById("produkte")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      router.push(
+        trimmed
+          ? `/products?search=${encodeURIComponent(trimmed)}`
+          : "/products",
+      );
+    }
 
     setSearchOpen(false);
     setSearchQuery("");

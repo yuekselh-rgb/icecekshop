@@ -58,6 +58,7 @@ export default function FeaturedProducts({
   const [loading, setLoading] = useState(initialProducts.length === 0);
   const [error, setError] = useState("");
   const [showOffers, setShowOffers] = useState(initialShowOffers);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
     new Set(),
@@ -93,6 +94,10 @@ export default function FeaturedProducts({
           error: "Produkte konnten nicht geladen werden.",
           showAll: "Alle anzeigen",
           showLess: "Weniger anzeigen",
+          searchResultsFor: (query: string) => `Suchergebnisse für „${query}“`,
+          clearSearch: "Suche zurücksetzen",
+          noSearchResults: (query: string) =>
+            `Keine Produkte gefunden für „${query}“.`,
         }
       : {
           offersEyebrow: "Güncel Kampanyalar",
@@ -108,6 +113,10 @@ export default function FeaturedProducts({
           error: "Ürünler yüklenemedi.",
           showAll: "Tümünü gör",
           showLess: "Daha az göster",
+          searchResultsFor: (query: string) => `„${query}“ için arama sonuçları`,
+          clearSearch: "Aramayı temizle",
+          noSearchResults: (query: string) =>
+            `„${query}“ için ürün bulunamadı.`,
         };
 
   useEffect(() => {
@@ -159,12 +168,19 @@ export default function FeaturedProducts({
 
 
   const groupedProducts = useMemo(() => {
-    const filtered =
-      selectedCategory === "all"
-        ? products
-        : products.filter(
-            (product) => product.categorySlug === selectedCategory,
-          );
+    const normalizedSearch = searchQuery.trim().toLowerCase();
+
+    const filtered = products
+      .filter(
+        (product) =>
+          selectedCategory === "all" ||
+          product.categorySlug === selectedCategory,
+      )
+      .filter(
+        (product) =>
+          normalizedSearch === "" ||
+          product.name[language].toLowerCase().includes(normalizedSearch),
+      );
 
     const map = new Map();
 
@@ -181,7 +197,7 @@ export default function FeaturedProducts({
     }
 
     return Array.from(map.values());
-  }, [products, selectedCategory]);
+  }, [products, selectedCategory, searchQuery, language]);
 
   useEffect(() => {
     function handleCategoryChange(event: Event) {
@@ -201,6 +217,21 @@ export default function FeaturedProducts({
         "home-category-change",
         handleCategoryChange,
       );
+    };
+  }, []);
+
+  useEffect(() => {
+    function handleSearch(event: Event) {
+      const customEvent = event as CustomEvent<{ query: string }>;
+
+      setSelectedCategory("all");
+      setSearchQuery(customEvent.detail.query || "");
+    }
+
+    window.addEventListener("home-search", handleSearch);
+
+    return () => {
+      window.removeEventListener("home-search", handleSearch);
     };
   }, []);
 
@@ -280,20 +311,41 @@ export default function FeaturedProducts({
             ) : null}
 
             <section id="home-products" className="scroll-mt-28">
-              <div className="mx-auto mb-12 max-w-lg text-center">
-                <p className="font-semibold text-[#05090A]">
-                  {language === "de" ? "Sortiment" : "Ürünler"}
+              {searchQuery.trim() ? (
+                <div className="mx-auto mb-8 flex max-w-lg flex-wrap items-center justify-center gap-3 text-center">
+                  <p className="font-semibold text-[#05090A]">
+                    {t.searchResultsFor(searchQuery.trim())}
+                  </p>
+
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery("")}
+                    className="rounded-full border border-[#05090a26] px-3 py-1 text-xs font-bold text-[#505253] transition hover:border-[#0E6FAE] hover:text-[#0E6FAE]"
+                  >
+                    {t.clearSearch}
+                  </button>
+                </div>
+              ) : (
+                <div className="mx-auto mb-12 max-w-lg text-center">
+                  <p className="font-semibold text-[#05090A]">
+                    {language === "de" ? "Sortiment" : "Ürünler"}
+                  </p>
+
+                  <h2 className="mt-3 text-3xl font-medium tracking-tight text-[#05090A] sm:text-4xl">
+                    {t.allProductsTitle}
+                  </h2>
+
+                  <p className="mt-3 text-[#505253]">
+                    {t.allProductsDescription}
+                  </p>
+                </div>
+              )}
+
+              {searchQuery.trim() && groupedProducts.length === 0 ? (
+                <p className="mx-auto max-w-lg text-center text-[#505253]">
+                  {t.noSearchResults(searchQuery.trim())}
                 </p>
-
-                <h2 className="mt-3 text-3xl font-medium tracking-tight text-[#05090A] sm:text-4xl">
-                  {t.allProductsTitle}
-                </h2>
-
-                <p className="mt-3 text-[#505253]">
-                  {t.allProductsDescription}
-                </p>
-              </div>
-
+              ) : null}
 
 {groupedProducts.map((group) => {
   const hasMore = group.products.length > PREVIEW_COUNT;
