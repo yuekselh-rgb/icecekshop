@@ -5,6 +5,7 @@ import Header from "@/components/layout/Header";
 import { useCart } from "@/context/CartContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { Minus, Plus, RotateCcw, ShoppingBag, Trash2, X } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -237,17 +238,19 @@ export default function CartClient({
                       key={item.id}
                       className="flex flex-col gap-5 rounded-3xl bg-white p-5 sm:flex-row sm:items-center"
                     >
-                      <div className="flex h-28 w-full shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-slate-100 sm:w-28">
+                      <div className="relative flex h-28 w-full shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-slate-100 sm:w-28">
                         {item.image &&
                         (item.image.startsWith("http://") ||
                           item.image.startsWith("https://") ||
                           item.image.startsWith("/") ||
                           item.image.startsWith("data:image/") ||
                           item.image.startsWith("blob:")) ? (
-                          <img
+                          <Image
                             src={item.image}
                             alt={item.name}
-                            className="h-full w-full object-contain p-2"
+                            fill
+                            sizes="112px"
+                            className="object-contain p-2"
                           />
                         ) : (
                           <span className="text-5xl">{item.image || "📦"}</span>

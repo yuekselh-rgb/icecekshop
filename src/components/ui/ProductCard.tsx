@@ -1,6 +1,7 @@
 "use client";
 
 import { Check, Minus, Plus, ShoppingCart } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { useCart } from "@/context/CartContext";
@@ -186,10 +187,12 @@ export default function ProductCard({
         ) : null}
 
         {isImageSource(image) ? (
-          <img
+          <Image
             src={image}
             alt={localizedName}
-            className="h-full w-full object-contain transition duration-300"
+            fill
+            sizes="(max-width: 1024px) 50vw, 25vw"
+            className="object-contain transition duration-300"
             style={{
               transform: `translate(${imagePositionX}px, ${imagePositionY}px) scale(${imageScale})`,
               transformOrigin: "center",

@@ -6,6 +6,7 @@ import ProductActions from "@/components/product/ProductActions";
 import ProductCard from "@/components/ui/ProductCard";
 import { useLanguage } from "@/context/LanguageContext";
 import { Check, Loader2, RotateCcw } from "lucide-react";
+import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -182,10 +183,13 @@ export default function ProductDetailClient({
               ) : null}
 
               {isImageSource(product.image) ? (
-                <img
+                <Image
                   src={product.image}
                   alt={localizedName}
-                  className="h-full max-h-[480px] w-full object-contain transition duration-300"
+                  fill
+                  priority
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  className="object-contain transition duration-300"
                   style={{
                     transform: `translate(${product.imagePositionX ?? 0}px, ${
                       product.imagePositionY ?? 0

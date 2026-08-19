@@ -5,6 +5,11 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: process.cwd(),
   },
+  images: {
+    remotePatterns: [
+      { protocol: "https", hostname: "*.public.blob.vercel-storage.com" },
+    ],
+  },
   async headers() {
     return [
       {
