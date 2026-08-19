@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -71,31 +71,62 @@ export default function Header({
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  function submitSearch(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  const hasScrolledForSearchRef = useRef(false);
+
+  useEffect(() => {
+    if (!searchOpen) {
+      hasScrolledForSearchRef.current = false;
+    }
+  }, [searchOpen]);
+
+  /*
+   * Live-Suche auf der Startseite: während des Tippens wird gefiltert
+   * (leicht verzögert, damit nicht bei jedem Tastenanschlag neu gerendert
+   * wird) — kein Enter nötig. Auf anderen Seiten bleibt es bei Enter →
+   * Weiterleitung zu /products, da es dort keine Live-Ergebnisliste gibt.
+   */
+  useEffect(() => {
+    if (!searchOpen || pathname !== "/") {
+      return;
+    }
 
     const trimmed = searchQuery.trim();
 
-    if (pathname === "/") {
+    const timeout = setTimeout(() => {
       window.dispatchEvent(
         new CustomEvent("home-search", {
           detail: { query: trimmed },
         }),
       );
 
-      document
-        .getElementById("produkte")
-        ?.scrollIntoView({ behavior: "smooth", block: "start" });
-    } else {
+      if (trimmed && !hasScrolledForSearchRef.current) {
+        hasScrolledForSearchRef.current = true;
+
+        document
+          .getElementById("produkte")
+          ?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }, 250);
+
+    return () => clearTimeout(timeout);
+  }, [searchQuery, searchOpen, pathname]);
+
+  function submitSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (pathname !== "/") {
+      const trimmed = searchQuery.trim();
+
       router.push(
         trimmed
           ? `/products?search=${encodeURIComponent(trimmed)}`
           : "/products",
       );
+
+      setSearchQuery("");
     }
 
     setSearchOpen(false);
-    setSearchQuery("");
   }
 
 
