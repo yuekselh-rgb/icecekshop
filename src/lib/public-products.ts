@@ -1,16 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import { getCurrentTenant } from "@/lib/tenant";
 
-export async function getPublicProducts() {
-  const tenant = await getCurrentTenant();
-
-  if (!tenant) {
-    return [];
-  }
-
+export async function queryPublicProductsForTenant(tenantId: string) {
   const products = await prisma.product.findMany({
     where: {
-      tenantId: tenant.id,
+      tenantId,
       active: true,
       stock: {
         gt: 0,
@@ -101,6 +95,16 @@ export async function getPublicProducts() {
     cartonPrice:
       product.cartonPrice !== null ? Number(product.cartonPrice) : null,
   }));
+}
+
+export async function getPublicProducts() {
+  const tenant = await getCurrentTenant();
+
+  if (!tenant) {
+    return [];
+  }
+
+  return queryPublicProductsForTenant(tenant.id);
 }
 
 export type PublicProduct = Awaited<

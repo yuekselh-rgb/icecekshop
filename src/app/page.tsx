@@ -8,8 +8,7 @@ import CategorySection from "@/components/home/CategorySection";
 import HeroSection from "@/components/home/HeroSection";
 import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
-import { prisma } from "@/lib/prisma";
-import { getPublicProducts } from "@/lib/public-products";
+import { getCachedHomePageData } from "@/lib/home-page-cache";
 import { getCurrentTenant, isPlatformHost } from "@/lib/tenant";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
@@ -30,41 +29,12 @@ export default async function HomePage() {
 
   const tenant = await getCurrentTenant();
 
-  const [companySetting, categories, products] = await Promise.all([
-    tenant
-      ? prisma.companySetting
-          .findUnique({
-            where: {
-              tenantId: tenant.id,
-            },
-          })
-          .catch(() => null)
-      : null,
-
-    tenant
-      ? prisma.category
-          .findMany({
-            where: {
-              tenantId: tenant.id,
-            },
-            orderBy: [
-              { sortOrder: "asc" },
-              { type: "asc" },
-              { name: "asc" },
-            ],
-          })
-          .catch(() => [])
-      : [],
-
-    getPublicProducts().catch(() => []),
-  ]);
+  const { companySetting, categories, products } = tenant
+    ? await getCachedHomePageData(tenant.id)
+    : { companySetting: null, categories: [], products: [] };
 
   const initialSettings = companySetting
-    ? {
-        ...companySetting,
-        createdAt: companySetting.createdAt.toISOString(),
-        updatedAt: companySetting.updatedAt.toISOString(),
-      }
+    ? companySetting
     : {
         companyName: "Firma Adı",
         companySubtitle: null,
