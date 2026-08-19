@@ -2,6 +2,7 @@
 
 import ProductCard from "@/components/ui/ProductCard";
 import { useLanguage } from "@/context/LanguageContext";
+import { trackSearch } from "@/lib/analytics";
 import { ChevronDown, ChevronUp, Loader2, Search, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -202,6 +203,37 @@ export default function FeaturedProducts({
 
     return Array.from(map.values());
   }, [products, selectedCategory, searchQuery, language]);
+
+  /*
+   * Die Startseiten-Suche ist die eigentlich meistgenutzte Suche im
+   * Shop (nicht /products) — deshalb wird auch hier getrackt, erst
+   * 600ms nach dem letzten Tastenanschlag, nie pro Zeichen.
+   */
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+
+  useEffect(() => {
+    const handle = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery.trim());
+    }, 600);
+
+    return () => clearTimeout(handle);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    if (!debouncedSearchQuery) {
+      return;
+    }
+
+    const resultsCount = groupedProducts.reduce(
+      (total, group) => total + group.products.length,
+      0,
+    );
+
+    trackSearch(debouncedSearchQuery, resultsCount);
+    // groupedProducts absichtlich nicht in den Deps: soll nur beim
+    // Einpendeln des Suchbegriffs feuern, nicht bei jeder Filteränderung.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearchQuery]);
 
   useEffect(() => {
     function handleCategoryChange(event: Event) {
