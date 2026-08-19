@@ -11,10 +11,17 @@ import Header from "@/components/layout/Header";
 import { prisma } from "@/lib/prisma";
 import { getPublicProducts } from "@/lib/public-products";
 import { getCurrentTenant, isPlatformHost } from "@/lib/tenant";
+import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: "/",
+  },
+};
 
 export default async function HomePage() {
   if (isPlatformHost((await headers()).get("host"))) {

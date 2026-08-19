@@ -2,6 +2,7 @@
 
 import { useLanguage } from "@/context/LanguageContext";
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 
@@ -77,10 +78,12 @@ export default function PfandSection() {
 
         <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
           <div className="relative flex aspect-[4/3] flex-col justify-end overflow-hidden border border-[#05090a26] bg-[#05090A] lg:aspect-auto lg:min-h-[22rem]">
-            <img
+            <Image
               src="/images/home/pfand-flaschen.jpg"
               alt="Pfandflaschen"
-              className="absolute inset-0 h-full w-full object-cover"
+              fill
+              sizes="(min-width: 1024px) 50vw, 100vw"
+              className="object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[#05090A] via-[#05090A]/10 to-transparent" />
 

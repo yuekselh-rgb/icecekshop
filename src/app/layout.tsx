@@ -24,7 +24,6 @@ const SCHEMA_DAY_NAMES = [
 export const viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
 };
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -32,10 +31,14 @@ export async function generateMetadata(): Promise<Metadata> {
   const result = await getTenantCompanySettings();
   const settings = result?.settings;
 
-  const title = settings?.companyName || result?.tenant.name || "Online Shop";
+  const companyName = settings?.companyName || result?.tenant.name || "Online Shop";
+
+  const title = settings?.city
+    ? `${companyName} – Getränke-Lieferservice in ${settings.city}`
+    : companyName;
 
   const description = settings?.city
-    ? `${title} – Getränke-Lieferservice in ${settings.city}. Getränke, Verpackungen und Reinigungsprodukte bequem online bestellen und liefern lassen.`
+    ? `${companyName} – Getränke-Lieferservice in ${settings.city}. Getränke, Verpackungen und Reinigungsprodukte bequem online bestellen und liefern lassen.`
     : "Getränke, Verpackungen und Reinigungsprodukte bequem bestellen.";
 
   const siteUrl = host ? `https://${host}` : undefined;
@@ -65,7 +68,7 @@ export async function generateMetadata(): Promise<Metadata> {
       title,
       description,
       url: siteUrl,
-      siteName: title,
+      siteName: companyName,
       locale: "de_DE",
       type: "website",
       images: settings?.logoUrl ? [settings.logoUrl] : undefined,

@@ -2,6 +2,7 @@
 
 import { useLanguage } from "@/context/LanguageContext";
 import { ArrowRight, Check } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 function scrollToProducts(event: React.MouseEvent) {
@@ -41,10 +42,13 @@ export default function HeroSection() {
     // Relume header-98: full-bleed sharp-cornered dark panel, centered content, two pill CTAs
     <section className="px-4 pb-8 pt-8 lg:px-8 lg:pb-12 lg:pt-12">
       <div className="relative mx-auto max-w-7xl overflow-hidden rounded-none bg-[#05090A]">
-        <img
+        <Image
           src="/images/home/hero-lager.jpg"
           alt=""
-          className="absolute inset-0 h-full w-full object-cover"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover"
         />
         <div className="absolute inset-0 bg-[#05090A]/75" />
 

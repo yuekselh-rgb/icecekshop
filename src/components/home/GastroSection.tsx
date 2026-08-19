@@ -2,6 +2,7 @@
 
 import { useLanguage } from "@/context/LanguageContext";
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 
@@ -95,10 +96,12 @@ export default function GastroSection() {
             </div>
 
             <div className="relative aspect-square overflow-hidden bg-[#05090A] md:aspect-auto md:min-h-[18rem]">
-              <img
+              <Image
                 src={tabImages[active].src}
                 alt={tabImages[active].alt}
-                className="h-full w-full object-cover"
+                fill
+                sizes="(min-width: 768px) 50vw, 100vw"
+                className="object-cover"
               />
             </div>
           </div>
