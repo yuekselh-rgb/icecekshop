@@ -290,7 +290,7 @@ export default function FeaturedProducts({
           </div>
         ) : (
           <div>
-            {showOffers && offerProducts.length > 0 ? (
+            {!searchQuery.trim() && showOffers && offerProducts.length > 0 ? (
               <section className="mb-16">
                 <div className="mx-auto mb-8 max-w-lg text-center">
                   <p className="font-semibold text-[#05090A]">{t.offersEyebrow}</p>
