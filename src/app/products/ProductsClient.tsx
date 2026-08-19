@@ -4,6 +4,7 @@ import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
 import ProductCard from "@/components/ui/ProductCard";
 import { useLanguage } from "@/context/LanguageContext";
+import { trackSearch } from "@/lib/analytics";
 import { Loader2, Search, SlidersHorizontal } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -194,6 +195,32 @@ export default function ProductsClient({
 
     return sorted;
   }, [products, search, activeCategory, language, sortOption, inStockOnly]);
+
+  /*
+   * Suchvorgänge werden erst getrackt, nachdem der Nutzer für 600ms
+   * aufgehört hat zu tippen — sonst würde jeder Tastenanschlag ein
+   * eigenes Analytics-Event auslösen.
+   */
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  useEffect(() => {
+    const handle = setTimeout(() => {
+      setDebouncedSearch(search.trim());
+    }, 600);
+
+    return () => clearTimeout(handle);
+  }, [search]);
+
+  useEffect(() => {
+    if (!debouncedSearch) {
+      return;
+    }
+
+    trackSearch(debouncedSearch, filteredProducts.length);
+    // filteredProducts absichtlich nicht in den Deps: soll nur beim
+    // Einpendeln des Suchbegriffs feuern, nicht bei jeder Filteränderung.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearch]);
 
   const categoryButtons = [
     {

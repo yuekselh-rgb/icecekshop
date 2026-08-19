@@ -11,8 +11,7 @@ import {
   normalizeBusinessHours,
   type BusinessHoursDay,
 } from "@/lib/business-hours";
-import { trackMetaPixelEvent } from "@/lib/meta-pixel-events";
-import { trackTikTokPixelEvent } from "@/lib/tiktok-pixel-events";
+import { trackBeginCheckout, trackPurchase } from "@/lib/analytics";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -231,25 +230,7 @@ export default function CheckoutClient({
 
     initiateCheckoutFiredRef.current = true;
 
-    trackMetaPixelEvent("InitiateCheckout", {
-      content_ids: items.map((item) => item.productId),
-      content_type: "product",
-      num_items: items.reduce((total, item) => total + item.quantity, 0),
-      value: Number(subtotal.toFixed(2)),
-      currency: "EUR",
-    });
-
-    trackTikTokPixelEvent("InitiateCheckout", {
-      contents: items.map((item) => ({
-        content_id: item.productId,
-        content_name: item.name,
-        content_type: "product",
-        quantity: item.quantity,
-        price: item.price,
-      })),
-      value: Number(subtotal.toFixed(2)),
-      currency: "EUR",
-    });
+    trackBeginCheckout(items, subtotal);
   }, [items, subtotal]);
 
   const deliveryMessage = isDealer
@@ -470,25 +451,7 @@ export default function CheckoutClient({
         return;
       }
 
-      trackMetaPixelEvent("Purchase", {
-        content_ids: items.map((item) => item.productId),
-        content_type: "product",
-        num_items: items.reduce((total, item) => total + item.quantity, 0),
-        value: Number(data.order.totalAmount),
-        currency: "EUR",
-      });
-
-      trackTikTokPixelEvent("CompletePayment", {
-        contents: items.map((item) => ({
-          content_id: item.productId,
-          content_name: item.name,
-          content_type: "product",
-          quantity: item.quantity,
-          price: item.price,
-        })),
-        value: Number(data.order.totalAmount),
-        currency: "EUR",
-      });
+      trackPurchase(items, data.order.totalAmount);
 
       setCompletedOrder({
         orderNumber: data.order.orderNumber,

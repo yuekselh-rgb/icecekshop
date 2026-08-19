@@ -5,10 +5,11 @@ import Header from "@/components/layout/Header";
 import ProductActions from "@/components/product/ProductActions";
 import ProductCard from "@/components/ui/ProductCard";
 import { useLanguage } from "@/context/LanguageContext";
+import { trackProductView } from "@/lib/analytics";
 import { Check, Loader2, RotateCcw } from "lucide-react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type LocalizedText = {
   tr: string;
@@ -125,6 +126,24 @@ export default function ProductDetailClient({
 
     loadProduct();
   }, [params.id]);
+
+  const trackedProductViewRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!product || trackedProductViewRef.current === product.id) {
+      return;
+    }
+
+    trackedProductViewRef.current = product.id;
+
+    trackProductView({
+      id: product.id,
+      name: product.name[language],
+      price: product.price,
+    });
+    // Nur einmal pro Produkt-ID feuern, nicht bei jedem Sprachwechsel.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product]);
 
   if (loading) {
     return (

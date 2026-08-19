@@ -38,3 +38,7 @@ export function readStoredConsent(): StoredConsent | null {
 export function hasMarketingConsent() {
   return readStoredConsent()?.marketing === true;
 }
+
+export function hasAnalyticsConsent() {
+  return readStoredConsent()?.analytics === true;
+}

@@ -1,7 +1,6 @@
 "use client";
 
-import { trackMetaPixelEvent } from "@/lib/meta-pixel-events";
-import { trackTikTokPixelEvent } from "@/lib/tiktok-pixel-events";
+import { trackAddToCart } from "@/lib/analytics";
 import {
   createContext,
   ReactNode,
@@ -137,22 +136,11 @@ export function CartProvider({ children }: CartProviderProps) {
   }, [items, pfandItems, isLoaded]);
 
   function addToCart(item: Omit<CartItem, "quantity">, quantity = 1) {
-    trackMetaPixelEvent("AddToCart", {
-      content_ids: [item.productId],
-      content_name: item.name,
-      content_type: "product",
-      value: Number((item.price * quantity).toFixed(2)),
-      currency: "EUR",
-    });
-
-    trackTikTokPixelEvent("AddToCart", {
-      content_id: item.productId,
-      content_name: item.name,
-      content_type: "product",
-      quantity,
+    trackAddToCart({
+      productId: item.productId,
+      name: item.name,
       price: item.price,
-      value: Number((item.price * quantity).toFixed(2)),
-      currency: "EUR",
+      quantity,
     });
 
     setItems((currentItems) => {
