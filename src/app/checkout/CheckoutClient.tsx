@@ -115,7 +115,7 @@ export default function CheckoutClient({
           paymentInfo:
             "Sie bezahlen bar oder mit Karte direkt an den Fahrer bei Zustellung. Eine Online-Zahlung ist nicht erforderlich.",
           saving: "Wird gespeichert...",
-          submitOrder: "Bestellung absenden",
+          submitOrder: "Zahlungspflichtig bestellen",
           goToLogin: "Jetzt anmelden",
           goToRegister: "Konto erstellen",
         }
@@ -166,7 +166,7 @@ export default function CheckoutClient({
           paymentInfo:
             "Ödemenizi teslimat sırasında şoföre nakit veya kartla yapabilirsiniz. Online ödeme gerekmez.",
           saving: "Kaydediliyor...",
-          submitOrder: "Siparişi Gönder",
+          submitOrder: "Ödeme yükümlülüğüyle satın al",
           goToLogin: "Şimdi giriş yap",
           goToRegister: "Hesap oluştur",
         };
