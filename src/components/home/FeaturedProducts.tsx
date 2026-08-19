@@ -212,6 +212,8 @@ export default function FeaturedProducts({
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
 
   useEffect(() => {
+    console.log("DEBUG_SEARCH_TRACK_MARKER_12345", searchQuery);
+
     const handle = setTimeout(() => {
       setDebouncedSearchQuery(searchQuery.trim());
     }, 600);
