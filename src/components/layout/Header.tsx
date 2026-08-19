@@ -36,7 +36,11 @@ import {
 } from "@/components/ui/sheet";
 
 
-export default function Header() {
+export default function Header({
+  initialSettings,
+}: {
+  initialSettings?: any;
+} = {}) {
   const router = useRouter();
 
   const pathname = usePathname();
@@ -130,20 +134,42 @@ export default function Header() {
   const [permissions, setPermissions] =
     useState<Record<string, boolean>>({});
 
-  const [minOrderValueSettings, setMinOrderValueSettings] = useState({
-    enabled: false,
-    value: 0,
-  });
+  const [minOrderValueSettings, setMinOrderValueSettings] = useState(
+    initialSettings
+      ? {
+          enabled: Boolean(initialSettings.minOrderValueEnabled),
+          value: Number(initialSettings.minOrderValue) || 0,
+        }
+      : {
+          enabled: false,
+          value: 0,
+        },
+  );
 
   const [businessHoursSettings, setBusinessHoursSettings] = useState<{
     enabled: boolean;
     hours: BusinessHoursDay[];
-  }>({
-    enabled: false,
-    hours: getDefaultBusinessHours(),
-  });
+  }>(
+    initialSettings
+      ? {
+          enabled: Boolean(initialSettings.businessHoursEnabled),
+          hours: normalizeBusinessHours(initialSettings.businessHours),
+        }
+      : {
+          enabled: false,
+          hours: getDefaultBusinessHours(),
+        },
+  );
 
   useEffect(() => {
+    /*
+     * initialSettings kam bereits vom Server (z. B. Startseite) —
+     * kein erneuter Fetch beim Mount nötig.
+     */
+    if (initialSettings) {
+      return;
+    }
+
     async function loadCompanySettings() {
       try {
         const res = await fetch("/api/company-settings");
@@ -167,7 +193,7 @@ export default function Header() {
     }
 
     loadCompanySettings();
-  }, []);
+  }, [initialSettings]);
 
   useEffect(() => {
     async function loadUser() {
@@ -268,7 +294,7 @@ export default function Header() {
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-5 px-4 py-4 lg:px-8">
           <div className="flex items-center gap-6">
             <div className="w-28 shrink-0 lg:w-32">
-              <CompanyBrand variant="footer" />
+              <CompanyBrand variant="footer" initialSettings={initialSettings} />
             </div>
 
           <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>

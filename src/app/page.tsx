@@ -77,7 +77,7 @@ export default async function HomePage() {
   // Produkte, Vorteile, Pfand, Gastro, Testimonial, CTA, Footer.
   return (
     <main className="min-h-screen bg-[#F2F2F2]">
-      <Header />
+      <Header initialSettings={initialSettings} />
       <HeroSection />
       <CategorySection initialCategories={categories} />
 
