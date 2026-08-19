@@ -222,6 +222,8 @@ export default function FeaturedProducts({
   }, [searchQuery]);
 
   useEffect(() => {
+    console.log("DEBUG_SEARCH_TRACK_MARKER_67890", debouncedSearchQuery);
+
     if (!debouncedSearchQuery) {
       return;
     }
