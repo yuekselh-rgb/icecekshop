@@ -168,6 +168,46 @@ export default function CartClient({
         tr: "Kasa / İçecek Kasası",
       },
     },
+    {
+      key: "CRATE_510",
+      unitAmount: 5.1,
+      name: {
+        de: "Kasten Pfand 5,10 €",
+        tr: "Kasa Pfandı 5,10 €",
+      },
+    },
+    {
+      key: "CRATE_390",
+      unitAmount: 3.9,
+      name: {
+        de: "Kasten Pfand 3,90 €",
+        tr: "Kasa Pfandı 3,90 €",
+      },
+    },
+    {
+      key: "CRATE_342",
+      unitAmount: 3.42,
+      name: {
+        de: "Kasten Pfand 3,42 €",
+        tr: "Kasa Pfandı 3,42 €",
+      },
+    },
+    {
+      key: "CRATE_310",
+      unitAmount: 3.1,
+      name: {
+        de: "Kasten Pfand 3,10 €",
+        tr: "Kasa Pfandı 3,10 €",
+      },
+    },
+    {
+      key: "CRATE_150",
+      unitAmount: 1.5,
+      name: {
+        de: "Kasten Pfand 1,50 €",
+        tr: "Kasa Pfandı 1,50 €",
+      },
+    },
   ] as const;
 
   function applyPfandQuantity(
@@ -212,7 +252,7 @@ export default function CartClient({
 
       <section className="px-4 py-10 lg:px-8">
         <div className="mx-auto max-w-7xl">
-          {items.length === 0 ? (
+          {items.length === 0 && pfandItems.length === 0 ? (
             <div className="rounded-[32px] bg-white p-12 text-center">
               <ShoppingBag size={48} className="mx-auto text-slate-300" />
 

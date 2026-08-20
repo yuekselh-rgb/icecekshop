@@ -410,7 +410,7 @@ export default function CheckoutClient({
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (items.length === 0) {
+    if (items.length === 0 && pfandReturnTotal <= 0) {
       setError(
         t.cartEmpty,
       );
@@ -784,11 +784,11 @@ export default function CheckoutClient({
               {t.orderSummary}
             </h2>
 
-            {items.length === 0 ? (
+            {items.length === 0 && pfandReturnTotal <= 0 ? (
               <p className="mt-6 text-slate-500">
                 {t.cartEmpty}
               </p>
-            ) : (
+            ) : items.length === 0 ? null : (
               <div className="mt-6 space-y-4">
                 {items.map((item) => (
                   <div
@@ -905,7 +905,7 @@ export default function CheckoutClient({
               type="submit"
               disabled={
                 submitting ||
-                items.length === 0 ||
+                (items.length === 0 && pfandReturnTotal <= 0) ||
                 Boolean(error) ||
                 belowMinOrderValue
               }

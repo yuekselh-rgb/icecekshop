@@ -205,7 +205,11 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
 
     const pfandItems = normalizePfandItems(body.pfandItems);
 
-    if (items.length === 0) {
+    const hasPfandReturn = pfandItems.some(
+      (item) => item.quantity > 0 && item.unitAmount > 0,
+    );
+
+    if (items.length === 0 && !hasPfandReturn) {
       return NextResponse.json(
         {
           error:
@@ -470,6 +474,7 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
         : 0;
 
       if (
+        items.length > 0 &&
         companySettings?.minOrderValueEnabled &&
         minOrderValue > 0 &&
         subtotal < minOrderValue
