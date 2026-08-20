@@ -1,12 +1,14 @@
 "use client";
 
 import { useLanguage } from "@/context/LanguageContext";
+import { extractReceiptFromFile } from "@/lib/receipt-ocr";
 import {
   FileText,
   Loader2,
   Paperclip,
   Plus,
   Receipt,
+  ScanText,
   Trash2,
   Upload,
   X,
@@ -96,6 +98,11 @@ export default function SupplierDeliveriesPage() {
   );
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
+  const [ocrRunning, setOcrRunning] = useState(false);
+  const [ocrRawText, setOcrRawText] = useState("");
+  const [showOcrText, setShowOcrText] = useState(false);
+  const [ocrNotice, setOcrNotice] = useState("");
+
   const t =
     language === "de"
       ? {
@@ -145,6 +152,21 @@ export default function SupplierDeliveriesPage() {
           itemsRequired:
             "Bitte erfassen Sie mindestens eine Ware mit Menge und Preis.",
           supplierRequired: "Bitte wählen Sie einen Lieferanten aus.",
+          ocrRunning: "Beleg wird gelesen (Texterkennung)...",
+          ocrShowText: "Erkannten Text anzeigen",
+          ocrHideText: "Erkannten Text ausblenden",
+          ocrSupplierMatched: "Lieferant automatisch erkannt.",
+          ocrSupplierNotMatched:
+            "Kein bekannter Lieferant im Beleg gefunden — bitte manuell auswählen.",
+          ocrTotalFilled:
+            "Gesamtbetrag automatisch erkannt und als Position eingetragen — bitte prüfen und bei Bedarf in einzelne Waren aufteilen.",
+          ocrItemsFilled:
+            "Warenzeilen automatisch erkannt — bitte auf Richtigkeit prüfen.",
+          ocrNothingFound:
+            "Im Beleg konnten keine Beträge automatisch erkannt werden. Bitte manuell eintragen.",
+          ocrDisclaimer:
+            "Kostenlose Texterkennung im Browser, kein KI-Modell — Ergebnis unbedingt prüfen.",
+          ocrTotalItemName: "Beleg-Gesamtbetrag (bitte aufteilen)",
         }
       : {
           title: "Teslimatlar",
@@ -192,6 +214,21 @@ export default function SupplierDeliveriesPage() {
           openDocument: "Belgeyi Aç",
           itemsRequired: "Lütfen en az bir ürün, miktar ve fiyat girin.",
           supplierRequired: "Lütfen bir toptancı seçin.",
+          ocrRunning: "Belge okunuyor (metin tanıma)...",
+          ocrShowText: "Tanınan metni göster",
+          ocrHideText: "Tanınan metni gizle",
+          ocrSupplierMatched: "Toptancı otomatik olarak tanındı.",
+          ocrSupplierNotMatched:
+            "Belgede bilinen bir toptancı bulunamadı — lütfen manuel seçin.",
+          ocrTotalFilled:
+            "Genel toplam otomatik olarak tanındı ve satır olarak eklendi — lütfen kontrol edin ve gerekirse ayrı ürünlere bölün.",
+          ocrItemsFilled:
+            "Ürün satırları otomatik olarak tanındı — lütfen doğruluğunu kontrol edin.",
+          ocrNothingFound:
+            "Belgede otomatik olarak bir tutar tanınamadı. Lütfen manuel girin.",
+          ocrDisclaimer:
+            "Tarayıcıda ücretsiz metin tanıma, yapay zeka modeli değildir — sonucu mutlaka kontrol edin.",
+          ocrTotalItemName: "Belge Genel Toplamı (lütfen bölün)",
         };
 
   useEffect(() => {
@@ -324,10 +361,81 @@ export default function SupplierDeliveriesPage() {
       }
 
       setDocumentUrls((current) => [...current, data.documentUrl]);
+
+      runOcrOnFile(file);
     } catch {
       setUploadError(t.loadError);
     } finally {
       setUploading(false);
+    }
+  }
+
+  function isItemsFormEmpty(current: FormItem[]) {
+    return (
+      current.length === 1 &&
+      !current[0].productName &&
+      !current[0].quantity &&
+      !current[0].unitPrice
+    );
+  }
+
+  async function runOcrOnFile(file: File) {
+    setOcrRunning(true);
+    setOcrNotice("");
+
+    try {
+      const result = await extractReceiptFromFile(file, suppliers);
+
+      setOcrRawText(result.rawText);
+
+      const notices: string[] = [];
+
+      if (result.matchedSupplierId) {
+        const matchedId = result.matchedSupplierId;
+        setSupplierId((current) => current || matchedId);
+        notices.push(t.ocrSupplierMatched);
+      } else {
+        notices.push(t.ocrSupplierNotMatched);
+      }
+
+      if (result.suggestedItems.length > 0) {
+        setItems((current) => {
+          const mapped: FormItem[] = result.suggestedItems.map((item) => ({
+            productName: item.productName,
+            quantity: String(item.quantity),
+            unit: "",
+            unitPrice: item.unitPrice.toFixed(2),
+          }));
+
+          return isItemsFormEmpty(current) ? mapped : [...current, ...mapped];
+        });
+        notices.push(t.ocrItemsFilled);
+      } else if (result.suggestedTotal !== null) {
+        setItems((current) => {
+          if (!isItemsFormEmpty(current)) {
+            return current;
+          }
+
+          return [
+            {
+              productName: t.ocrTotalItemName,
+              quantity: "1",
+              unit: "",
+              unitPrice: result.suggestedTotal!.toFixed(2),
+            },
+          ];
+        });
+        notices.push(t.ocrTotalFilled);
+      } else {
+        notices.push(t.ocrNothingFound);
+      }
+
+      setOcrNotice(notices.join(" "));
+    } catch (error) {
+      console.error("RECEIPT_OCR_ERROR", error);
+      setOcrNotice(t.ocrNothingFound);
+    } finally {
+      setOcrRunning(false);
     }
   }
 
@@ -393,6 +501,9 @@ export default function SupplierDeliveriesPage() {
       setInitialPaidAmount("");
       setNote("");
       setDocumentUrls([]);
+      setOcrRawText("");
+      setOcrNotice("");
+      setShowOcrText(false);
 
       await loadData();
     } catch {
@@ -771,6 +882,41 @@ export default function SupplierDeliveriesPage() {
             <p className="mt-2 text-sm font-bold text-red-600">
               {uploadError}
             </p>
+          ) : null}
+
+          {ocrRunning ? (
+            <div className="mt-3 flex items-center gap-2 rounded-xl bg-slate-50 px-3 py-2 text-xs font-bold text-slate-500">
+              <Loader2 size={14} className="animate-spin" />
+              {t.ocrRunning}
+            </div>
+          ) : null}
+
+          {!ocrRunning && ocrNotice ? (
+            <div className="mt-3 rounded-xl bg-orange-50 px-3 py-2.5 text-xs text-orange-800">
+              <div className="flex items-start gap-2">
+                <ScanText size={14} className="mt-0.5 shrink-0" />
+                <div>
+                  <p className="font-bold">{ocrNotice}</p>
+                  <p className="mt-1 text-orange-700/80">{t.ocrDisclaimer}</p>
+
+                  {ocrRawText ? (
+                    <button
+                      type="button"
+                      onClick={() => setShowOcrText((current) => !current)}
+                      className="mt-1.5 font-bold underline underline-offset-2"
+                    >
+                      {showOcrText ? t.ocrHideText : t.ocrShowText}
+                    </button>
+                  ) : null}
+
+                  {showOcrText ? (
+                    <pre className="mt-2 max-h-40 overflow-y-auto whitespace-pre-wrap rounded-lg bg-white p-2 text-[11px] text-slate-600">
+                      {ocrRawText}
+                    </pre>
+                  ) : null}
+                </div>
+              </div>
+            </div>
           ) : null}
         </div>
 
