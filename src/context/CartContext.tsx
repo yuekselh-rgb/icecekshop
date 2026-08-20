@@ -64,6 +64,12 @@ type CartContextValue = {
 
   removePfandItem: (id: string) => void;
 
+  setPfandQuantity: (
+    name: string,
+    unitAmount: number,
+    quantity: number,
+  ) => void;
+
   clearCart: () => void;
 };
 
@@ -246,6 +252,41 @@ export function CartProvider({ children }: CartProviderProps) {
     );
   }
 
+  /*
+   * Sucht, aktualisiert/entfernt und legt ggf. neu an — alles in einem
+   * einzigen funktionalen setState-Aufruf. Zwei schnell aufeinanderfolgende
+   * Aufrufe (z. B. Doppelklick auf +) werden von React nacheinander gegen
+   * den jeweils aktuellen State ausgeführt statt gegen einen veralteten
+   * Closure-Snapshot, sodass kein doppelter Eintrag für denselben Pfandtyp
+   * entstehen kann.
+   */
+  function setPfandQuantity(
+    name: string,
+    unitAmount: number,
+    quantity: number,
+  ) {
+    setPfandItems((currentItems) => {
+      const existing = currentItems.find((item) => item.name === name);
+
+      if (quantity <= 0) {
+        return existing
+          ? currentItems.filter((item) => item.id !== existing.id)
+          : currentItems;
+      }
+
+      if (existing) {
+        return currentItems.map((item) =>
+          item.id === existing.id ? { ...item, quantity, unitAmount } : item,
+        );
+      }
+
+      return [
+        ...currentItems,
+        { id: createPfandId(), name, quantity, unitAmount },
+      ];
+    });
+  }
+
   function clearCart() {
     setItems([]);
     setPfandItems([]);
@@ -302,6 +343,7 @@ export function CartProvider({ children }: CartProviderProps) {
         addPfandItem,
         updatePfandItem,
         removePfandItem,
+        setPfandQuantity,
         clearCart,
       }}
     >

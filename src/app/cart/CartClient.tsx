@@ -25,8 +25,8 @@ export default function CartClient({
     decreaseQuantity,
     setItemQuantity,
     removeFromCart,
-    addPfandItem,
     removePfandItem,
+    setPfandQuantity,
   } = useCart();
 
   const { language, translations } = useLanguage();
@@ -221,25 +221,7 @@ export default function CartClient({
     unitAmount: number,
     nextQuantity: number,
   ) {
-    const existing = pfandItems.find((item) => item.name === canonicalName);
-
-    if (nextQuantity <= 0) {
-      if (existing) {
-        removePfandItem(existing.id);
-      }
-
-      return;
-    }
-
-    if (existing) {
-      removePfandItem(existing.id);
-    }
-
-    addPfandItem({
-      name: canonicalName,
-      quantity: nextQuantity,
-      unitAmount,
-    });
+    setPfandQuantity(canonicalName, unitAmount, nextQuantity);
   }
 
   return (
@@ -361,9 +343,14 @@ export default function CartClient({
                               const raw = event.target.value;
 
                               if (raw === "" || /^[0-9]+$/.test(raw)) {
+                                const normalized = raw.replace(
+                                  /^0+(?=\d)/,
+                                  "",
+                                );
+
                                 setQuantityInputs((current) => ({
                                   ...current,
-                                  [item.id]: raw,
+                                  [item.id]: normalized,
                                 }));
                               }
                             }}
@@ -524,16 +511,21 @@ export default function CartClient({
                                       const raw = event.target.value;
 
                                       if (raw === "" || /^[0-9]+$/.test(raw)) {
+                                        const normalized = raw.replace(
+                                          /^0+(?=\d)/,
+                                          "",
+                                        );
+
                                         setPfandQuantityInputs((current) => ({
                                           ...current,
-                                          [option.key]: raw,
+                                          [option.key]: normalized,
                                         }));
 
-                                        if (raw !== "") {
+                                        if (normalized !== "") {
                                           applyPfandQuantity(
                                             canonicalName,
                                             option.unitAmount,
-                                            Number(raw),
+                                            Number(normalized),
                                           );
                                         }
                                       }
