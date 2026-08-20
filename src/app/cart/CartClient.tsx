@@ -528,6 +528,14 @@ export default function CartClient({
                                           ...current,
                                           [option.key]: raw,
                                         }));
+
+                                        if (raw !== "") {
+                                          applyPfandQuantity(
+                                            canonicalName,
+                                            option.unitAmount,
+                                            Number(raw),
+                                          );
+                                        }
                                       }
                                     }}
                                     onBlur={() => {
