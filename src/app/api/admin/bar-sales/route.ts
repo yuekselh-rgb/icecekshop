@@ -23,7 +23,7 @@ function normalizePfandItems(value: unknown): RequestedPfandItem[] {
     return [];
   }
 
-  const allowedAmounts = [0.08, 0.15, 0.25, 3.3];
+  const allowedAmounts = [0.08, 0.15, 0.25, 1.5, 3.1, 3.3, 3.42, 3.9, 5.1];
 
   const result: RequestedPfandItem[] = [];
 
@@ -215,13 +215,17 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
       );
     }
 
-    if (items.length === 0) {
+    const hasPfandReturn = pfandItems.some(
+      (item) => item.quantity > 0 && item.unitAmount > 0,
+    );
+
+    if (items.length === 0 && !hasPfandReturn) {
       return NextResponse.json(
         {
           error:
             language === "de"
-              ? "Der Verkaufswarenkorb ist leer."
-              : "Satış sepeti boş.",
+              ? "Fügen Sie ein Produkt hinzu oder erfassen Sie zurückgegebenes Pfand."
+              : "Bir ürün ekleyin veya iade edilen Pfand girin.",
         },
         {
           status: 400,
@@ -374,6 +378,18 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
 
     const totalAmount = Number(
       Math.max(0, subtotal + pfandAmount - pfandReturnAmount).toFixed(2),
+    );
+
+    /*
+     * Ungekappter Netto-Betrag, ausschließlich für die Kasse: bei einem
+     * reinen Pfand-Rückkauf (kein Kauf, oder Pfand-Rückgabe größer als
+     * der Kaufbetrag) zahlt das Geschäft dem Kunden Bargeld aus — das
+     * muss als Ausgang in der Kasse landen, auch wenn `totalAmount`
+     * (für Beleg/Order) selbst nicht negativ werden darf und deshalb
+     * bei 0 gekappt wird.
+     */
+    const netCashAmount = Number(
+      (subtotal + pfandAmount - pfandReturnAmount).toFixed(2),
     );
 
     const fullName = [admin.user.firstName, admin.user.lastName]
@@ -648,9 +664,7 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
        * Kart ve açık hesap satışları nakit kasaya eklenmez.
        */
       if (paymentMethod === "CASH") {
-        const cashAmount = Number(Number(createdOrder.totalAmount).toFixed(2));
-
-        if (cashAmount > 0) {
+        if (netCashAmount > 0) {
           const existingCashMovement = await tx.cashMovement.findFirst({
             where: {
               accountType: "BAR",
@@ -669,7 +683,7 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
                 accountType: "BAR",
                 direction: "IN",
                 category: "BAR_SALE",
-                amount: cashAmount,
+                amount: netCashAmount,
                 orderId: createdOrder.id,
                 createdById: admin.user.id,
                 companyName: selectedCustomerName,
@@ -677,6 +691,43 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
                   language === "de"
                     ? `Barverkauf ${orderNumber}. Verkauft von: ${adminName}`
                     : `Nakit bar satışı ${orderNumber}. Satışı yapan: ${adminName}`,
+              },
+            });
+          }
+        } else if (netCashAmount < 0) {
+          /*
+           * Zurückgegebenes Pfand übersteigt den Kaufbetrag (oder es
+           * wurde gar nichts gekauft) — das Geschäft zahlt dem Kunden
+           * die Differenz bar aus. Das muss als Ausgang in der Kasse
+           * erfasst werden, sonst driftet die physische Kasse vom
+           * System weg.
+           */
+          const existingPayoutMovement = await tx.cashMovement.findFirst({
+            where: {
+              accountType: "BAR",
+              category: "PFAND_COLLECTION",
+              orderId: createdOrder.id,
+            },
+            select: {
+              id: true,
+            },
+          });
+
+          if (!existingPayoutMovement) {
+            await tx.cashMovement.create({
+              data: {
+                tenantId: tenant.id,
+                accountType: "BAR",
+                direction: "OUT",
+                category: "PFAND_COLLECTION",
+                amount: Math.abs(netCashAmount),
+                orderId: createdOrder.id,
+                createdById: admin.user.id,
+                companyName: selectedCustomerName,
+                description:
+                  language === "de"
+                    ? `Pfand-Auszahlung ${orderNumber} (kein/geringerer Kauf). Erfasst von: ${adminName}`
+                    : `Pfand ödemesi ${orderNumber} (satış yok/az). Kaydeden: ${adminName}`,
               },
             });
           }

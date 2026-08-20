@@ -121,6 +121,31 @@ const initialPfandOptions: PfandOption[] = [
     unitAmount: 3.3,
     quantity: 0,
   },
+  {
+    name: "Kasten Pfand 5,10 €",
+    unitAmount: 5.1,
+    quantity: 0,
+  },
+  {
+    name: "Kasten Pfand 3,90 €",
+    unitAmount: 3.9,
+    quantity: 0,
+  },
+  {
+    name: "Kasten Pfand 3,42 €",
+    unitAmount: 3.42,
+    quantity: 0,
+  },
+  {
+    name: "Kasten Pfand 3,10 €",
+    unitAmount: 3.1,
+    quantity: 0,
+  },
+  {
+    name: "Kasten Pfand 1,50 €",
+    unitAmount: 1.5,
+    quantity: 0,
+  },
 ];
 
 export default function BarSalesPage() {
@@ -892,8 +917,12 @@ const adminName =
   }
 
   async function completeSale() {
-    if (cart.length === 0) {
-      setError(language === "de" ? "Der Verkaufswarenkorb ist leer." : "Satış sepeti boş.");
+    if (cart.length === 0 && pfandReturnAmount <= 0) {
+      setError(
+        language === "de"
+          ? "Fügen Sie ein Produkt hinzu oder erfassen Sie zurückgegebenes Pfand."
+          : "Bir ürün ekleyin veya iade edilen Pfand girin.",
+      );
       return;
     }
 
@@ -1905,7 +1934,7 @@ const adminName =
               onClick={completeSale}
               disabled={
                 saving ||
-                cart.length === 0 ||
+                (cart.length === 0 && pfandReturnAmount <= 0) ||
                 (paymentMethod === "OPEN" && !selectedCustomerId)
               }
               className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-orange-500 px-5 py-4 font-black text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:bg-slate-300"
