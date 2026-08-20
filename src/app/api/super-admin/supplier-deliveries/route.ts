@@ -66,6 +66,7 @@ export const GET = withTenant(async (_request: NextRequest, _context, tenant) =>
       supplier: delivery.supplier,
       items: delivery.items.map((item) => ({
         id: item.id,
+        productId: item.productId,
         productName: item.productName,
         quantity: Number(item.quantity),
         unit: item.unit,
@@ -147,16 +148,23 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
         const quantity = Number(item?.quantity);
         const unit = String(item?.unit || "").trim();
         const unitPrice = Number(item?.unitPrice);
+        const productId = String(item?.productId || "").trim() || null;
 
         return {
           productName,
           quantity,
           unit: unit || null,
           unitPrice,
+          productId,
         };
       })
       .filter(
-        (item: { productName: string; quantity: number; unitPrice: number }) =>
+        (item: {
+          productName: string;
+          quantity: number;
+          unitPrice: number;
+          productId: string | null;
+        }) =>
           item.productName &&
           Number.isFinite(item.quantity) &&
           item.quantity > 0 &&
@@ -176,6 +184,66 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
           status: 400,
         },
       );
+    }
+
+    /*
+     * Verknüpfte Produkte gehören per Definition zum aktuellen Tenant —
+     * prisma.product ist in TENANT_SCOPED_MODELS, ein findMany hier findet
+     * daher nie ein Produkt aus einem anderen Tenant, egal welche ID der
+     * Client schickt.
+     */
+    const linkedProductIds: string[] = Array.from(
+      new Set(
+        items
+          .map((item: { productId: string | null }) => item.productId)
+          .filter((id: string | null): id is string => Boolean(id)),
+      ),
+    );
+
+    if (linkedProductIds.length > 0) {
+      const linkedProducts = await prisma.product.findMany({
+        where: {
+          id: { in: linkedProductIds },
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      const foundIds = new Set(linkedProducts.map((product) => product.id));
+
+      for (const item of items as {
+        productId: string | null;
+        quantity: number;
+      }[]) {
+        if (item.productId && !foundIds.has(item.productId)) {
+          return NextResponse.json(
+            {
+              error:
+                language === "de"
+                  ? "Ein verknüpftes Produkt wurde nicht gefunden."
+                  : "Bağlantılı bir ürün bulunamadı.",
+            },
+            {
+              status: 404,
+            },
+          );
+        }
+
+        if (item.productId && !Number.isInteger(item.quantity)) {
+          return NextResponse.json(
+            {
+              error:
+                language === "de"
+                  ? "Bei einer Produktverknüpfung muss die Menge eine ganze Zahl sein."
+                  : "Ürün bağlantısı olan satırlarda miktar tam sayı olmalıdır.",
+            },
+            {
+              status: 400,
+            },
+          );
+        }
+      }
     }
 
     const documentUrls = Array.isArray(body.documentUrls)
@@ -223,7 +291,9 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
                 quantity: number;
                 unit: string | null;
                 unitPrice: number;
+                productId: string | null;
               }) => ({
+                productId: item.productId,
                 productName: item.productName,
                 quantity: item.quantity,
                 unit: item.unit,
@@ -236,6 +306,51 @@ export const POST = withTenant(async (request: NextRequest, _context, tenant) =>
           },
         },
       });
+
+      /*
+       * Verknüpfte Zeilen erhöhen den Lagerbestand automatisch — Menge
+       * wurde oben bereits als Ganzzahl validiert, wenn productId gesetzt
+       * ist. Nur Bestand + letzter Einkaufspreis werden aktualisiert
+       * (nicht Verkaufspreis/Pfand — das bleibt eine bewusste Admin-
+       * Entscheidung, nicht automatisch aus einer Lieferung ableitbar).
+       */
+      for (const item of items as {
+        productId: string | null;
+        quantity: number;
+        unitPrice: number;
+      }[]) {
+        if (!item.productId) {
+          continue;
+        }
+
+        const stockAmount = Math.round(item.quantity);
+
+        await tx.product.update({
+          where: {
+            id: item.productId,
+          },
+          data: {
+            stock: {
+              increment: stockAmount,
+            },
+            purchasePrice: Number(item.unitPrice.toFixed(2)),
+          },
+        });
+
+        await tx.stockMovement.create({
+          data: {
+            tenantId: tenant.id,
+            productId: item.productId,
+            amount: stockAmount,
+            reason:
+              (language === "de"
+                ? `Lieferung von ${supplier.name}`
+                : `${supplier.name} teslimatı`) +
+              ` · ${stockAmount} × ${item.unitPrice.toFixed(2)} € · ` +
+              `Lieferung: ${created.id}`,
+          },
+        });
+      }
 
       if (initialPaidAmount > 0) {
         await tx.supplierDeliveryPayment.create({

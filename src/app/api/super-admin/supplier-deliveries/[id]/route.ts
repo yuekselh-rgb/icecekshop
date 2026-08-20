@@ -53,6 +53,7 @@ export const DELETE = withTenant(async (
             name: true,
           },
         },
+        items: true,
       },
     });
 
@@ -70,11 +71,67 @@ export const DELETE = withTenant(async (
       );
     }
 
-    // Cascade löscht SupplierDeliveryItem/-Payment-Zeilen dieser Lieferung mit.
-    await prisma.supplierDelivery.delete({
-      where: {
-        id: delivery.id,
-      },
+    await prisma.$transaction(async (tx) => {
+      /*
+       * Produktverknüpfte Zeilen hatten beim Anlegen den Lagerbestand
+       * erhöht — das muss beim Löschen (z. B. falsch erfasste Lieferung)
+       * symmetrisch rückgängig gemacht werden, sonst bleibt der Bestand
+       * dauerhaft zu hoch.
+       */
+      for (const item of delivery.items) {
+        if (!item.productId) {
+          continue;
+        }
+
+        const stockAmount = Math.round(Number(item.quantity));
+
+        /*
+         * Kein reines decrement — der Bestand kann inzwischen (durch
+         * reguläre Verkäufe) niedriger sein als die ursprünglich gebuchte
+         * Menge. Löschen ist eine Buchführungskorrektur, kein Verkaufs-
+         * vorgang, also wird auf 0 begrenzt statt die Löschung mit
+         * "Bestand reicht nicht" zu blockieren.
+         */
+        const product = await tx.product.findUnique({
+          where: {
+            id: item.productId,
+          },
+          select: {
+            stock: true,
+          },
+        });
+
+        if (product) {
+          await tx.product.update({
+            where: {
+              id: item.productId,
+            },
+            data: {
+              stock: Math.max(0, product.stock - stockAmount),
+            },
+          });
+        }
+
+        await tx.stockMovement.create({
+          data: {
+            tenantId: tenant.id,
+            productId: item.productId,
+            amount: -stockAmount,
+            reason:
+              (language === "de"
+                ? `Lieferung von ${delivery.supplier.name} gelöscht`
+                : `${delivery.supplier.name} teslimatı silindi`) +
+              ` · Lieferung: ${delivery.id}`,
+          },
+        });
+      }
+
+      // Cascade löscht SupplierDeliveryItem/-Payment-Zeilen dieser Lieferung mit.
+      await tx.supplierDelivery.delete({
+        where: {
+          id: delivery.id,
+        },
+      });
     });
 
     await logAuditEvent({

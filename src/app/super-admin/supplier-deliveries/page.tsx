@@ -22,6 +22,7 @@ type SupplierOption = {
 
 type DeliveryItem = {
   id: string;
+  productId: string | null;
   productName: string;
   quantity: number;
   unit: string | null;
@@ -50,6 +51,8 @@ type Delivery = {
 };
 
 type FormItem = {
+  productId: string | null;
+  categoryId: string;
   productName: string;
   quantity: string;
   unit: string;
@@ -57,8 +60,32 @@ type FormItem = {
 };
 
 function emptyFormItem(): FormItem {
-  return { productName: "", quantity: "", unit: "", unitPrice: "" };
+  return {
+    productId: null,
+    categoryId: "",
+    productName: "",
+    quantity: "",
+    unit: "",
+    unitPrice: "",
+  };
 }
+
+type CatalogProduct = {
+  id: string;
+  name: string;
+  nameDe: string | null;
+  nameTr: string | null;
+  categoryId: string;
+  stock: number;
+  stockUnit: string;
+};
+
+type ProductCategory = {
+  id: string;
+  name: string;
+  nameDe: string | null;
+  nameTr: string | null;
+};
 
 function formatMoney(value: number) {
   return `${value.toFixed(2)} €`;
@@ -69,6 +96,8 @@ export default function SupplierDeliveriesPage() {
 
   const [suppliers, setSuppliers] = useState<SupplierOption[]>([]);
   const [deliveries, setDeliveries] = useState<Delivery[]>([]);
+  const [catalogProducts, setCatalogProducts] = useState<CatalogProduct[]>([]);
+  const [categories, setCategories] = useState<ProductCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -167,6 +196,12 @@ export default function SupplierDeliveriesPage() {
           ocrDisclaimer:
             "Kostenlose Texterkennung im Browser, kein KI-Modell — Ergebnis unbedingt prüfen.",
           ocrTotalItemName: "Beleg-Gesamtbetrag (bitte aufteilen)",
+          linkProduct: "Mit Lagerprodukt verknüpfen",
+          selectCategory: "Kategorie wählen",
+          selectProduct: "Produkt wählen",
+          productLinked: "Verknüpft — Bestand wird automatisch erhöht",
+          unlinkProduct: "Verknüpfung lösen",
+          currentStock: "Bestand",
         }
       : {
           title: "Teslimatlar",
@@ -229,6 +264,12 @@ export default function SupplierDeliveriesPage() {
           ocrDisclaimer:
             "Tarayıcıda ücretsiz metin tanıma, yapay zeka modeli değildir — sonucu mutlaka kontrol edin.",
           ocrTotalItemName: "Belge Genel Toplamı (lütfen bölün)",
+          linkProduct: "Stok ürünüyle ilişkilendir",
+          selectCategory: "Kategori seçin",
+          selectProduct: "Ürün seçin",
+          productLinked: "İlişkilendirildi — stok otomatik artırılacak",
+          unlinkProduct: "İlişkiyi kaldır",
+          currentStock: "Stok",
         };
 
   useEffect(() => {
@@ -241,13 +282,18 @@ export default function SupplierDeliveriesPage() {
     setError("");
 
     try {
-      const [suppliersRes, deliveriesRes] = await Promise.all([
-        fetch("/api/admin/suppliers", { cache: "no-store" }),
-        fetch("/api/super-admin/supplier-deliveries", { cache: "no-store" }),
-      ]);
+      const [suppliersRes, deliveriesRes, productsRes, categoriesRes] =
+        await Promise.all([
+          fetch("/api/admin/suppliers", { cache: "no-store" }),
+          fetch("/api/super-admin/supplier-deliveries", { cache: "no-store" }),
+          fetch("/api/admin/products", { cache: "no-store" }),
+          fetch("/api/admin/categories", { cache: "no-store" }),
+        ]);
 
       const suppliersData = await suppliersRes.json();
       const deliveriesData = await deliveriesRes.json();
+      const productsData = await productsRes.json();
+      const categoriesData = await categoriesRes.json();
 
       if (!suppliersRes.ok || !deliveriesRes.ok) {
         setError(suppliersData.error || deliveriesData.error || t.loadError);
@@ -256,6 +302,8 @@ export default function SupplierDeliveriesPage() {
 
       setSuppliers(suppliersData.suppliers || []);
       setDeliveries(deliveriesData.deliveries || []);
+      setCatalogProducts(productsRes.ok ? productsData.products || [] : []);
+      setCategories(categoriesRes.ok ? categoriesData.categories || [] : []);
     } catch {
       setError(t.loadError);
     } finally {
@@ -307,6 +355,33 @@ export default function SupplierDeliveriesPage() {
 
   function removeItem(index: number) {
     setItems((current) => current.filter((_, itemIndex) => itemIndex !== index));
+  }
+
+  function productLabel(product: { name: string; nameDe: string | null; nameTr: string | null }) {
+    return (language === "de" ? product.nameDe : product.nameTr) || product.name;
+  }
+
+  function categoryLabel(category: { name: string; nameDe: string | null; nameTr: string | null }) {
+    return (language === "de" ? category.nameDe : category.nameTr) || category.name;
+  }
+
+  function selectItemProduct(index: number, productId: string) {
+    if (!productId) {
+      updateItem(index, { productId: null });
+      return;
+    }
+
+    const product = catalogProducts.find((entry) => entry.id === productId);
+
+    updateItem(index, {
+      productId,
+      productName: product ? productLabel(product) : "",
+      unit: product?.stockUnit || "",
+    });
+  }
+
+  function unlinkItemProduct(index: number) {
+    updateItem(index, { productId: null, categoryId: "" });
   }
 
   const computedTotal = items.reduce((sum, item) => {
@@ -401,6 +476,8 @@ export default function SupplierDeliveriesPage() {
       if (result.suggestedItems.length > 0) {
         setItems((current) => {
           const mapped: FormItem[] = result.suggestedItems.map((item) => ({
+            productId: null,
+            categoryId: "",
             productName: item.productName,
             quantity: String(item.quantity),
             unit: "",
@@ -418,6 +495,8 @@ export default function SupplierDeliveriesPage() {
 
           return [
             {
+              productId: null,
+              categoryId: "",
               productName: t.ocrTotalItemName,
               quantity: "1",
               unit: "",
@@ -475,6 +554,7 @@ export default function SupplierDeliveriesPage() {
           supplierId,
           deliveredAt,
           items: validItems.map((item) => ({
+            productId: item.productId,
             productName: item.productName.trim(),
             quantity: Number(item.quantity),
             unit: item.unit.trim() || null,
@@ -721,14 +801,78 @@ export default function SupplierDeliveriesPage() {
                 key={index}
                 className="grid gap-2 rounded-xl border border-slate-200 p-3 sm:grid-cols-[1fr_90px_90px_110px_90px_36px] sm:items-center"
               >
-                <input
-                  value={item.productName}
-                  onChange={(event) =>
-                    updateItem(index, { productName: event.target.value })
-                  }
-                  placeholder={t.productName}
-                  className="rounded-lg border border-slate-200 px-2 py-1.5 text-sm outline-none focus:border-orange-500"
-                />
+                <div className="flex flex-col gap-1">
+                  {item.productId ? (
+                    <div className="flex items-center gap-2 rounded-lg bg-orange-50 px-2 py-1.5">
+                      <span className="flex-1 truncate text-sm font-bold text-slate-800">
+                        {item.productName}
+                      </span>
+                      <span className="hidden shrink-0 text-[10px] font-black uppercase text-orange-600 sm:inline">
+                        {t.productLinked}
+                      </span>
+                      <button
+                        type="button"
+                        aria-label={t.unlinkProduct}
+                        onClick={() => unlinkItemProduct(index)}
+                        className="shrink-0 text-orange-400 hover:text-red-500"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ) : (
+                    <input
+                      value={item.productName}
+                      onChange={(event) =>
+                        updateItem(index, { productName: event.target.value })
+                      }
+                      placeholder={t.productName}
+                      className="rounded-lg border border-slate-200 px-2 py-1.5 text-sm outline-none focus:border-orange-500"
+                    />
+                  )}
+
+                  {!item.productId ? (
+                    <div className="flex gap-1">
+                      <select
+                        value={item.categoryId}
+                        onChange={(event) =>
+                          updateItem(index, {
+                            categoryId: event.target.value,
+                          })
+                        }
+                        className="min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-1.5 py-1 text-[11px] text-slate-500 outline-none focus:border-orange-500"
+                      >
+                        <option value="">{t.selectCategory}</option>
+                        {categories.map((category) => (
+                          <option key={category.id} value={category.id}>
+                            {categoryLabel(category)}
+                          </option>
+                        ))}
+                      </select>
+
+                      <select
+                        value=""
+                        disabled={!item.categoryId}
+                        onChange={(event) =>
+                          selectItemProduct(index, event.target.value)
+                        }
+                        className="min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-1.5 py-1 text-[11px] text-slate-500 outline-none focus:border-orange-500 disabled:opacity-50"
+                      >
+                        <option value="">{t.selectProduct}</option>
+                        {catalogProducts
+                          .filter(
+                            (product) =>
+                              product.categoryId === item.categoryId,
+                          )
+                          .map((product) => (
+                            <option key={product.id} value={product.id}>
+                              {productLabel(product)} · {t.currentStock}{" "}
+                              {product.stock}
+                            </option>
+                          ))}
+                      </select>
+                    </div>
+                  ) : null}
+                </div>
 
                 <input
                   type="number"
@@ -1011,6 +1155,11 @@ export default function SupplierDeliveriesPage() {
                         <tr key={item.id} className="border-t border-slate-100">
                           <td className="py-1.5 font-bold text-slate-700">
                             {item.productName}
+                            {item.productId ? (
+                              <span className="ml-1.5 rounded-full bg-orange-50 px-1.5 py-0.5 text-[9px] font-black uppercase text-orange-600">
+                                {t.productLinked.split(" —")[0]}
+                              </span>
+                            ) : null}
                           </td>
                           <td className="py-1.5 text-slate-500">
                             {item.quantity}
