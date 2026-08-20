@@ -94,6 +94,10 @@ export default function CartClient({
       language === "de"
         ? "Pfand pro Stück"
         : "adet başına Pfand",
+    pfandOnlyEntry:
+      language === "de"
+        ? "Ich möchte nur Leergut zurückgeben, ohne etwas zu kaufen"
+        : "Sadece bir şey satın almadan Pfand iade etmek istiyorum",
   };
 
   const [deliveryFeeEnabled, setDeliveryFeeEnabled] = useState(
@@ -132,6 +136,8 @@ export default function CartClient({
   >({});
 
   const [showPfandForm, setShowPfandForm] = useState(false);
+
+  const [forcePfandOnly, setForcePfandOnly] = useState(false);
 
   const [pfandError, setPfandError] = useState("");
 
@@ -252,7 +258,7 @@ export default function CartClient({
 
       <section className="px-4 py-10 lg:px-8">
         <div className="mx-auto max-w-7xl">
-          {items.length === 0 && pfandItems.length === 0 ? (
+          {items.length === 0 && pfandItems.length === 0 && !forcePfandOnly ? (
             <div className="rounded-[32px] bg-white p-12 text-center">
               <ShoppingBag size={48} className="mx-auto text-slate-300" />
 
@@ -268,6 +274,17 @@ export default function CartClient({
               >
                 {t.browseProducts}
               </Link>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setForcePfandOnly(true);
+                  setShowPfandForm(true);
+                }}
+                className="mt-4 block w-full text-sm font-bold text-slate-500 underline underline-offset-2 hover:text-orange-500"
+              >
+                {t.pfandOnlyEntry}
+              </button>
             </div>
           ) : (
             <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
