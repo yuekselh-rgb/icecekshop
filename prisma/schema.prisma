@@ -160,6 +160,7 @@ model Tenant {
   cashMovements           CashMovement[]
   cashMovementCategories  CashMovementCustomCategory[]
   suppliers               Supplier[]
+  supplierDeliveries      SupplierDelivery[]
   dealerProfiles          DealerProfile[]
   dealerPrices            DealerPrice[]
   stockUnitOptions        StockUnitOption[]
@@ -1005,12 +1006,71 @@ model Supplier {
   updatedAt      DateTime @updatedAt
 
   cashMovements CashMovement[]
+  deliveries    SupplierDelivery[]
 
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@unique([tenantId, name])
   @@index([city])
   @@index([active])
+}
+
+/*
+ * Eine vom Toptancı/Großhändler erhaltene Lieferung: welche Ware, wie
+ * viel wurde bereits bezahlt, wie viel Schuld bleibt offen. paidAmount
+ * wird bei jeder SupplierDeliveryPayment aktualisiert, damit die Schuld
+ * (totalAmount - paidAmount) ohne Neuberechnung aus der Zahlungshistorie
+ * direkt gelesen werden kann.
+ */
+model SupplierDelivery {
+  id           String   @id @default(cuid())
+  tenantId     String
+  supplierId   String
+  deliveredAt  DateTime @default(now())
+  totalAmount  Decimal  @db.Decimal(12, 2)
+  paidAmount   Decimal  @db.Decimal(12, 2) @default(0)
+  note         String?
+  documentUrls String[] @default([])
+  createdById  String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  supplier Supplier                  @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+  tenant   Tenant                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  items    SupplierDeliveryItem[]
+  payments SupplierDeliveryPayment[]
+
+  @@index([tenantId])
+  @@index([supplierId])
+  @@index([deliveredAt])
+}
+
+model SupplierDeliveryItem {
+  id          String  @id @default(cuid())
+  deliveryId  String
+  productName String
+  quantity    Decimal @db.Decimal(12, 2)
+  unit        String?
+  unitPrice   Decimal @db.Decimal(12, 2)
+  totalPrice  Decimal @db.Decimal(12, 2)
+
+  delivery SupplierDelivery @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+
+  @@index([deliveryId])
+}
+
+model SupplierDeliveryPayment {
+  id          String   @id @default(cuid())
+  deliveryId  String
+  amount      Decimal  @db.Decimal(12, 2)
+  note        String?
+  createdById String
+  createdAt   DateTime @default(now())
+
+  delivery SupplierDelivery @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+
+  @@index([deliveryId])
+  @@index([createdAt])
 }
 
 model DealerProfile {

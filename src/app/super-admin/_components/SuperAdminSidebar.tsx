@@ -12,6 +12,7 @@ import {
   Lock,
   Menu,
   Package,
+  Receipt,
   Settings,
   Shield,
   ShieldCheck,
@@ -77,6 +78,11 @@ const navItems: NavItem[] = [
     href: "/super-admin/stock",
     label: { de: "Lagerverwaltung", tr: "Stok Yönetimi" },
     icon: Boxes,
+  },
+  {
+    href: "/super-admin/supplier-deliveries",
+    label: { de: "Lieferungen", tr: "Teslimatlar" },
+    icon: Receipt,
   },
   {
     href: "/super-admin/cash-categories",
