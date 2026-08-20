@@ -27,6 +27,7 @@ export default function CartClient({
     removeFromCart,
     removePfandItem,
     setPfandQuantity,
+    adjustPfandQuantity,
   } = useCart();
 
   const { language, translations } = useLanguage();
@@ -487,10 +488,10 @@ export default function CartClient({
                                     aria-label={t.decrease}
                                     disabled={quantity <= 0}
                                     onClick={() =>
-                                      applyPfandQuantity(
+                                      adjustPfandQuantity(
                                         canonicalName,
                                         option.unitAmount,
-                                        quantity - 1,
+                                        -1,
                                       )
                                     }
                                     className="p-2 disabled:cursor-not-allowed disabled:opacity-30"
@@ -555,10 +556,10 @@ export default function CartClient({
                                     type="button"
                                     aria-label={t.increase}
                                     onClick={() =>
-                                      applyPfandQuantity(
+                                      adjustPfandQuantity(
                                         canonicalName,
                                         option.unitAmount,
-                                        quantity + 1,
+                                        1,
                                       )
                                     }
                                     className="p-2"

@@ -70,6 +70,12 @@ type CartContextValue = {
     quantity: number,
   ) => void;
 
+  adjustPfandQuantity: (
+    name: string,
+    unitAmount: number,
+    delta: number,
+  ) => void;
+
   clearCart: () => void;
 };
 
@@ -287,6 +293,44 @@ export function CartProvider({ children }: CartProviderProps) {
     });
   }
 
+  /*
+   * Für die +/- Buttons: die Ziel-Menge wird relativ zum State berechnet,
+   * der zum Zeitpunkt der tatsächlichen Ausführung aktuell ist (nicht zum
+   * Zeitpunkt, an dem der Klick-Handler erstellt wurde). Das vermeidet,
+   * dass zwei sehr schnell aufeinanderfolgende Klicks beide von derselben
+   * veralteten Menge ausgehen und sich gegenseitig überschreiben statt zu
+   * summieren.
+   */
+  function adjustPfandQuantity(
+    name: string,
+    unitAmount: number,
+    delta: number,
+  ) {
+    setPfandItems((currentItems) => {
+      const existing = currentItems.find((item) => item.name === name);
+      const nextQuantity = (existing?.quantity ?? 0) + delta;
+
+      if (nextQuantity <= 0) {
+        return existing
+          ? currentItems.filter((item) => item.id !== existing.id)
+          : currentItems;
+      }
+
+      if (existing) {
+        return currentItems.map((item) =>
+          item.id === existing.id
+            ? { ...item, quantity: nextQuantity, unitAmount }
+            : item,
+        );
+      }
+
+      return [
+        ...currentItems,
+        { id: createPfandId(), name, quantity: nextQuantity, unitAmount },
+      ];
+    });
+  }
+
   function clearCart() {
     setItems([]);
     setPfandItems([]);
@@ -344,6 +388,7 @@ export function CartProvider({ children }: CartProviderProps) {
         updatePfandItem,
         removePfandItem,
         setPfandQuantity,
+        adjustPfandQuantity,
         clearCart,
       }}
     >
