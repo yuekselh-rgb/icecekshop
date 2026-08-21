@@ -1,6 +1,7 @@
 import {
   requireAdminPermission,
 } from "@/lib/admin-auth";
+import { PFAND_CATALOG } from "@/lib/pfand-catalog";
 import { prisma } from "@/lib/prisma";
 import { getRequestLanguage } from "@/lib/request-language";
 import { withTenant } from "@/lib/tenant";
@@ -215,6 +216,32 @@ export const GET = withTenant(async () => {
           totalOut: number;
         }
       >();
+
+    /*
+     * Alle offiziellen Pfand-Arten werden mit 0 Bestand vorbelegt, auch
+     * wenn noch nie eine reale Bewegung dafür erfasst wurde — sonst
+     * lässt sich im Pfand-Ausgang-Formular unten keine Bewegung für eine
+     * Art anlegen, die noch nie als Eingang gebucht wurde. Der Key muss
+     * exakt demselben Format folgen wie unten bei echten Bewegungen,
+     * damit reale Daten hier nahtlos hineingemergt werden.
+     */
+    for (const catalogItem of PFAND_CATALOG) {
+      const normalizedName = catalogItem.nameDe
+        .trim()
+        .toLocaleLowerCase("tr-TR");
+
+      const key = `${normalizedName}::${catalogItem.unitAmount.toFixed(2)}`;
+
+      warehouseItemMap.set(key, {
+        key,
+        name: catalogItem.nameDe,
+        unitAmount: catalogItem.unitAmount,
+        quantity: 0,
+        totalValue: 0,
+        totalIn: 0,
+        totalOut: 0,
+      });
+    }
 
     for (
       const movement of

@@ -107,6 +107,36 @@ const defaultPfandItems: PfandItemForm[] = [
     quantity: "0",
     unitAmount: "3.30",
   },
+  {
+    id: "CRATE_510",
+    name: "Kasten Pfand 5,10 €",
+    quantity: "0",
+    unitAmount: "5.10",
+  },
+  {
+    id: "CRATE_390",
+    name: "Kasten Pfand 3,90 €",
+    quantity: "0",
+    unitAmount: "3.90",
+  },
+  {
+    id: "CRATE_342",
+    name: "Kasten Pfand 3,42 €",
+    quantity: "0",
+    unitAmount: "3.42",
+  },
+  {
+    id: "CRATE_310",
+    name: "Kasten Pfand 3,10 €",
+    quantity: "0",
+    unitAmount: "3.10",
+  },
+  {
+    id: "CRATE_150",
+    name: "Kasten Pfand 1,50 €",
+    quantity: "0",
+    unitAmount: "1.50",
+  },
 ];
 
 const pfandLabels: Record<string, { de: string; tr: string }> = {
@@ -125,6 +155,26 @@ const pfandLabels: Record<string, { de: string; tr: string }> = {
   CRATE_330: {
     de: "Kiste / Getränkekasten",
     tr: "Kasa / İçecek Kasası",
+  },
+  CRATE_510: {
+    de: "Kasten Pfand 5,10 €",
+    tr: "Kasa Pfandı 5,10 €",
+  },
+  CRATE_390: {
+    de: "Kasten Pfand 3,90 €",
+    tr: "Kasa Pfandı 3,90 €",
+  },
+  CRATE_342: {
+    de: "Kasten Pfand 3,42 €",
+    tr: "Kasa Pfandı 3,42 €",
+  },
+  CRATE_310: {
+    de: "Kasten Pfand 3,10 €",
+    tr: "Kasa Pfandı 3,10 €",
+  },
+  CRATE_150: {
+    de: "Kasten Pfand 1,50 €",
+    tr: "Kasa Pfandı 1,50 €",
   },
 };
 
