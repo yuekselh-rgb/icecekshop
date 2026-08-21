@@ -653,6 +653,12 @@ export default function AdminPfandPage() {
     );
   }
 
+  const outgoingTotal = warehouseSummary.items.reduce(
+    (total, item) =>
+      total + (outgoingQuantities[item.key] || 0) * item.unitAmount,
+    0,
+  );
+
   return (
     <main className="min-h-screen bg-slate-100 p-4 sm:p-6 lg:p-10">
       <div className="mx-auto max-w-7xl">
@@ -1051,6 +1057,18 @@ export default function AdminPfandPage() {
                     </div>
                   ))}
                 </div>
+              </div>
+
+              <div className="mt-4 flex items-center justify-between rounded-xl bg-orange-50 px-4 py-3">
+                <span className="font-bold text-orange-700">{t.total}</span>
+
+                <span className="text-lg font-black text-orange-900">
+                  {outgoingTotal.toLocaleString("de-DE", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}{" "}
+                  €
+                </span>
               </div>
 
               <button
