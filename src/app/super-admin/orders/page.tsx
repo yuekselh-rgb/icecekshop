@@ -832,6 +832,23 @@ export default function SuperAdminOrdersPage() {
     );
   }
 
+  /*
+   * "Eingenommen" soll nur echten Warenumsatz zeigen, kein Pfand — Pfand
+   * ist eine Kaution, die dem Kunden bei Rückgabe wieder gutgeschrieben
+   * wird, kein tatsächlicher Umsatz. Der real zu zahlende Betrag
+   * (getEffectiveOrderTotal, inkl. Pfand) bleibt für alle anderen
+   * Kennzahlen (Gesamtbetrag, offene Zahlungen) unverändert.
+   */
+  function getProductOnlyOrderTotal(order: Order) {
+    return Number(
+      Math.max(0, order.subtotal + order.deliveryFee).toFixed(2),
+    );
+  }
+
+  function getOrderPfandCollected(order: Order) {
+    return Number(Math.max(0, order.pfandAmount).toFixed(2));
+  }
+
   const filteredOrders = useMemo(
     () =>
       orders.filter((order) => {
@@ -1232,8 +1249,18 @@ export default function SuperAdminOrdersPage() {
   );
 
   const reportSummary = useMemo(() => {
-    const paidAmount = paidReportOrders.reduce(
+    const paidAmountFull = paidReportOrders.reduce(
       (total, order) => total + getEffectiveOrderTotal(order),
+      0,
+    );
+
+    const paidAmount = paidReportOrders.reduce(
+      (total, order) => total + getProductOnlyOrderTotal(order),
+      0,
+    );
+
+    const paidPfandAmount = paidReportOrders.reduce(
+      (total, order) => total + getOrderPfandCollected(order),
       0,
     );
 
@@ -1257,9 +1284,11 @@ export default function SuperAdminOrdersPage() {
 
       paidAmount: Number(paidAmount.toFixed(2)),
 
+      paidPfandAmount: Number(paidPfandAmount.toFixed(2)),
+
       openAmount: Number(openAmount.toFixed(2)),
 
-      totalAmount: Number((paidAmount + openAmount).toFixed(2)),
+      totalAmount: Number((paidAmountFull + openAmount).toFixed(2)),
     };
   }, [selectedReportOrders, paidReportOrders, openReportOrders]);
 
@@ -1309,8 +1338,12 @@ export default function SuperAdminOrdersPage() {
     );
 
     let dailyPaid = 0;
+    let dailyPaidFull = 0;
+    let dailyPaidPfand = 0;
     let dailyOpen = 0;
     let monthlyPaid = 0;
+    let monthlyPaidFull = 0;
+    let monthlyPaidPfand = 0;
     let monthlyOpen = 0;
 
     for (const order of reportActivityOrders) {
@@ -1321,6 +1354,8 @@ export default function SuperAdminOrdersPage() {
       }
 
       const amount = getEffectiveOrderTotal(order);
+      const productAmount = getProductOnlyOrderTotal(order);
+      const pfandAmount = getOrderPfandCollected(order);
 
       const dailyBucketDate = getBucketDateForKey(order, effectiveReportDate);
 
@@ -1331,7 +1366,9 @@ export default function SuperAdminOrdersPage() {
         if (wasOrderOpenAsOfKey(order, effectiveReportDate)) {
           dailyOpen += amount;
         } else {
-          dailyPaid += amount;
+          dailyPaidFull += amount;
+          dailyPaid += productAmount;
+          dailyPaidPfand += pfandAmount;
         }
       }
 
@@ -1344,7 +1381,9 @@ export default function SuperAdminOrdersPage() {
         if (wasOrderOpenAsOfKey(order, monthEndKey)) {
           monthlyOpen += amount;
         } else {
-          monthlyPaid += amount;
+          monthlyPaidFull += amount;
+          monthlyPaid += productAmount;
+          monthlyPaidPfand += pfandAmount;
         }
       }
     }
@@ -1352,15 +1391,19 @@ export default function SuperAdminOrdersPage() {
     return {
       dailyPaid: Number(dailyPaid.toFixed(2)),
 
+      dailyPaidPfand: Number(dailyPaidPfand.toFixed(2)),
+
       dailyOpen: Number(dailyOpen.toFixed(2)),
 
-      dailyTotal: Number((dailyPaid + dailyOpen).toFixed(2)),
+      dailyTotal: Number((dailyPaidFull + dailyOpen).toFixed(2)),
 
       monthlyPaid: Number(monthlyPaid.toFixed(2)),
 
+      monthlyPaidPfand: Number(monthlyPaidPfand.toFixed(2)),
+
       monthlyOpen: Number(monthlyOpen.toFixed(2)),
 
-      monthlyTotal: Number((monthlyPaid + monthlyOpen).toFixed(2)),
+      monthlyTotal: Number((monthlyPaidFull + monthlyOpen).toFixed(2)),
     };
   }, [reportActivityOrders, effectiveReportDate, reportDriverId]);
 
@@ -1444,7 +1487,8 @@ export default function SuperAdminOrdersPage() {
       } else {
         current.paidCount += 1;
 
-        current.paidAmount += orderTotal;
+        // "Eingenommen" ist Warenumsatz ohne Pfand, siehe getProductOnlyOrderTotal.
+        current.paidAmount += getProductOnlyOrderTotal(order);
       }
 
       grouped.set(groupKey, current);
@@ -1500,7 +1544,7 @@ export default function SuperAdminOrdersPage() {
           </div>
         ) : null}
 
-        <section className="mt-6 grid grid-cols-2 items-start gap-2 lg:grid-cols-5">
+        <section className="mt-6 grid grid-cols-2 items-start gap-2 lg:grid-cols-6">
           <div className="self-start rounded-xl bg-slate-950 px-4 py-3 text-white shadow-sm">
             <p className="text-[10px] font-black uppercase tracking-wide text-slate-400">
               {language === "de" ? "Tageskasse Gesamt" : "Günlük Toplam Kasa"}
@@ -1522,6 +1566,24 @@ export default function SuperAdminOrdersPage() {
 
             <p className="mt-1 text-xl font-black leading-none text-green-900">
               {superAdminCashSummary.dailyPaid.toFixed(2)} €
+            </p>
+
+            <p className="mt-2 text-[10px] font-bold text-green-700">
+              {language === "de" ? "Ohne Pfand" : "Pfand hariç"}
+            </p>
+          </div>
+
+          <div className="self-start rounded-xl bg-teal-50 px-4 py-3 shadow-sm">
+            <p className="text-[10px] font-black uppercase tracking-wide text-teal-700">
+              {language === "de" ? "Pfand heute" : "Bugünkü Pfand"}
+            </p>
+
+            <p className="mt-1 text-xl font-black leading-none text-teal-900">
+              {superAdminCashSummary.dailyPaidPfand.toFixed(2)} €
+            </p>
+
+            <p className="mt-2 text-[10px] font-bold text-teal-700">
+              {language === "de" ? "Kaution, keine Einnahme" : "Kapora, gelir değil"}
             </p>
           </div>
 
@@ -1768,6 +1830,26 @@ export default function SuperAdminOrdersPage() {
 
               <p className="mt-1 text-lg font-black leading-none text-green-900 sm:text-2xl">
                 {reportSummary.paidAmount.toFixed(2)} €
+              </p>
+
+              <p className="mt-0.5 text-[10px] font-bold text-green-700">
+                {language === "de" ? "Warenumsatz, ohne Pfand" : "Pfand hariç"}
+              </p>
+            </div>
+
+            <div className="rounded-2xl bg-teal-50 px-4 py-4 sm:px-5 sm:py-5">
+              <p className="text-[10px] font-black uppercase leading-none text-teal-700 sm:text-xs">
+                {language === "de" ? "Pfand eingenommen" : "Alınan Pfand"}
+              </p>
+
+              <p className="mt-1 text-lg font-black leading-none text-teal-900 sm:text-2xl">
+                {reportSummary.paidPfandAmount.toFixed(2)} €
+              </p>
+
+              <p className="mt-0.5 text-[10px] font-bold text-teal-700">
+                {language === "de"
+                  ? "Kaution, keine Einnahme"
+                  : "Kapora, gelir değildir"}
               </p>
             </div>
 
@@ -2033,7 +2115,7 @@ export default function SuperAdminOrdersPage() {
                           </div>
 
                           <span className="inline-flex items-center justify-center rounded-full bg-green-50 px-3 py-1.5 font-black text-green-700 sm:justify-self-end">
-                            {getEffectiveOrderTotal(order).toFixed(2)} €
+                            {getProductOnlyOrderTotal(order).toFixed(2)} €
                           </span>
                         </div>
                       );

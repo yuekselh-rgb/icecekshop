@@ -946,6 +946,26 @@ export default function AdminOrdersPage() {
     return Number(Math.max(0, Number(order.totalAmount || 0)).toFixed(2));
   }
 
+  /*
+   * "Eingenommen" soll nur echten Warenumsatz zeigen, kein Pfand — Pfand
+   * ist eine Kaution, die dem Kunden bei Rückgabe wieder gutgeschrieben
+   * wird, kein tatsächlicher Umsatz. Der real zu zahlende Betrag
+   * (getEffectiveOrderTotal, inkl. Pfand) bleibt für alle anderen
+   * Kennzahlen (Gesamtbetrag, offene Zahlungen) unverändert.
+   */
+  function getProductOnlyOrderTotal(order: Order) {
+    return Number(
+      Math.max(
+        0,
+        Number(order.subtotal || 0) + Number(order.deliveryFee || 0),
+      ).toFixed(2),
+    );
+  }
+
+  function getOrderPfandCollected(order: Order) {
+    return Number(Math.max(0, Number(order.pfandAmount || 0)).toFixed(2));
+  }
+
   function isBarSale(order: Order) {
     return order.orderNumber.startsWith("BAR-");
   }
@@ -1317,7 +1337,12 @@ export default function AdminOrdersPage() {
     );
 
     const paidAmount = paidReportOrders.reduce(
-      (total, order) => total + getEffectiveOrderTotal(order),
+      (total, order) => total + getProductOnlyOrderTotal(order),
+      0,
+    );
+
+    const paidPfandAmount = paidReportOrders.reduce(
+      (total, order) => total + getOrderPfandCollected(order),
       0,
     );
 
@@ -1355,6 +1380,8 @@ export default function AdminOrdersPage() {
 
       paidAmount: Number(paidAmount.toFixed(2)),
 
+      paidPfandAmount: Number(paidPfandAmount.toFixed(2)),
+
       openAmount: Number(openAmount.toFixed(2)),
     };
   }, [selectedReportOrders, paidReportOrders, selectedOpenReportOrders]);
@@ -1365,6 +1392,8 @@ export default function AdminOrdersPage() {
    */
   const cashSummary = {
     paid: reportSummary.paidAmount,
+
+    pfand: reportSummary.paidPfandAmount,
 
     open: reportSummary.openAmount,
   };
@@ -1442,7 +1471,8 @@ export default function AdminOrdersPage() {
       } else {
         current.paidCount += 1;
 
-        current.paidAmount += amount;
+        // "Eingenommen" ist Warenumsatz ohne Pfand, siehe getProductOnlyOrderTotal.
+        current.paidAmount += getProductOnlyOrderTotal(order);
       }
 
       grouped.set(rowKey, current);
@@ -1662,7 +1692,7 @@ export default function AdminOrdersPage() {
               </div>
             </div>
 
-            <div className="mb-5 grid gap-3 sm:grid-cols-3">
+            <div className="mb-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <div className="rounded-2xl bg-green-50 p-5">
                 <p className="text-xs font-black uppercase text-green-700">
                   {language === "de" ? "Eingenommen" : "Tahsil Edilen"}
@@ -1677,7 +1707,29 @@ export default function AdminOrdersPage() {
                 </p>
 
                 <p className="mt-1 text-xs font-bold text-green-700">
-                  {language === "de" ? "Gesamt bezahlt" : "Seçilen rapora göre ödenen toplam"}
+                  {language === "de"
+                    ? "Warenumsatz, ohne Pfand"
+                    : "Seçilen rapora göre ödenen toplam (Pfand hariç)"}
+                </p>
+              </div>
+
+              <div className="rounded-2xl bg-teal-50 p-5">
+                <p className="text-xs font-black uppercase text-teal-700">
+                  {language === "de" ? "Pfand eingenommen" : "Alınan Pfand"}
+                </p>
+
+                <p className="mt-2 text-3xl font-black text-teal-900">
+                  {cashSummary.pfand.toLocaleString("de-DE", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}{" "}
+                  €
+                </p>
+
+                <p className="mt-1 text-xs font-bold text-teal-700">
+                  {language === "de"
+                    ? "Pfand auf bezahlte Bestellungen (Kaution, keine Einnahme)"
+                    : "Ödenen siparişlerdeki Pfand (kapora, gelir değildir)"}
                 </p>
               </div>
 
@@ -1997,7 +2049,7 @@ export default function AdminOrdersPage() {
                           </div>
 
                           <strong className="text-green-700">
-                            {getEffectiveOrderTotal(order).toFixed(2)} €
+                            {getProductOnlyOrderTotal(order).toFixed(2)} €
                           </strong>
                         </div>
                         );
