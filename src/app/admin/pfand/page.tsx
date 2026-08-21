@@ -295,6 +295,10 @@ export default function AdminPfandPage() {
     Record<string, number>
   >({});
 
+  const [outgoingQuantityInputs, setOutgoingQuantityInputs] = useState<
+    Record<string, string>
+  >({});
+
   const [savingOutgoing, setSavingOutgoing] = useState(false);
 
   const [markingPaidId, setMarkingPaidId] = useState<string | null>(null);
@@ -499,6 +503,13 @@ export default function AdminPfandPage() {
         [itemKey]: Math.max(0, currentQuantity + difference),
       };
     });
+
+    // Verhindert, dass ein noch offener Text-Puffer den frischen Wert überschreibt.
+    setOutgoingQuantityInputs((current) => {
+      const next = { ...current };
+      delete next[itemKey];
+      return next;
+    });
   }
 
   function setOutgoingQuantity(itemKey: string, value: number) {
@@ -570,6 +581,7 @@ export default function AdminPfandPage() {
       setOutgoingPartyName("");
       setOutgoingNote("");
       setOutgoingQuantities({});
+      setOutgoingQuantityInputs({});
       setShowOutgoingForm(false);
 
       await loadReturns();
@@ -985,12 +997,45 @@ export default function AdminPfandPage() {
                         </button>
 
                         <input
-                          type="number"
-                          min={0}
-                          value={outgoingQuantities[item.key] || 0}
-                          onChange={(event) =>
-                            setOutgoingQuantity(item.key, Number(event.target.value))
+                          type="text"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          value={
+                            outgoingQuantityInputs[item.key] ??
+                            String(outgoingQuantities[item.key] || 0)
                           }
+                          onChange={(event) => {
+                            const raw = event.target.value;
+
+                            if (raw === "" || /^[0-9]+$/.test(raw)) {
+                              const normalized = raw.replace(/^0+(?=\d)/, "");
+
+                              setOutgoingQuantityInputs((current) => ({
+                                ...current,
+                                [item.key]: normalized,
+                              }));
+
+                              if (normalized !== "") {
+                                setOutgoingQuantity(item.key, Number(normalized));
+                              }
+                            }
+                          }}
+                          onBlur={() => {
+                            const raw = outgoingQuantityInputs[item.key];
+
+                            if (raw !== undefined) {
+                              setOutgoingQuantity(
+                                item.key,
+                                raw === "" ? 0 : Number(raw),
+                              );
+                            }
+
+                            setOutgoingQuantityInputs((current) => {
+                              const next = { ...current };
+                              delete next[item.key];
+                              return next;
+                            });
+                          }}
                           onFocus={(event) => event.target.select()}
                           className="w-14 rounded-lg border border-slate-200 bg-white py-1 text-center font-black outline-none focus:border-orange-500"
                         />
