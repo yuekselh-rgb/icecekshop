@@ -862,6 +862,30 @@ export default function SuperAdminOrdersPage() {
     return Number(Math.max(0, pfandReturnAmount).toFixed(2));
   }
 
+  /*
+   * Unclamped: subtotal + deliveryFee + pfandAmount (neu bezahltes Pfand)
+   * minus pfandReturnAmount (zurückgegebenes Pfand). Negativ bedeutet,
+   * das zurückgegebene Pfand war mehr wert als der Rest der Bestellung —
+   * es wurde also tatsächlich Bargeld an den Kunden ausgezahlt, nicht
+   * nur mit dem Kauf verrechnet.
+   */
+  function getOrderNetCashAmount(order: Order) {
+    const pfandReturn = order.pfandReturns[0];
+
+    const pfandReturnAmount = pfandReturn
+      ? Number(pfandReturn.approvedAmount ?? pfandReturn.totalAmount)
+      : 0;
+
+    return Number(
+      (
+        order.subtotal +
+        order.deliveryFee +
+        order.pfandAmount -
+        pfandReturnAmount
+      ).toFixed(2),
+    );
+  }
+
   const filteredOrders = useMemo(
     () =>
       orders.filter((order) => {
@@ -2135,10 +2159,23 @@ export default function SuperAdminOrdersPage() {
                             </span>
 
                             {getOrderPfandCollected(order) > 0 ? (
-                              <p className="mt-1 text-xs font-bold text-teal-700">
-                                +{getOrderPfandCollected(order).toFixed(2)} €{" "}
-                                {language === "de" ? "Pfand zurückgegeben" : "Pfand iade edildi"}
-                              </p>
+                              getOrderNetCashAmount(order) < 0 ? (
+                                <p className="mt-1 text-xs font-bold text-red-600">
+                                  -
+                                  {Math.abs(getOrderNetCashAmount(order)).toFixed(2)}{" "}
+                                  €{" "}
+                                  {language === "de"
+                                    ? "Bargeld ausgezahlt (Pfand)"
+                                    : "Pfand için nakit ödendi"}
+                                </p>
+                              ) : (
+                                <p className="mt-1 text-xs font-bold text-slate-500">
+                                  {getOrderPfandCollected(order).toFixed(2)} €{" "}
+                                  {language === "de"
+                                    ? "Pfand zurückgegeben (mit Kauf verrechnet)"
+                                    : "Pfand iade edildi (satın alımla mahsup)"}
+                                </p>
+                              )
                             ) : null}
                           </div>
                         </div>
