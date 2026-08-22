@@ -2129,9 +2129,18 @@ export default function SuperAdminOrdersPage() {
                             </p>
                           </div>
 
-                          <span className="inline-flex items-center justify-center rounded-full bg-green-50 px-3 py-1.5 font-black text-green-700 sm:justify-self-end">
-                            {getProductOnlyOrderTotal(order).toFixed(2)} €
-                          </span>
+                          <div className="text-right sm:justify-self-end">
+                            <span className="inline-flex items-center justify-center rounded-full bg-green-50 px-3 py-1.5 font-black text-green-700">
+                              {getProductOnlyOrderTotal(order).toFixed(2)} €
+                            </span>
+
+                            {getOrderPfandCollected(order) > 0 ? (
+                              <p className="mt-1 text-xs font-bold text-teal-700">
+                                +{getOrderPfandCollected(order).toFixed(2)} €{" "}
+                                {language === "de" ? "Pfand zurückgegeben" : "Pfand iade edildi"}
+                              </p>
+                            ) : null}
+                          </div>
                         </div>
                       );
                     })}

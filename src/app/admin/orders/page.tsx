@@ -2055,9 +2055,20 @@ export default function AdminOrdersPage() {
                             ) : null}
                           </div>
 
-                          <strong className="text-green-700">
-                            {getProductOnlyOrderTotal(order).toFixed(2)} €
-                          </strong>
+                          <div className="text-right">
+                            <strong className="text-green-700">
+                              {getProductOnlyOrderTotal(order).toFixed(2)} €
+                            </strong>
+
+                            {getOrderPfandCollected(order) > 0 ? (
+                              <p className="mt-0.5 text-xs font-bold text-teal-700">
+                                +{getOrderPfandCollected(order).toFixed(2)} €{" "}
+                                {language === "de"
+                                  ? "Pfand zurückgegeben"
+                                  : "Pfand iade edildi"}
+                              </p>
+                            ) : null}
+                          </div>
                         </div>
                         );
                       })}
