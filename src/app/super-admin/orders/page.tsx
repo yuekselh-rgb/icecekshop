@@ -845,8 +845,21 @@ export default function SuperAdminOrdersPage() {
     );
   }
 
+  /*
+   * "Pfand eingenommen" bezieht sich auf Leergut, das ein Kunde
+   * zurückgebracht hat (PfandReturn.approvedAmount/totalAmount) — NICHT
+   * auf das Pfand, das beim Kauf neuer Produkte mitbezahlt wurde
+   * (order.pfandAmount). Ein Kunde, der nur einkauft, trägt hier also
+   * nichts bei; nur wer tatsächlich Leergut abgibt.
+   */
   function getOrderPfandCollected(order: Order) {
-    return Number(Math.max(0, order.pfandAmount).toFixed(2));
+    const pfandReturn = order.pfandReturns[0];
+
+    const pfandReturnAmount = pfandReturn
+      ? Number(pfandReturn.approvedAmount ?? pfandReturn.totalAmount)
+      : 0;
+
+    return Number(Math.max(0, pfandReturnAmount).toFixed(2));
   }
 
   const filteredOrders = useMemo(
@@ -1583,7 +1596,9 @@ export default function SuperAdminOrdersPage() {
             </p>
 
             <p className="mt-2 text-[10px] font-bold text-teal-700">
-              {language === "de" ? "Kaution, keine Einnahme" : "Kapora, gelir değil"}
+              {language === "de"
+                ? "Zurückgegebenes Leergut"
+                : "Geri alınan Pfand"}
             </p>
           </div>
 
@@ -1848,8 +1863,8 @@ export default function SuperAdminOrdersPage() {
 
               <p className="mt-0.5 text-[10px] font-bold text-teal-700">
                 {language === "de"
-                  ? "Kaution, keine Einnahme"
-                  : "Kapora, gelir değildir"}
+                  ? "Von Kunden zurückgegebenes Leergut"
+                  : "Müşterilerden geri alınan Pfand"}
               </p>
             </div>
 

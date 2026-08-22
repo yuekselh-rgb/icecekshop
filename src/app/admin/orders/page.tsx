@@ -962,8 +962,15 @@ export default function AdminOrdersPage() {
     );
   }
 
+  /*
+   * "Pfand eingenommen" bezieht sich auf Leergut, das ein Kunde
+   * zurückgebracht hat (pfandReturnAmount) — NICHT auf das Pfand, das
+   * beim Kauf neuer Produkte mitbezahlt wurde (order.pfandAmount). Ein
+   * Kunde, der nur einkauft, trägt hier also nichts bei; nur wer
+   * tatsächlich Leergut abgibt.
+   */
   function getOrderPfandCollected(order: Order) {
-    return Number(Math.max(0, Number(order.pfandAmount || 0)).toFixed(2));
+    return Number(Math.max(0, Number(order.pfandReturnAmount || 0)).toFixed(2));
   }
 
   function isBarSale(order: Order) {
@@ -1728,8 +1735,8 @@ export default function AdminOrdersPage() {
 
                 <p className="mt-1 text-xs font-bold text-teal-700">
                   {language === "de"
-                    ? "Pfand auf bezahlte Bestellungen (Kaution, keine Einnahme)"
-                    : "Ödenen siparişlerdeki Pfand (kapora, gelir değildir)"}
+                    ? "Von Kunden zurückgegebenes Leergut, nicht das beim Einkauf mitbezahlte Pfand"
+                    : "Müşterilerden geri alınan Pfand, satın alırken ödenen Pfand değil"}
                 </p>
               </div>
 

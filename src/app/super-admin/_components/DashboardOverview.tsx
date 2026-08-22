@@ -5,7 +5,6 @@ import {
   ArrowUpRight,
   Banknote,
   PackageCheck,
-  PiggyBank,
   Recycle,
   Users,
 } from "lucide-react";
@@ -18,7 +17,6 @@ import ResetSalesButton from "./ResetSalesButton";
 export type DashboardStats = {
   totalCustomers: number;
   totalRevenue: number;
-  pfandCollectedAmount: number;
   totalOrders: number;
   pfandReturnsCount: number;
   pfandReturnsAmount: number;
@@ -94,7 +92,6 @@ export default function DashboardOverview({
           subtitle: "Systemverwaltung und alle Admin-Berechtigungen.",
           totalCustomers: "Gesamtkunden",
           totalRevenue: "Gesamtumsatz",
-          pfandCollected: "Pfand eingenommen",
           totalOrders: "Gesamtbestellungen",
           pfandReturns: "Pfand-Rückgaben",
           revenueOverTime: "Umsatz-Verlauf",
@@ -119,7 +116,6 @@ export default function DashboardOverview({
           subtitle: "Sistem yönetimi ve tüm yönetici yetkileri.",
           totalCustomers: "Toplam Müşteri",
           totalRevenue: "Toplam Ciro",
-          pfandCollected: "Alınan Pfand",
           totalOrders: "Toplam Sipariş",
           pfandReturns: "Pfand İadeleri",
           revenueOverTime: "Ciro Grafiği",
@@ -149,11 +145,6 @@ export default function DashboardOverview({
       label: t.totalRevenue,
       value: formatEuro(stats.totalRevenue),
       icon: Banknote,
-    },
-    {
-      label: t.pfandCollected,
-      value: formatEuro(stats.pfandCollectedAmount),
-      icon: PiggyBank,
     },
     {
       label: t.totalOrders,
@@ -224,7 +215,7 @@ export default function DashboardOverview({
         <ResetSalesButton />
       </div>
 
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {statCards.map((card) => {
           const Icon = card.icon;
 

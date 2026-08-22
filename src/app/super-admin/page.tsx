@@ -44,12 +44,14 @@ async function loadDashboardStats(tenantId: string): Promise<DashboardStats> {
      * kein Pfand — Pfand ist eine Kaution, keine Einnahme. Der real
      * berechnete Betrag (inkl. Pfand) bleibt in Order.totalAmount für
      * Zahlungsabwicklung unverändert, nur diese Dashboard-Kennzahl ändert
-     * sich. pfandAmount wird separat summiert und als eigene Kachel
-     * gezeigt (siehe pfandCollectedAmount unten).
+     * sich. Pfand, das Kunden beim Kauf mitbezahlen, wird hier bewusst
+     * nirgends ausgewiesen — die "Pfand-Rückgaben"-Kachel unten (pfandAgg)
+     * zeigt bereits das, was tatsächlich zählt: von Kunden zurückgegebenes
+     * Leergut.
      */
     prisma.order.aggregate({
       where: { tenantId, status: { not: "CANCELLED" } },
-      _sum: { subtotal: true, deliveryFee: true, pfandAmount: true },
+      _sum: { subtotal: true, deliveryFee: true },
     }),
 
     prisma.order.count({
@@ -214,7 +216,6 @@ async function loadDashboardStats(tenantId: string): Promise<DashboardStats> {
         Number(revenueAgg._sum.deliveryFee ?? 0)
       ).toFixed(2),
     ),
-    pfandCollectedAmount: Number(revenueAgg._sum.pfandAmount ?? 0),
     totalOrders,
     pfandReturnsCount: pfandAgg._count._all,
     pfandReturnsAmount: Number(pfandAgg._sum.approvedAmount ?? 0),
@@ -233,7 +234,6 @@ export default async function SuperAdminPage() {
     : {
         totalCustomers: 0,
         totalRevenue: 0,
-        pfandCollectedAmount: 0,
         totalOrders: 0,
         pfandReturnsCount: 0,
         pfandReturnsAmount: 0,
